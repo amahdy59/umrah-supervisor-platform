@@ -5,6 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
+    "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc -p tsconfig.build.json"
