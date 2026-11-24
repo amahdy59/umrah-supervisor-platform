@@ -498,6 +498,9 @@
           <button class="mode-btn" onclick="switchTab('fiqh')">
             <span>📖</span> المرشد الفقهي وآداب السكن
           </button>
+          <button class="mode-btn" onclick="switchTab('women-fiqh')">
+            <span>🧕</span> فقه المرأة المعتمرة
+          </button>
         </nav>
 
         <a href="/supervisor.html" class="supervisor-link-btn" title="دخول بوابة المشرف">
@@ -936,6 +939,246 @@
 
     </div>
 
+    <!-- ========================================================== -->
+    <!-- TAB 4: WOMEN'S FIQH IN UMRAH (فقه المرأة المعتمرة)         -->
+    <!-- مستخلص من كتاب «دليل المعتمر» للشيخ يوسف العطير            -->
+    <!-- ========================================================== -->
+    <div id="tab-women-fiqh" class="tab-view">
+      
+      <!-- Banner / Source Header -->
+      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #fdf2f8 0%, #fff 100%); border-color: #fbcfe8;">
+        <div class="card-header" style="border-bottom-color: #fbcfe8;">
+          <div class="card-title" style="color: #9d174d;">
+            <span>🧕</span> دليل فقه وأحكام المرأة في العمرة والزيارة
+          </div>
+          <span class="badge" style="background: #fce7f3; color: #9d174d; font-weight: 800;">
+            مستخلص ومحقق من «دليل المعتمر»
+          </span>
+        </div>
+        <p style="font-size: 0.95rem; line-height: 1.8; color: #4a044e; margin-bottom: 1rem;">
+          أحكام وفتاوى شرعية موثقة تهم كل أخت معتمرة، مستفادة من فتاوى كبار العلماء (الشيخ عبد العزيز بن باز، والشيخ محمد بن صالح العثيمين، والشيخ عبد المحسن العباد البدر حفظه الله ورعاهم جميعاً).
+        </p>
+
+        <!-- Quick Search Bar -->
+        <div style="position: relative;">
+          <input type="text" id="women-search-input" onkeyup="filterWomenFiqh()" placeholder="🔍 ابحثي في أحكام المرأة (مثال: حيض، نقاب، سدل، تقصير، أبيض، جوارب، روضة)..." 
+            style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 2px solid #fbcfe8; font-size: 0.95rem; outline: none; background: white;">
+        </div>
+      </div>
+
+      <!-- Quick Summary Cards (Pillars for the Muslim Sister) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
+          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">🌸 الإحرام مع الحيض</div>
+          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تُحرم وجوباً من الميقات وتغتسل وتلبي، وتؤخر الطواف حتى تطهر.</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
+          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">👗 لا نقاب ولا قفازين</div>
+          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تلبس ثيابها الساترة المعتادة، ويحرم النقاب المفصل وتستر بسدل الخمار.</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
+          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">🚶‍♀️ هدوء ووقار في الطواف</div>
+          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">لا رمل ولا اضطباع ولا هرولة للمرأة بالإجماع، وشأنها السكينة والستر.</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
+          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">✂️ التقصير قدر أنملة</div>
+          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تقص قدر أنملة (~2 سم) من أطراف الشعر، ويحرم كشف الشعر بمروة الحرم.</div>
+        </div>
+      </div>
+
+      <!-- 10 Comprehensive Rulings (Accordion with Searchable Class) -->
+      <div id="women-fiqh-list">
+
+        <!-- 1: Miqat & Menstruation -->
+        <div class="accordion-item women-topic" data-keywords="حيض نفاس ميقات احرام تأخير طواف دم عائشة سرف">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">1. وصول المرأة إلى الميقات وهي حائض أو نفساء</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> إذا بلغت المرأة الميقات وهي حائض أو نُفساء، فهل تحرم أم تؤخر إحرامها حتى تطهر بمكة؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> تغتسل وتُحرم مع الناس من الميقات وجوباً، وتفعل كل ما يفعله المعتمر من الذكر والدعاء والتلبية، غير أنها لا تطوف بالبيت حتى تطهر وتغتسل.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> لا يجوز للمرأة تجاوز الميقات دون إحرام بحجة الحيض. بل تنوي وتلبي في الطائرة أو الحافلة، وإذا وصلت الفندق بمكة تنتظر حتى تطهر تماماً وتغتسل غسل الطهارة، ثم تذهب للحرم وتطوف وتسعى وتقصر. ولا يجوز لها تقديم السعي على الطواف في العمرة بحال.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>الدليل الشرعي:</em> حديث عائشة رضي الله عنها حين حاضت بسرف فقال لها رسول الله ﷺ: «افْعَلِي مَا يَفْعَلُ الْحَاجُّ غَيْرَ أَنْ لا تَطُوفِي بِالْبَيْتِ حَتَّى تَطْهُرِي». (متفق عليه - دليل المعتمر ص 16)
+            </div>
+          </div>
+        </div>
+
+        <!-- 2: Ihram Clothes (No Niqab, No Gloves) -->
+        <div class="accordion-item women-topic" data-keywords="لباس ثياب نقاب قفازين برقع وجه كفين احرام محرمات">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">2. صفة لباس إحرام المرأة وما يحرم عليها ارتداؤه</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> ما هو اللباس المخصص لإحرام المرأة؟ وما الذي يحرم عليها ارتداؤه؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> ليس للمرأة لباس محدد للإحرام، بل تُحرم في لباسها المعتاد الساتر الفضفاض الذي لا زينة فيه ولا يصف جسدها. ويحرم عليها شيئان فقط بالاتفاق: <strong>النقاب (البُرقُع المفصل للوجه) والقفازان للكفين</strong>.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> تلبس المرأة عباءتها أو ثيابها الساترة المعتادة. يحرم عليها لبس النقاب المخيط للعينين والقفازين، وتغطي وجهها بسدل خمارها عند مرور الرجال الأجانب، وتستر كفيها بكم عباءتها الفضفاض دون قفازين.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>الدليل الشرعي:</em> قوله ﷺ: «لا تَنْتَقِبِ المَرْأَةُ المُحْرِمَةُ، ولا تَلْبَسِ القُفَّازَيْنِ». (رواه البخاري - دليل المعتمر ص 17)
+            </div>
+          </div>
+        </div>
+
+        <!-- 3: Bid'ah of Specific White or Green Dress -->
+        <div class="accordion-item women-topic" data-keywords="أبيض اخضر لون ثوب بدعة تخصيص ملابس">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">3. بدعة تخصيص الثوب الأبيض أو الأخضر للمعتمرة</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> هل يجب أو يُستحب للمرأة أن تلبس ثوباً أبيض أو أخضر للإحرام كما يعتقد كثير من الناس؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> تخصيص ثوب أبيض أو أخضر لإحرام المرأة لا أصل له في الشرع وهو من البدع والمحدثات المنكرة.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> تُحرم المرأة في الأسود أو الكحلي أو البني أو أي لون ساتر غير لافت. وقد نص أهل العلم (كالشيخ ابن عثيمين والشيخ ابن باز) على كراهة لبس الثوب الأبيض للمرأة لأنه يشبه لباس الرجال، وقد يلفت الأنظار ويشف عند التعرق والزحام، كما أن وضع الرباط الأبيض على الرأس بدعة لا دليل عليها.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>المرجع:</em> «دليل المعتمر» ص 17 وص 54 (تخصيص ثياب خاصة للنساء خضراء أو بيضاء لا أصل له).
+            </div>
+          </div>
+        </div>
+
+        <!-- 4: Face Veil (Sadl) in Front of Non-Mahram Men -->
+        <div class="accordion-item women-topic" data-keywords="سدل خمار تغطية وجه رجال اجانب عصابة طربوش محرم">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">4. سدل الخمار على الوجه بحضرة الرجال الأجانب دون عصابة</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> كيف تغطي المحرمة وجهها إذا مر بها رجال أجانب مع تحريم النقاب؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> تسدل خمارها أو جلبابها من فوق رأسها على وجهها، ولا يضر إن مس الخمار وجهها إطلاقاً. وبدعة وضع (العصابة أو الطربوش أو الإسفنج) لرفع الخمار عن الوجه لا أصل لها.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> كان نساء الصحابة وأمهات المؤمنين إذا حاذاهن الركبان سدلت إحداهن جلبابها من رأسها على وجهها، فإذا جاوزوهن كشفن وجوههن. ومس القماش للوجه أثناء السدل جائز شرعاً ولا يوجب فدية ولا كفارة خلافاً لما يظنه العامة.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>الدليل الشرعي:</em> حديث عائشة رضي الله عنها: «كَانَ الرُّكْبَانُ يَمُرُّونَ بِنَا وَنَحْنُ مَعَ رَسُولِ اللَّهِ ﷺ مُحْرِمَاتٌ، فَإِذَا حَاذَوْا بِنَا سَدَلَتْ إِحْدَانَا جِلْبَابَهَا مِنْ رَأْسِهَا عَلَى وَجْهِهَا، فَإِذَا جَاوَزُونَا كَشَفْنَاهُ». (أبو داود وابن ماجه)
+            </div>
+          </div>
+        </div>
+
+        <!-- 5: Tawaf Physicality (No Ramal, No Idtiba, No Herwala) -->
+        <div class="accordion-item women-topic" data-keywords="رمل اضطباع هرولة طواف سعي مشي كتف جري سرعة">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">5. لا رمل ولا اضطباع ولا هرولة على النساء في الطواف والسعي</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> هل ترمل المرأة في الأشواط الثلاثة الأولى للطواف أو تسرع بين العلمين الأخضرين في السعي؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> إجماع علماء الأمة قديماً وحديثاً على أنه <strong>لا رمل ولا اضطباع ولا هرولة على النساء</strong> في طواف ولا سعي، بل شأن المرأة الستر والوقار.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> تمشي المرأة مشياً عادياً هادئاً بسكينة في جميع أشواط الطواف وأشواط السعي بين الصفا والمروة. وإذا مرت بين الضوئين الأخضرين في المسعى تمشي كعادتها ولا تسرع. كما يستحب لها الطواف في حواشي المطاف وأطرافه بعيداً عن مزاحمة الرجال واحتكاكهم، وذلك أعظم لأجرها وأصون لعفافها.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>الإجماع:</em> قال ابن المنذر والإمام النووي: «أجمع أهل العلم على أن المرأة لا رمل عليها حول البيت، ولا بين الصفا والمروة، وليس عليها اضطباع، وذلك لأن الرمل والاضطباع والهرولة يطلب فيها إظهار الجلد، والمرأة عورة وشأنها الستر». (دليل المعتمر ص 31)
+            </div>
+          </div>
+        </div>
+
+        <!-- 6: Menstruation after Tawaf & before Sa'i -->
+        <div class="accordion-item women-topic" data-keywords="حيض بعد الطواف قبل السعي طهر نقاء اتمام عمرة">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">6. نزول الحيض بعد إتمام الطواف وقبل السعي بين الصفا والمروة</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> امرأة طافت بالبيت طوافاً تاماً صحيحاً، ثم نزل عليها دم الحيض قبل السعي، فهل تنتظر أم تسعى؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> تسعى بين الصفا والمروة وهي حائض وتتم عمرتها وتقصر من شعرها وتتحلل، وعمرتها صحيحة وتامة بالإجماع.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> الطهارة من الحدث والحيض شرط لصحة الطواف بالبيت العتيق فقط، وليست شرطاً لصحة السعي بين الصفا والمروة، بل هي مستحبة في السعي. والمسعى ليس جزءاً من المسجد الحرام الذي تمنع الحائض من المكث فيه، فتدخل وتسعى وتقصر وتكون قد أتمت نسكها بفضل الله.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>المرجع:</em> «دليل المعتمر» ص 44 (لو حاضت المرأة أو نفست بعد الطواف سعت وأجزأها ذلك لأن الطهارة في السعي سنة وليست شرطاً).
+            </div>
+          </div>
+        </div>
+
+        <!-- 7: Hair Trimming (Taqseer vs Shaving) -->
+        <div class="accordion-item women-topic" data-keywords="تقصير شعر حلق رأس انملة مقص فندق مروة تحلل">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">7. صفة تقصير المرأة لشعرها للتحلل وتحريم الحلق وكشف الشعر بالمروة</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> كيف تتحلل المرأة من عمرتها؟ وهل تحلق رأسها؟ وأين تقص شعرها؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> المرأة لا يُشرع لها الحلق بالإجماع بل يحرم عليها حلق رأسها، والواجب عليها <strong>التقصير فقط قدر أنملة الأصبع</strong>.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> تجمع المرأة شعرها أو أطراف ضفائرها وتقص من أسفله قدر (أنملة الأصبع) أي حوالي 1.5 إلى 2 سم. <strong>تنبيه بالغ الأهمية:</strong> تقع بعض النساء في منكر خطير بكشف حجابهن وشعورهن أمام الرجال عند نهاية المروة لتقصير الشعر بالمقص! بل الواجب عليها تأخير القص حتى تعود إلى غرفتها بالفندق أو في مكان ساتر خاص بالنساء.</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>الحديث النبوي:</em> قال رسول الله ﷺ: «لَيْسَ عَلَى النِّسَاءِ حَلْقٌ، إِنَّمَا عَلَى النِّسَاءِ التَّقْصِيرُ». (رواه أبو داود والدارمي وصححه الألباني - دليل المعتمر ص 47)
+            </div>
+          </div>
+        </div>
+
+        <!-- 8: Socks and Sewn Shoes -->
+        <div class="accordion-item women-topic" data-keywords="جوارب شرابات احذية مخيط خفين قدم عورة ستر">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">8. جواز لبس الجوارب (الشرابات) والأحذية المخيطة للمرأة</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> هل يجوز للمرأة المحرمة لبس الجوارب (الشرابات) أو الأحذية العادية المخيطة؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> يجوز للمرأة المحرمة لبس الجوارب والخفين والأحذية المخيطة دون أي كراهة أو فدية بالإجماع.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> النهي عن لبس المخيط والخفاف خاص بالرجال فقط دون النساء. بل يُسن للمرأة لبس الجوارب لستر قدميها عن أنظار الرجال الأجانب أثناء رفع ثيابها أو أثناء المشي في الطواف والسعي والصلاة، لأن قدمي الحرة عورة أمام الرجال الأجانب.</p>
+          </div>
+        </div>
+
+        <!-- 9: 8 Conditions of Sharia Hijab -->
+        <div class="accordion-item women-topic" data-keywords="حجاب شروط ثمانية عباءة ستر تبرج عطر بخور زينة">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">9. شروط الحجاب الشرعي الثمانية للمعتمرة داخل الحرمين</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> ما هي شروط العباءة والحجاب الشرعي المقبول في أقدس البقاع؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> الحجاب عبادة يُقصد به الستر الكامل لا الزينة، وقد جمع العلماء شروطه الثمانية من الكتاب والسنة:
+            </div>
+            <ol style="margin-right: 1.5rem; line-height: 1.9; font-size: 0.9rem;">
+              <li><strong>استيعاب جميع البدن:</strong> ساتر لجميع جسدها.</li>
+              <li><strong>أن لا يكون زينة في نفسه:</strong> فلا يكون مطرزاً بالخرز أو الذهب أو الألوان الفاقعة اللافتة.</li>
+              <li><strong>أن يكون صفيقاً ثخيناً:</strong> لا يشف عما تحته ولا يكشف لون البشرة.</li>
+              <li><strong>أن يكون فضفاضاً واسعاً:</strong> غير ضيق يفصل تقاطيع الجسد ومفاتنه.</li>
+              <li><strong>أن لا يكون مطيباً ولا مبخراً:</strong> يحرم على المحرمة التطيب أو التعطر برائحة فواحة.</li>
+              <li><strong>أن لا يشبه لباس الرجال:</strong> لحديث لعن المتشبهات بالرجال من النساء.</li>
+              <li><strong>أن لا يشبه لباس الكافرات:</strong> فيما يختص بهن من أزياء.</li>
+              <li><strong>أن لا يكون ثوب شهرة:</strong> يقصد به لفت الأنظار والتعالي على الناس.</li>
+            </ol>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>المرجع:</em> «دليل المعتمر» ص 128 (شروط الحجاب الشرعي).
+            </div>
+          </div>
+        </div>
+
+        <!-- 10: Prophet's Mosque & Rawdah Visits -->
+        <div class="accordion-item women-topic" data-keywords="مسجد نبوي روضة شريفة مقابر بقيع احد قبور نسك تصريح سلام">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: 800; color: #831843;">10. زيارة المرأة للمسجد النبوي والروضة الشريفة وحكم المقابر</span>
+            <span>➕</span>
+          </div>
+          <div class="accordion-body">
+            <p><strong>السؤال:</strong> هل تزور المرأة قبر النبي ﷺ ومقبرة البقيع وشهدء أحد؟ وما حكم صلاتها في الروضة؟</p>
+            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
+              <strong>الفتوى والبيان:</strong> يُشرع للمرأة الصلاة في المسجد النبوي ودخول الروضة الشريفة في الفترات المخصصة للنساء بتصريح نسك. أما زيارة المقابر (البقيع وأحد) أو الوقوف على المواجهة الشريفة للقبر، فالصحيح من قولي العلماء منعه للنساء.
+            </div>
+            <p><strong>الإرشاد العملي:</strong> تصلي الأخت المعتمرة في مصليات النساء بالمسجد النبوي، وتحجز موعد الروضة الشريفة عبر تطبيق «نُسك» لتصلي ركعتين في الروضة. أما السلام على رسول الله ﷺ وصاحبيه فيحصل بالصلاة والسلام عليه من أي مكان، فالملائكة تبلغه صلاتنا وسلامنا أينما كنا. وتجتنب النساء الذهاب للمقابر لحديث النبي ﷺ: «لَعَنَ اللَّهُ زَوَّارَاتِ الْقُبُورِ».</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+              <em>المرجع:</em> «دليل المعتمر» ص 85-87 (فتاوى الزيارة بالمدينة المنورة).
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
   </main>
 
   <!-- Modals -->
@@ -1022,12 +1265,22 @@
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
 
-      const tabs = ['rituals', 'ziyarat', 'fiqh'];
+      const tabs = ['rituals', 'ziyarat', 'fiqh', 'women-fiqh'];
       const index = tabs.indexOf(tab);
       if (index !== -1) {
         document.querySelectorAll('.mode-btn')[index].classList.add('active');
         document.getElementById(`tab-${tab}`).classList.add('active');
       }
+    }
+
+    // Filter Women's Fiqh Search
+    function filterWomenFiqh() {
+      const query = document.getElementById('women-search-input').value.toLowerCase().trim();
+      const items = document.querySelectorAll('.women-topic');
+      items.forEach(item => {
+        const text = (item.innerText + ' ' + (item.getAttribute('data-keywords') || '')).toLowerCase();
+        item.style.display = text.includes(query) ? 'block' : 'none';
+      });
     }
 
     function openTaxiModal() { document.getElementById('taxi-modal').classList.add('active'); }
