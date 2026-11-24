@@ -349,6 +349,9 @@
           <button class="mode-btn" onclick="switchTab('women-guide')">
             <span>🧕</span> إرشاد وفقه النساء
           </button>
+          <button class="mode-btn" onclick="switchTab('logistics-health')">
+            <span>🧳</span> فرز الأمتعة والسجل الطبي
+          </button>
         </nav>
 
         <a href="/index.html" class="pilgrim-link-btn" title="معاينة تطبيق رفيق المعتمر">
@@ -392,7 +395,12 @@
       <div class="card" style="margin-bottom: 1.5rem;">
         <div class="card-header">
           <div class="card-title">🚌 كشف حضور وركوب باص الرحلة (باص رقم 1 - مكة إلى المدينة)</div>
-          <span class="badge badge-primary">43 صعدوا / 2 متبقين</span>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;" onclick="exportManifestCSV()">
+              📥 تصدير الكشف (CSV / Excel)
+            </button>
+            <span class="badge badge-primary">43 صعدوا / 2 متبقين</span>
+          </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -629,7 +637,9 @@
                 <td style="padding: 0.75rem 1rem;">0.00 ج.م</td>
                 <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">مكتمل السداد 🎉</span></td>
                 <td style="padding: 0.75rem 1rem;">
-                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="showToast('تم طباعة الإيصال')">📄 الإيصال</button>
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyOfficialWhatsAppReceipt('خالد عبد الله', 4000, 40000, 0)">
+                    📄 إيصال واتساب
+                  </button>
                 </td>
               </tr>
               <tr>
@@ -639,9 +649,12 @@
                 <td style="padding: 0.75rem 1rem;">20,000 ج.م</td>
                 <td style="padding: 0.75rem 1rem;">4,000.00 ج.م</td>
                 <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">مستحق خلال 3 أيام</span></td>
-                <td style="padding: 0.75rem 1rem;">
+                <td style="padding: 0.75rem 1rem; display: flex; gap: 0.4rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyOfficialWhatsAppReceipt('سعيد إبراهيم', 4000, 20000, 20000)">
+                    📄 إيصال
+                  </button>
                   <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyInstallmentReminder('سعيد إبراهيم')">
-                    📲 تذكير الواتساب
+                    📲 تذكير
                   </button>
                 </td>
               </tr>
@@ -652,9 +665,12 @@
                 <td style="padding: 0.75rem 1rem;">16,000 ج.م</td>
                 <td style="padding: 0.75rem 1rem;">4,000.00 ج.م</td>
                 <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">قيد السداد</span></td>
-                <td style="padding: 0.75rem 1rem;">
+                <td style="padding: 0.75rem 1rem; display: flex; gap: 0.4rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyOfficialWhatsAppReceipt('أحمد محمود', 4000, 16000, 24000)">
+                    📄 إيصال
+                  </button>
                   <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyInstallmentReminder('أحمد محمود')">
-                    📲 تذكير الواتساب
+                    📲 تذكير
                   </button>
                 </td>
               </tr>
@@ -844,6 +860,181 @@
 
     </div>
 
+    <!-- ========================================================== -->
+    <!-- TAB 7: LUGGAGE DISPATCH & MEDICAL/SPECIAL NEEDS REGISTRY   -->
+    <!-- (فرز وتوصيل الأمتعة + السجل الطبي ورعاية ذوي الاحتياجات)   -->
+    <!-- ========================================================== -->
+    <div id="tab-logistics-health" class="tab-view">
+
+      <!-- Section 1: Luggage Tracker -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🧳 نظام فرز وتوصيل أمتعة الفوج للفندق</div>
+          <button class="btn btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;" onclick="openLuggageModal()">
+            🖨️ طباعة بطاقات الأمتعة (Luggage Tags)
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">إجمالي حقائب الفوج</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">45 حقيبة</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">بمعدل حقيبة لكل معتمر</span>
+          </div>
+          <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.8rem; color: #9a3412;">بالحافلة (قيد التفريغ)</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--gold-dark);" id="count-lug-bus">15 حقيبة</div>
+            <span style="font-size: 0.75rem; color: var(--gold-dark);">في انتظار النقل للبهو</span>
+          </div>
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.8rem; color: #1e40af;">ببهو الاستقبال (فرز الغرف)</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #2563eb;" id="count-lug-lobby">18 حقيبة</div>
+            <span style="font-size: 0.75rem; color: #2563eb;">جاهزة للرفع بالمصاعد</span>
+          </div>
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.8rem; color: #065f46;">سُلّمت للغرفة بنجاح</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--success);" id="count-lug-room">12 حقيبة</div>
+            <span style="font-size: 0.75rem; color: var(--success);">تم استلام المعتمر ✅</span>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: #f1f5f9; color: var(--text-muted);">
+                <th style="padding: 0.75rem 1rem;">كود الحقيبة</th>
+                <th style="padding: 0.75rem 1rem;">اسم المعتمر</th>
+                <th style="padding: 0.75rem 1rem;">رقم الغرفة</th>
+                <th style="padding: 0.75rem 1rem;">الحالة الحالية</th>
+                <th style="padding: 0.75rem 1rem;">تحديث الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong style="font-family: monospace;">BAG-502-01</strong></td>
+                <td style="padding: 0.75rem 1rem;">أحمد محمود الشريف</td>
+                <td style="padding: 0.75rem 1rem;">502 (ثنائية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success" id="lug-badge-1">سُلّمت للغرفة ✅</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="cycleLuggage('lug-badge-1')">تغيير الحالة 🔁</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong style="font-family: monospace;">BAG-502-02</strong></td>
+                <td style="padding: 0.75rem 1rem;">محمود حسن علي</td>
+                <td style="padding: 0.75rem 1rem;">502 (ثنائية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-primary" id="lug-badge-2">ببهو الاستقبال 🏨</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="cycleLuggage('lug-badge-2')">تغيير الحالة 🔁</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong style="font-family: monospace;">BAG-504-01</strong></td>
+                <td style="padding: 0.75rem 1rem;">سعيد إبراهيم خليل</td>
+                <td style="padding: 0.75rem 1rem;">504 (ثلاثية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning" id="lug-badge-3">بالحافلة 🚌</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="cycleLuggage('lug-badge-3')">تغيير الحالة 🔁</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong style="font-family: monospace;">BAG-601-01</strong></td>
+                <td style="padding: 0.75rem 1rem;">فاطمة إبراهيم مصطفى</td>
+                <td style="padding: 0.75rem 1rem;">601 (عائلية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-primary" id="lug-badge-4">ببهو الاستقبال 🏨</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="cycleLuggage('lug-badge-4')">تغيير الحالة 🔁</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 2: Medical & Special Needs Registry -->
+      <div class="grid-2">
+
+        <!-- Special Needs & Wheelchair Registry -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">♿ حصر كبار السن وعربات الطواف والسعي</div>
+            <span class="badge badge-warning">2 حالات تتطلب رعاية</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.25rem;">
+                <span>الحاج إبراهيم خليل (غرفة 504)</span>
+                <span class="badge badge-danger">كرسي متحرك + إنسولين</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                يعاني من صعوبة الحركة ومريض سكري. يحتاج إلى مطوف بالعربة في طواف وسعي السطح، وحفظ حقن الإنسولين في ثلاجة الفندق.
+              </p>
+              <div style="font-weight: 700; color: var(--primary);">مرافق الطوارئ: سعيد إبراهيم (+201200000000)</div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.25rem;">
+                <span>الحاجة خديجة مصطفى (غرفة 601)</span>
+                <span class="badge badge-warning">عربة غولف كهربائية</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                كبيرة في السن ولا تتحمل المشي الطويل في الساحات. تم حجز عربة كهربائية بسطح الحرم المكي.
+              </p>
+              <div style="font-weight: 700; color: var(--primary);">مرافق الطوارئ: فاطمة إبراهيم (+201087654321)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency Numbers & First Aid -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🚨 أرقام الطوارئ السريعة بالمملكة</div>
+            <span class="badge badge-danger">اتصال سريع 24/7</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <a href="tel:997" class="btn btn-secondary" style="justify-content: flex-start; text-decoration: none; padding: 0.75rem;">
+              <span style="font-size: 1.4rem;">🚑</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">الهلال الأحمر السعودي</div>
+                <strong style="color: var(--danger); font-size: 1.1rem;">997</strong>
+              </div>
+            </a>
+            <a href="tel:911" class="btn btn-secondary" style="justify-content: flex-start; text-decoration: none; padding: 0.75rem;">
+              <span style="font-size: 1.4rem;">🚨</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">الطوارئ الموحد بالحرم</div>
+                <strong style="color: var(--primary); font-size: 1.1rem;">911</strong>
+              </div>
+            </a>
+            <a href="tel:996" class="btn btn-secondary" style="justify-content: flex-start; text-decoration: none; padding: 0.75rem;">
+              <span style="font-size: 1.4rem;">🛣️</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">أمن الطرق السريعة</div>
+                <strong style="color: var(--gold-dark); font-size: 1.1rem;">996</strong>
+              </div>
+            </a>
+            <a href="tel:1966" class="btn btn-secondary" style="justify-content: flex-start; text-decoration: none; padding: 0.75rem;">
+              <span style="font-size: 1.4rem;">🕋</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">خدمة ضيوف الرحمن (وزارة الحج)</div>
+                <strong style="color: var(--primary-dark); font-size: 1.1rem;">1966</strong>
+              </div>
+            </a>
+          </div>
+
+          <div style="background: #fffdf5; border: 1px dashed var(--gold); border-radius: 10px; padding: 0.85rem; margin-top: 1rem; font-size: 0.85rem; line-height: 1.7;">
+            💡 <strong>تعليمات إسعاف المغمى عليه أو المصاب في الزحام:</strong><br>
+            1. لا تحرك المريض إن كان يشتبه بكسر.<br>
+            2. اطلب فوراً أقرب مسعف من الهلال الأحمر أو اتصل برقم 997 مع ذكر رقم البوابة أو العمود بالحرم بدقة.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
   </main>
 
   <!-- Modals -->
@@ -895,6 +1086,38 @@
     </div>
   </div>
 
+  <!-- Modal: Printable Luggage Tags -->
+  <div class="modal-overlay" id="luggage-modal" onclick="closeModal('luggage-modal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">🧳 بطاقات باركود أمتعة الفوج للطباعة</h3>
+        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('luggage-modal')">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div style="border: 2px dashed #064e3b; border-radius: 10px; padding: 1rem; background: #f0fdf4; text-align: center;">
+          <div style="font-weight: 800; font-size: 1rem; color: #064e3b;">فوج الرحمة 🕋 #UMR-1447</div>
+          <div style="font-size: 1.2rem; font-weight: 900; color: #b45309; margin: 0.4rem 0;">غرفة [ 502 ]</div>
+          <div style="font-size: 0.9rem; font-weight: 700;">أحمد محمود الشريف</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">فندق أبراج الكسوة - مكة</div>
+          <div style="font-family: monospace; font-size: 0.9rem; font-weight: 800; margin-top: 0.3rem;">[ BAG-502-01 ]</div>
+        </div>
+
+        <div style="border: 2px dashed #064e3b; border-radius: 10px; padding: 1rem; background: #f0fdf4; text-align: center;">
+          <div style="font-weight: 800; font-size: 1rem; color: #064e3b;">فوج الرحمة 🕋 #UMR-1447</div>
+          <div style="font-size: 1.2rem; font-weight: 900; color: #b45309; margin: 0.4rem 0;">غرفة [ 502 ]</div>
+          <div style="font-size: 0.9rem; font-weight: 700;">محمود حسن علي</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">فندق أبراج الكسوة - مكة</div>
+          <div style="font-family: monospace; font-size: 0.9rem; font-weight: 800; margin-top: 0.3rem;">[ BAG-502-02 ]</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
+        🖨️ طباعة جميع بطاقات الأمتعة
+      </button>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast-msg">تم بنجاح!</div>
 
@@ -903,7 +1126,7 @@
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
 
-      const tabs = ['manifest', 'whatsapp', 'gameya', 'print', 'sos', 'women-guide'];
+      const tabs = ['manifest', 'whatsapp', 'gameya', 'print', 'sos', 'women-guide', 'logistics-health'];
       const index = tabs.indexOf(tab);
       if (index !== -1) {
         document.querySelectorAll('.mode-btn')[index].classList.add('active');
@@ -913,7 +1136,75 @@
 
     function openWristbandModal() { document.getElementById('wristband-modal').classList.add('active'); }
     function openAgreementModal() { document.getElementById('agreement-modal').classList.add('active'); }
+    function openLuggageModal() { document.getElementById('luggage-modal').classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Export Bus Manifest to CSV / Excel
+    function exportManifestCSV() {
+      const rows = [
+        ['اسم المعتمر', 'رقم الجواز', 'رقم الغرفة', 'حالة ركوب الباص', 'رقم الحافلة'],
+        ['أحمد محمود الشريف', 'A12345678', '502', 'صعد الباص', 'باص 1'],
+        ['محمود حسن علي', 'A23456789', '502', 'صعد الباص', 'باص 1'],
+        ['سعيد إبراهيم خليل', 'A34567890', '504', 'لم يصعد بعد', 'باص 1'],
+        ['فاطمة إبراهيم مصطفى', 'A45678901', '601', 'لم تصعد بعد', 'باص 1'],
+      ];
+
+      let csvContent = '\uFEFF'; // UTF-8 BOM for Excel Arabic support
+      rows.forEach(row => {
+        csvContent += row.map(val => `"${val}"`).join(',') + '\r\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'umrah_manifest_bus1_1447.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('📥 تم تنزيل كشف ركوب الباص (Excel/CSV)');
+    }
+
+    // Official WhatsApp Payment Receipt
+    function copyOfficialWhatsAppReceipt(name, amount, totalPaid, remaining) {
+      const receiptNo = Math.floor(Math.random() * 9000 + 1000);
+      const dateStr = new Date().toLocaleDateString('ar-EG');
+      const msg = `📋 *إيصال سداد إلكتروني معتمد - جمعية تقسيط العمرة* 🕋
+رقم الإيصال: #REC-1447-${receiptNo}
+تاريخ السداد: ${dateStr}
+
+المشترك الكريم: *${name}*
+المبلغ المستلم: *${amount.toLocaleString()} ج.م*
+إجمالي المسدد حتى الآن: *${totalPaid.toLocaleString()} ج.م*
+المتبقي لإتمام تكلفة الرحلة: *${remaining.toLocaleString()} ج.م*
+
+حالة الحساب: *${remaining === 0 ? 'مكتمل السداد بنجاح 🎉' : 'قيد السداد المنتظم ✅'}*
+
+بارك الله في أموالكم ويسر طاعتكم.
+_إدارة فوج الرحمة للعمرة 1447هـ_`;
+
+      navigator.clipboard.writeText(msg).then(() => {
+        showToast(`✅ تم نسخ إيصال واتساب معتمد لـ (${name})`);
+      });
+    }
+
+    // Cycle Luggage Status
+    function cycleLuggage(badgeId) {
+      const badge = document.getElementById(badgeId);
+      if (badge.classList.contains('badge-warning')) {
+        badge.className = 'badge badge-primary';
+        badge.innerText = 'ببهو الاستقبال 🏨';
+        showToast('تم نقل الحقيبة إلى بهو الفندق');
+      } else if (badge.classList.contains('badge-primary')) {
+        badge.className = 'badge badge-success';
+        badge.innerText = 'سُلّمت للغرفة ✅';
+        showToast('تم تسليم الحقيبة إلى غرفة المعتمر');
+      } else {
+        badge.className = 'badge badge-warning';
+        badge.innerText = 'بالحافلة 🚌';
+        showToast('تمت إعادة الحقيبة إلى الحافلة');
+      }
+    }
 
     function copyPost(id) {
       const text = document.getElementById(id).innerText;
