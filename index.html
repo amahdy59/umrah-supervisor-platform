@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق مشرف العمرة ورفيق المعتمر | Umrah Supervisor</title>
+  <title>رفيق المعتمر | تطبيق الحاج والمعتمر التفاعلي</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#064e3b">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +44,7 @@
       transition: font-size 0.2s ease;
     }
 
-    /* Senior Citizen Easy Mode Styles */
+    /* Senior Citizen Easy Mode */
     body.senior-mode {
       font-size: 1.25rem !important;
       line-height: 1.8;
@@ -73,7 +73,7 @@
     }
 
     .header-content {
-      max-width: 1280px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -169,8 +169,27 @@
       border-color: var(--gold);
     }
 
+    .supervisor-link-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .supervisor-link-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
     main {
-      max-width: 1280px;
+      max-width: 1200px;
       margin: 1.5rem auto;
       padding: 0 1.25rem;
       flex: 1;
@@ -355,33 +374,6 @@
       background: #d1fae5;
     }
 
-    .audio-wave {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(0.8); opacity: 0.5; }
-      to { transform: scale(1.3); opacity: 1; }
-    }
-
-    /* WhatsApp Post Box */
-    .whatsapp-box {
-      background: #eefbf4;
-      border: 1px solid #c7f0d8;
-      border-right: 5px solid #25d366;
-      border-radius: 12px;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
-      font-size: 0.95rem;
-      line-height: 1.9;
-      white-space: pre-wrap;
-    }
-
     /* Accordion */
     .accordion-item {
       background: #f8fafc;
@@ -468,7 +460,6 @@
       overflow-y: auto;
     }
 
-    /* Certificate Card */
     .certificate-card {
       border: 8px double #d97706;
       border-radius: 16px;
@@ -487,8 +478,8 @@
       <div class="logo-area">
         <div class="logo-icon">🕋</div>
         <div class="app-title">
-          <h1>منظومة مشرف العمرة الشاملة</h1>
-          <p>رفيق المعتمر التفاعلي، مواقيت الصلاة، مزارات الحرمين، ورسائل الواتساب</p>
+          <h1>رفيق المعتمر (Pilgrim Companion)</h1>
+          <p>رفيقك الإيماني في رحاب المسجد الحرام والمسجد النبوي الشريف</p>
         </div>
       </div>
 
@@ -498,22 +489,20 @@
         </button>
 
         <nav class="mode-nav">
-          <button class="mode-btn active" onclick="switchTab('pilgrim')">
-            <span>🤲</span> رفيق المعتمر
+          <button class="mode-btn active" onclick="switchTab('rituals')">
+            <span>🤲</span> مناسكي وبطاقتي
           </button>
           <button class="mode-btn" onclick="switchTab('ziyarat')">
             <span>🕌</span> دليل المزارات
           </button>
-          <button class="mode-btn" onclick="switchTab('whatsapp')">
-            <span>💬</span> رسائل الواتساب
-          </button>
           <button class="mode-btn" onclick="switchTab('fiqh')">
-            <span>📖</span> المرشد الفقهي
-          </button>
-          <button class="mode-btn" onclick="switchTab('supervisor')">
-            <span>📋</span> عمليات المشرف
+            <span>📖</span> المرشد الفقهي وآداب السكن
           </button>
         </nav>
+
+        <a href="/supervisor.html" class="supervisor-link-btn" title="دخول بوابة المشرف">
+          <span>📋</span> بوابة المشرف
+        </a>
       </div>
     </div>
   </header>
@@ -571,9 +560,9 @@
     </div>
 
     <!-- ========================================================== -->
-    <!-- TAB 1: PILGRIM COMPANION APP (رفيق المعتمر)                 -->
+    <!-- TAB 1: RITUALS, ID BADGE, TAWAF/SAI (مناسكي وبطاقتي)       -->
     <!-- ========================================================== -->
-    <div id="tab-pilgrim" class="tab-view active">
+    <div id="tab-rituals" class="tab-view active">
       
       <!-- Top Grid: Digital Badge & Emergency SOS -->
       <div class="grid-2">
@@ -808,157 +797,7 @@
     </div>
 
     <!-- ========================================================== -->
-    <!-- TAB 3: WHATSAPP BROADCAST POSTS (رسائل الواتساب الإرشادية) -->
-    <!-- ========================================================== -->
-    <div id="tab-whatsapp" class="tab-view">
-      
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">📱 منصة رسائل الواتساب الرسمية للفوج (WhatsApp Broadcast Hub)</div>
-          <span class="badge badge-success">جاهزة للنشر بضغطة زر</span>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-          رسائل منسقة واحترافية معدة خصيصاً للمشرف لمشاركتها في جروب واتساب الفوج عبر مراحل الرحلة المختلفة، تتضمن الإرشادات الفقهية، الأخلاق، وآداب السكن.
-        </p>
-      </div>
-
-      <!-- Phase 1: Packing & Pre-departure -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">🎒 1. قبل السفر: قائمة الحقيبة وتجهيزات الإحرام</div>
-          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-1')">
-            📋 نسخ الرسالة بالكامل للواتساب
-          </button>
-        </div>
-        <div class="whatsapp-box" id="post-1">*بسم الله الرحمن الرحيم* 🕋
-*ضيوف الرحمن أعزاءنا في فوج (عمرة شعبان 1447 المباركة)*
-السلام عليكم ورحمة الله وبركاته، تقبل الله منكم وجعلها عمرة مقبولة مبرورة.
-
-نذكركم بأهم التجهيزات قبل التوجه للمطار:
-1️⃣ *ملابس الإحرام:* (إزار ورداء أبيضين نظيفين وحزام للرجال)، ونعال مريحة غير مخيطة عند الكعب.
-2️⃣ *حقيبة اليد الصغيرة:* جواز السفر، تذاكر الطيران، أدوية الأمراض المزمنة في مكان يسهل الوصول إليه، وشاحن متنقل (Power Bank).
-3️⃣ *مستلزمات النظافة:* صابون وشامبو بدون رائحة/عطر، مقص صغير، ومظلة شمسية خفيفة.
-4️⃣ *الاستعداد البدني:* أخذ قسط كافٍ من النوم وشرب الماء بانتظام.
-
-📍 موعد تجمعنا بصالة المطار: *قبل موعد إقلاع الرحلة بـ 4 ساعات*.
-في خدمتكم طوال الرحلة: *مشرف الفوج (أبو عبد الرحمن)* 📞</div>
-      </div>
-
-      <!-- Phase 2: Miqat Announcement -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">✈️ 2. في الطائرة / الحافلة: تنبيه اقتراب الميقات وعقد النية</div>
-          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-2')">
-            📋 نسخ الرسالة بالكامل للواتساب
-          </button>
-        </div>
-        <div class="whatsapp-box" id="post-2">📢 *تنبيه هام وعاجل لجميع معتمري الفوج* 🕋
-
-نحن نقترب الآن من *محاذاة الميقات* بحمد الله وتوفيقه.
-
-📌 *المطلوب من كل معتمر الآن:*
-1️⃣ عقد النية بالقلب والتلفظ بالتلبية النبوية:
-*«لَبَّيْكَ اللَّهُمَّ عُمْرَةً»*
-*«لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لا شَرِيكَ لَكَ»*
-
-2️⃣ *محظورات الإحرام تبدأ من هذه اللحظة:*
-❌ تجنب الطيب والعطور والصابون المعطر تماماً.
-❌ تجنب قص الشعر أو تقليم الأظافر.
-❌ للرجال: تجنب تغطية الرأس بملاصق وتجنب لبس المخيط كالجلباب والقميص.
-
-أكثروا من التلبية والذكر والدعاء حتى نصل إلى الكعبة المشرفة آمنين إن شاء الله.</div>
-      </div>
-
-      <!-- Phase 3: Roommate Charter -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">🤝 3. عند الوصول للفندق: ميثاق رفقاء الغرفة وآداب السكن</div>
-          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-3')">
-            📋 نسخ الرسالة بالكامل للواتساب
-          </button>
-        </div>
-        <div class="whatsapp-box" id="post-3">*ميثاق الأخوة والسكن المبارك في فندق (أبراج الكسوة)* 🏨🌿
-
-أخي المعتمر الكريم، أختي المعتمرة الفاضلة:
-إن رفيق الغرفة هو صاحبك في رحلة الطاعة، وإحسانك إليه وتيسيرك عليه من أعظم القربات.
-
-نرجو التكرم بالالتزام بهذه الآداب النبوية الراقية:
-🛌 *1. مراعاة مواعيد النوم والراحة:*
-• خفض الصوت وعدم التحدث في الهاتف بصوت مرتفع عند نوم الرفقاء.
-• استخدام سماعات الأذن (Headphones) عند الاستماع للقرآن أو الدروس.
-• تجنب تشغيل الإضاءة القوية فجأة على من هو نائم واستخدام كشاف الهاتف الخافت عند الحاجة.
-
-🚿 *2. إتيكيت استخدام الحمام المشترك:*
-• عدم الإطالة في الحمام خاصة قبل مواعيد الصلوات ليتسنى للجميع الوضوء.
-• الحرص على تجفيف أرضية الحمام وتركه نظيفاً ومرتباً لمن يأتي بعدك.
-
-🔌 *3. الكهرباء والمقابس:*
-• التعاون في استخدام مقابس الشحن وعدم احتكارها، ومشاركة التوصيلات بود.
-
-🧹 *4. الترتيب وحفظ الأسرار:*
-• إبقاء الحقائب والأغراض في الجانب المخصص لكل شخص.
-• ما تراه أو تسمعه من خصوصيات رفيقك أمانة استر عليها.
-
-قال ﷺ: *«أَحَبُّ النَّاسِ إِلَى اللَّهِ أَنْفَعُهُمْ لِلنَّاسِ»*.
-مع تحيات مشرفكم: *إدارة الفوج*</div>
-      </div>
-
-      <!-- Phase 4: Tawaf Preparation & Meeting Point -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">🕋 4. الاستعداد للنزول لطواف وسعي العمرة</div>
-          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-4')">
-            📋 نسخ الرسالة بالكامل للواتساب
-          </button>
-        </div>
-        <div class="whatsapp-box" id="post-4">📣 *نداء الانطلاق لأداء مناسك العمرة كفوج واحد* 🕋
-
-إخواني وأخواتي ضيوف الرحمن:
-سنتحرك بإذن الله تعالى لأداء مناسك العمرة (طواف وسعي).
-
-⏰ *الموعد:* التجمع في بهو الفندق الساعة *بعد صلاة العصر مباشرة (4:00 عصراً)*.
-📍 *نقطة التجمع بالحرم:* *بوابة الملك عبد العزيز (بوابة رقم 1)*.
-
-💡 *توجيهات ضرورية لسلامتكم:*
-• إحضار *كيس خفيف لحذائك* لحمله معك في حقيبة الظهر (لا تتركه في الممرات).
-• ارتداء *بطاقة المعتمر الذكية* الخاصة بالحملة حول عنقك دائماً.
-• حمل قارورة ماء صغيرة، والحرص على المشي في جماعة وعدم الاستعجال.
-• كبار السن وأصحاب الكراسي المتحركة: سيتم توجيههم لمسار العربات الرسمي بالدور العلوي حفاظاً على سلامتهم.
-
-وفقكم الله وتقبل منا ومنكم صالح الأعمال.</div>
-      </div>
-
-      <!-- Phase 5: Rawdah Permit Timing -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🕌 5. تنبيه تصاريح الروضة الشريفة بالمسجد النبوي</div>
-          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-5')">
-            📋 نسخ الرسالة بالكامل للواتساب
-          </button>
-        </div>
-        <div class="whatsapp-box" id="post-5">🌸 *إشعار هام: موعد زيارة الروضة الشريفة والسلام على رسول الله ﷺ* 🕌
-
-إلى معتمرينا الكرام في المدينة المنورة:
-تم بحمد الله تأكيد تصاريح الروضة الشريفة عبر تطبيق نسك وفق المواعيد التالية:
-
-👨 *مجموعة الرجال:*
-• الموعد: *الليلة بعد صلاة العشاء (الساعة 9:30 مساءً)*
-• بوابة الدخول: *باب السلام أو باب بلال*
-• التجمع في بهو الفندق قبل الموعد بـ 45 دقيقة.
-
-🧕 *مجموعة النساء:*
-• الموعد: *صباح الغد بعد صلاة الفجر (الساعة 6:00 صباحاً)*
-• بوابة الدخول: *باب عثمان بن عفان (بوابة 24/37)*
-• التنسيق بإشراف مشرفة الفوج (أم فاطمة).
-
-⚠️ *تنبيه ضروري:*
-يجب إبراز رمز الاستجابة السريعة (QR) للتصريح على تطبيق "نسك" مع الهوية عند الدخول. الدخول دقيق جداً ولا يقبل التأخير دقيقة واحدة.</div>
-      </div>
-
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 4: FIQH ASSISTANT & ROOMMATE MORALS (المرشد الفقهي)     -->
+    <!-- TAB 3: FIQH ASSISTANT & ROOMMATE CHARTER (المرشد الفقهي)   -->
     <!-- ========================================================== -->
     <div id="tab-fiqh" class="tab-view">
       
@@ -1057,119 +896,41 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 5: SUPERVISOR MISSION CONTROL (عمليات المشرف والجمعيات) -->
-    <!-- ========================================================== -->
-    <div id="tab-supervisor" class="tab-view">
-
-      <!-- Stats Bar -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="card" style="padding: 1rem 1.25rem;">
-          <div style="font-size: 0.8rem; color: var(--text-muted);">حالة الرحلة النشطة</div>
-          <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">عمرة شعبان 1447</div>
-          <span class="badge badge-success" style="margin-top: 0.3rem;">مكة المكرمة (IN_MAKKAH)</span>
-        </div>
-        <div class="card" style="padding: 1rem 1.25rem;">
-          <div style="font-size: 0.8rem; color: var(--text-muted);">إجمالي المعتمرين بالفوج</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--text);">45 معتمراً</div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">باص 1: 45 راكب</span>
-        </div>
-        <div class="card" style="padding: 1rem 1.25rem;">
-          <div style="font-size: 0.8rem; color: var(--text-muted);">المحصل من جمعية العمرة</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--gold-dark);">320,000 ج.م</div>
-          <span class="badge badge-warning" style="margin-top: 0.3rem;">نسبة التحصيل: 80%</span>
-        </div>
-        <div class="card" style="padding: 1rem 1.25rem;">
-          <div style="font-size: 0.8rem; color: var(--text-muted);">أدوات سريعة للمشرف</div>
-          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openWristbandModal()">🖨️ طباعة الأساور</button>
-            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openAgreementModal()">📄 إقرار الجمعية</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bus Roll Call -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">🚌 كشف حضور وركوب باص الرحلة (باص رقم 1)</div>
-          <span class="badge badge-primary">43 صعدوا / 2 متبقين</span>
-        </div>
-
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
-            <thead>
-              <tr style="background: #f1f5f9; color: var(--text-muted);">
-                <th style="padding: 0.75rem 1rem;">اسم المعتمر</th>
-                <th style="padding: 0.75rem 1rem;">رقم الجواز</th>
-                <th style="padding: 0.75rem 1rem;">الغرفة</th>
-                <th style="padding: 0.75rem 1rem;">الحالة</th>
-                <th style="padding: 0.75rem 1rem;">الإجراء</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding: 0.75rem 1rem;"><strong>أحمد محمود الشريف</strong></td>
-                <td style="padding: 0.75rem 1rem;">A12345678</td>
-                <td style="padding: 0.75rem 1rem;">502 (ثنائية)</td>
-                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">صعد الباص ✅</span></td>
-                <td style="padding: 0.75rem 1rem;">-</td>
-              </tr>
-              <tr style="background: #fff7ed;">
-                <td style="padding: 0.75rem 1rem;"><strong>سعيد إبراهيم خليل</strong></td>
-                <td style="padding: 0.75rem 1rem;">A34567890</td>
-                <td style="padding: 0.75rem 1rem;">504 (ثلاثية)</td>
-                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">لم يصعد بعد ⏳</span></td>
-                <td style="padding: 0.75rem 1rem;">
-                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copySingleWhatsApp('سعيد إبراهيم خليل')">
-                    📲 تنبيه واتساب
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Gam'eya & Installment Ledger -->
+      <!-- Roommate Charter Visual Guide -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">💰 جدول جمعية وتقسيط العمرة (جمعية رمضان 1447)</div>
-          <span class="badge badge-primary">الاشتراك: 4,000 ج.م / شهر</span>
+          <div class="card-title">🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة</div>
+          <span class="badge badge-primary">دستور السكن المريح</span>
         </div>
 
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
-            <thead>
-              <tr style="background: #f1f5f9; color: var(--text-muted);">
-                <th style="padding: 0.75rem 1rem;">المشترك</th>
-                <th style="padding: 0.75rem 1rem;">الهاتف</th>
-                <th style="padding: 0.75rem 1rem;">الدور</th>
-                <th style="padding: 0.75rem 1rem;">المسدد</th>
-                <th style="padding: 0.75rem 1rem;">القادم</th>
-                <th style="padding: 0.75rem 1rem;">الحالة</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding: 0.75rem 1rem;"><strong>خالد عبد الله</strong></td>
-                <td style="padding: 0.75rem 1rem;" dir="ltr">+201111111111</td>
-                <td style="padding: 0.75rem 1rem;">شهر 1</td>
-                <td style="padding: 0.75rem 1rem;">40,000 ج.م</td>
-                <td style="padding: 0.75rem 1rem;">0.00 ج.م</td>
-                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">مكتمل 🎉</span></td>
-              </tr>
-              <tr>
-                <td style="padding: 0.75rem 1rem;"><strong>سعيد إبراهيم</strong></td>
-                <td style="padding: 0.75rem 1rem;" dir="ltr">+201200000000</td>
-                <td style="padding: 0.75rem 1rem;">شهر 3</td>
-                <td style="padding: 0.75rem 1rem;">20,000 ج.م</td>
-                <td style="padding: 0.75rem 1rem;">4,000.00 ج.م</td>
-                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">مستحق</span></td>
-              </tr>
-            </tbody>
-          </table>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🛌 مواعيد النوم وقيام الليل</h4>
+            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
+              تختلف ساعات النوم بين المعتمرين للراحة أو القيام. لا تشعل الأنوار الساطعة فجأة، ولا تتحدث في الهاتف داخل الغرفة أثناء نوم رفقائك. استخدم سماعات الأذن دائماً.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🚿 نظافة الحمام المشترك</h4>
+            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
+              الغرف تضم 2 إلى 4 أشخاص. تجنب الإطالة المبالغ فيها في الحمام قبل أوقات الأذان حتى لا تعطل الآخرين. جفف الأرضية واحرص على ترك الحمام نظيفاً تماماً لمن بعدك.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🔌 مقابس الشحن والكهرباء</h4>
+            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
+              المقابس في الغرف محدودة. شارك المشتركات الكهربائية بمودة، ولا تحتكر المقابس لشحن أجهزة متعددة بينما يحتاج رفيقك لشحن هاتفه قبل النزول للحرم.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🤐 الستر وكظم الغيظ</h4>
+            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
+              ما تراه داخل الغرفة من خصوصيات وأسرار أمانة عندك استر عليها. وإذا بدر تصرف عفوي أزعجك فقابل ذلك بالصبر وابتسامة العفو، فالعمرة مدرسة الأخلاق.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1177,11 +938,8 @@
 
   </main>
 
-  <!-- ========================================================== -->
-  <!-- MODALS                                                     -->
-  <!-- ========================================================== -->
-
-  <!-- Modal: Taxi Quick Card -->
+  <!-- Modals -->
+  <!-- Taxi Quick Card Modal -->
   <div class="modal-overlay" id="taxi-modal" onclick="closeModal('taxi-modal')">
     <div class="modal-box" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -1202,30 +960,7 @@
     </div>
   </div>
 
-  <!-- Modal: Printable Wristband / Badge -->
-  <div class="modal-overlay" id="wristband-modal" onclick="closeModal('wristband-modal')">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">🖨️ نموذج معصم اليد وبطاقة المعتمر للطباعة</h3>
-        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('wristband-modal')">&times;</button>
-      </div>
-
-      <div style="border: 2px solid #064e3b; border-radius: 12px; padding: 1.25rem; background: #ecfdf5; margin-bottom: 1.25rem; text-align: center;">
-        <div style="font-size: 1.2rem; font-weight: 800; color: #064e3b;">فوج الرحمة للعمرة 🕋 #UMR-1447</div>
-        <div style="font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0;">أحمد محمود الشريف (A12345678)</div>
-        <div style="font-size: 0.85rem; color: #065f46;">فندق أبراج الكسوة - جرول، مكة المكرمة</div>
-        <div style="font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem;">هاتف المشرف للطوارئ: +966 50 123 4567</div>
-        <div style="margin-top: 1rem; font-size: 2.5rem;">📱 [ QR CODE ]</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">امسح الكود عبر الكاميرا لإظهار بيانات المعتمر وموقعه</div>
-      </div>
-
-      <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
-        🖨️ طباعة البطاقة / المعصم
-      </button>
-    </div>
-  </div>
-
-  <!-- Modal: Umrah Certificate -->
+  <!-- Umrah Certificate Modal -->
   <div class="modal-overlay" id="certificate-modal" onclick="closeModal('certificate-modal')">
     <div class="modal-box" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -1255,43 +990,14 @@
     </div>
   </div>
 
-  <!-- Modal: Gam'eya Trust Agreement -->
-  <div class="modal-overlay" id="agreement-modal" onclick="closeModal('agreement-modal')">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">📄 إقرار التزام وسداد جمعية العمرة</h3>
-        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('agreement-modal')">&times;</button>
-      </div>
-
-      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; font-size: 0.9rem; line-height: 1.9; margin-bottom: 1.25rem;">
-        <h4 style="text-align: center; color: var(--primary); margin-bottom: 0.75rem;">إقرار والتزام بسداد أقساط رحلة العمرة</h4>
-        أقر أنا المشترك / المعتمر: <strong>................................................</strong><br>
-        ورقم بطاقتي / جوازي: <strong>................................................</strong><br>
-        بأنني انضممت لـ (جمعية عمرة رمضان 1447هـ) بإشراف المشرف، وملتزم بسداد القسط الشهري وقدره: <strong>4,000 ج.م</strong> في موعد أقصاه اليوم الخامس من كل شهر ميلادي حتى استكمال كامل تكلفة الرحلة المقدرة بـ <strong>40,000 ج.م</strong>.<br>
-        <div style="margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between;">
-          <div>توقيع المشترك: ...................</div>
-          <div>اعتماد المشرف: ...................</div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
-        🖨️ طباعة الإقرار للتوثيق
-      </button>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div class="toast" id="toast-msg">تم نسخ الرسالة بنجاح!</div>
+  <!-- Toast -->
+  <div class="toast" id="toast-msg">تم بنجاح!</div>
 
   <script>
-    // Register Service Worker for PWA Offline Functionality
+    // PWA Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(() => {
-          console.log('PWA Service Worker registered successfully');
-        }).catch(err => {
-          console.log('Service Worker registration failed:', err);
-        });
+        navigator.serviceWorker.register('/sw.js');
       });
     }
 
@@ -1303,8 +1009,8 @@
       const btn = document.getElementById('senior-btn');
       btn.classList.toggle('active', isSeniorMode);
       if (isSeniorMode) {
-        btn.innerHTML = '<span>👵</span> وضع كبار السن: مُفعّل (خط كبير)';
-        showToast('تم تفعيل وضع كبار السن بخط كبير وواضح');
+        btn.innerHTML = '<span>👵</span> وضع كبار السن: مُفعّل';
+        showToast('تم تفعيل وضع كبار السن (خط كبير)');
       } else {
         btn.innerHTML = '<span>👵</span> وضع كبار السن (خط كبير)';
         showToast('تم الرجوع للوضع المعتاد');
@@ -1316,7 +1022,7 @@
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
 
-      const tabs = ['pilgrim', 'ziyarat', 'whatsapp', 'fiqh', 'supervisor'];
+      const tabs = ['rituals', 'ziyarat', 'fiqh'];
       const index = tabs.indexOf(tab);
       if (index !== -1) {
         document.querySelectorAll('.mode-btn')[index].classList.add('active');
@@ -1324,14 +1030,11 @@
       }
     }
 
-    // Modal Helpers
     function openTaxiModal() { document.getElementById('taxi-modal').classList.add('active'); }
-    function openWristbandModal() { document.getElementById('wristband-modal').classList.add('active'); }
     function openCertificateModal() { document.getElementById('certificate-modal').classList.add('active'); }
-    function openAgreementModal() { document.getElementById('agreement-modal').classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // Prayer Times Logic
+    // Prayer Times
     const prayerSchedules = {
       MAKKAH: {
         name: 'المسجد الحرام (مكة المكرمة)',
@@ -1356,7 +1059,7 @@
       document.getElementById('time-maghrib').innerText = data.times.maghrib;
       document.getElementById('time-isha').innerText = data.times.isha;
       updatePrayerCountdown();
-      showToast(`تم عرض مواقيت ${city === 'MAKKAH' ? 'مكة المكرمة' : 'المدينة المنورة'}`);
+      showToast(`مواقيت ${city === 'MAKKAH' ? 'مكة المكرمة' : 'المدينة المنورة'}`);
     }
 
     function updatePrayerCountdown() {
@@ -1409,10 +1112,10 @@
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ar-SA';
-      utterance.rate = 0.85; // Serene, measured reading pace
+      utterance.rate = 0.85;
       utterance.pitch = 1.0;
       window.speechSynthesis.speak(utterance);
-      showToast('🔊 جاري قراءة الذكر والدعاء بصوت واضح...');
+      showToast('🔊 جاري قراءة الذكر بالصوت...');
     }
 
     function playCurrentTawafDua() {
@@ -1458,10 +1161,10 @@
         currentTawafLap++;
         updateTawafUI();
         if ('vibrate' in navigator) navigator.vibrate(100);
-        showToast(`بدأ الشوط رقم (${currentTawafLap}) بفضل الله`);
+        showToast(`بدأ الشوط رقم (${currentTawafLap})`);
       } else {
         if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        alert('🎉 هنيئاً لك! اكتملت أشواط الطواف السبعة بفضل الله.\n\nالمطلوب الآن:\n1. التوجه لصلاة ركعتي الطواف خلف مقام إبراهيم.\n2. الشرب من ماء زمزم والتضلع منه.\n3. التوجه إلى الصفا لبدء السعي.');
+        alert('🎉 هنيئاً لك! اكتملت أشواط الطواف السبعة بفضل الله.\n\nالمطلوب الآن:\n1. صلاة ركعتي الطواف خلف مقام إبراهيم.\n2. الشرب من ماء زمزم والتضلع منه.\n3. التوجه إلى الصفا لبدء السعي.');
       }
     }
 
@@ -1512,21 +1215,6 @@
       openTaxiModal();
     }
 
-    // Copying Posts
-    function copyPost(id) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        showToast('✅ تم نسخ منشور الواتساب بالكامل إلى الحافظة!');
-      });
-    }
-
-    function copySingleWhatsApp(name) {
-      const msg = `السلام عليكم ورحمة الله وبركاته يا أخي الكريم (${name})، باص الفوج يستعد للانطلاق الآن، نرجو التكرم بالصعود سريعاً لسلامة المواعيد. تقبل الله طاعتكم.`;
-      navigator.clipboard.writeText(msg).then(() => {
-        showToast(`تم نسخ تنبيه (${name})`);
-      });
-    }
-
     // Lap Doubt Calculator
     function calculateLapDoubt() {
       const l1 = parseInt(document.getElementById('lap-doubt-1').value);
@@ -1537,7 +1225,6 @@
       resDiv.innerHTML = `<strong>الفتوى الشرعية:</strong> تبني على اليقين وهو الأقل، فتعتبر نفسك قد أتممت <strong>(${lesser}) أشواط</strong>، وتكمل ما بقي عليك حتى تتم سبعة أشواط كاملة، ولا شيء عليك وتجزئك عمرتك بإذن الله تعالى.`;
     }
 
-    // Accordions
     function toggleAccordion(header) {
       const item = header.parentElement;
       item.classList.toggle('open');
@@ -1545,7 +1232,6 @@
       icon.innerText = item.classList.contains('open') ? '➖' : '➕';
     }
 
-    // Toast
     function showToast(text) {
       const toast = document.getElementById('toast-msg');
       toast.innerText = text;

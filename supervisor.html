@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة عمليات مشرف العمرة | Supervisor Mission Control</title>
+  <meta name="theme-color" content="#064e3b">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #064e3b;
+      --primary-light: #047857;
+      --primary-dark: #022c22;
+      --gold: #d97706;
+      --gold-light: #fef3c7;
+      --gold-dark: #b45309;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --radius: 16px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 1.25rem 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      font-size: 2.2rem;
+      background: rgba(255, 255, 255, 0.12);
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .app-title h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .app-title p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .mode-nav {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 0.55rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .mode-btn.active {
+      background: white;
+      color: var(--primary-dark);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .pilgrim-link-btn {
+      background: var(--gold);
+      color: white;
+      text-decoration: none;
+      padding: 0.55rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+      transition: all 0.2s;
+    }
+
+    .pilgrim-link-btn:hover {
+      background: var(--gold-dark);
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 1.75rem auto;
+      padding: 0 1.25rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    .tab-view {
+      display: none;
+    }
+
+    .tab-view.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 20px;
+    }
+
+    .badge-success { background: #dcfce7; color: var(--success); }
+    .badge-warning { background: var(--gold-light); color: var(--gold-dark); }
+    .badge-primary { background: #d1fae5; color: var(--primary); }
+    .badge-danger { background: #fee2e2; color: var(--danger); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(6, 78, 59, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: white;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-dark);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .whatsapp-box {
+      background: #eefbf4;
+      border: 1px solid #c7f0d8;
+      border-right: 5px solid #25d366;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+      line-height: 1.9;
+      white-space: pre-wrap;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      color: white;
+      padding: 0.85rem 1.75rem;
+      border-radius: 30px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+      opacity: 0;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: var(--radius);
+      max-width: 600px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <div class="logo-area">
+        <div class="logo-icon">📋</div>
+        <div class="app-title">
+          <h1>غرفة عمليات مشرف العمرة (Mission Control)</h1>
+          <p>إدارة الأفواج، كشف ركوب الحافلات، رسائل الواتساب الرسمية، وجداول الجمعيات</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <nav class="mode-nav">
+          <button class="mode-btn active" onclick="switchTab('manifest')">
+            <span>🚌</span> الفوج وكشف الباص
+          </button>
+          <button class="mode-btn" onclick="switchTab('whatsapp')">
+            <span>💬</span> منشورات الواتساب
+          </button>
+          <button class="mode-btn" onclick="switchTab('gameya')">
+            <span>💰</span> جمعية وتقسيط العمرة
+          </button>
+          <button class="mode-btn" onclick="switchTab('print')">
+            <span>🖨️</span> مركز الوثائق والطباعة
+          </button>
+          <button class="mode-btn" onclick="switchTab('sos')">
+            <span>🚨</span> مركز الطوارئ والتائهين
+          </button>
+        </nav>
+
+        <a href="/index.html" class="pilgrim-link-btn" title="معاينة تطبيق رفيق المعتمر">
+          <span>🤲</span> تطبيق المعتمر
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- Top Key Metrics Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+      <div class="card" style="padding: 1rem 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted);">الرحلة النشطة</div>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">عمرة شعبان 1447</div>
+        <span class="badge badge-success" style="margin-top: 0.3rem;">مكة المكرمة (IN_MAKKAH)</span>
+      </div>
+      <div class="card" style="padding: 1rem 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted);">إجمالي المعتمرين بالفوج</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--text);">45 معتمراً</div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">باص 1: 45 راكب</span>
+      </div>
+      <div class="card" style="padding: 1rem 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted);">المحصل من جمعية العمرة</div>
+        <div style="font-size: 1.4rem; font-weight: 800; color: var(--gold-dark);">320,000 ج.م</div>
+        <span class="badge badge-warning" style="margin-top: 0.3rem;">نسبة التحصيل: 80%</span>
+      </div>
+      <div class="card" style="padding: 1rem 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted);">بلاغات التائهين النشطة</div>
+        <div style="font-size: 1.4rem; font-weight: 800; color: var(--success);" id="sup-sos-count">0 بلاغات</div>
+        <span style="font-size: 0.75rem; color: var(--success);">جميع المعتمرين في نطاق الأمان</span>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 1: TRIP MANIFEST & BUS ROLL CALL                       -->
+    <!-- ========================================================== -->
+    <div id="tab-manifest" class="tab-view active">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🚌 كشف حضور وركوب باص الرحلة (باص رقم 1 - مكة إلى المدينة)</div>
+          <span class="badge badge-primary">43 صعدوا / 2 متبقين</span>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: #f1f5f9; color: var(--text-muted);">
+                <th style="padding: 0.75rem 1rem;">اسم المعتمر</th>
+                <th style="padding: 0.75rem 1rem;">رقم الجواز</th>
+                <th style="padding: 0.75rem 1rem;">الغرفة</th>
+                <th style="padding: 0.75rem 1rem;">الحالة</th>
+                <th style="padding: 0.75rem 1rem;">الإجراء السريع</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong>أحمد محمود الشريف</strong></td>
+                <td style="padding: 0.75rem 1rem;">A12345678</td>
+                <td style="padding: 0.75rem 1rem;">502 (ثنائية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">صعد الباص ✅</span></td>
+                <td style="padding: 0.75rem 1rem;">-</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong>محمود حسن علي</strong></td>
+                <td style="padding: 0.75rem 1rem;">A23456789</td>
+                <td style="padding: 0.75rem 1rem;">502 (ثنائية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">صعد الباص ✅</span></td>
+                <td style="padding: 0.75rem 1rem;">-</td>
+              </tr>
+              <tr style="background: #fff7ed;">
+                <td style="padding: 0.75rem 1rem;"><strong>سعيد إبراهيم خليل</strong></td>
+                <td style="padding: 0.75rem 1rem;">A34567890</td>
+                <td style="padding: 0.75rem 1rem;">504 (ثلاثية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">لم يصعد بعد ⏳</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copySingleWhatsApp('سعيد إبراهيم خليل')">
+                    📲 إرسال تنبيه واتساب
+                  </button>
+                </td>
+              </tr>
+              <tr style="background: #fff7ed;">
+                <td style="padding: 0.75rem 1rem;"><strong>فاطمة إبراهيم مصطفى</strong></td>
+                <td style="padding: 0.75rem 1rem;">A45678901</td>
+                <td style="padding: 0.75rem 1rem;">601 (عائلية)</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">لم تصعد بعد ⏳</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copySingleWhatsApp('فاطمة إبراهيم مصطفى')">
+                    📲 إرسال تنبيه واتساب
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 2: WHATSAPP BROADCAST HUB                              -->
+    <!-- ========================================================== -->
+    <div id="tab-whatsapp" class="tab-view">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">📱 مركز رسائل الواتساب الرسمية للفوج (WhatsApp Broadcast Hub)</div>
+          <span class="badge badge-success">جاهزة للنشر بضغطة زر</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+          رسائل منسقة واحترافية معدة خصيصاً للمشرف لمشاركتها في جروب واتساب الفوج عبر مراحل الرحلة المختلفة، تتضمن الإرشادات الفقهية، الأخلاق، ومواعيد التحرك.
+        </p>
+      </div>
+
+      <!-- Phase 1: Packing & Pre-departure -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🎒 1. قبل السفر: قائمة الحقيبة وتجهيزات الإحرام</div>
+          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-1')">
+            📋 نسخ الرسالة بالكامل للواتساب
+          </button>
+        </div>
+        <div class="whatsapp-box" id="post-1">*بسم الله الرحمن الرحيم* 🕋
+*ضيوف الرحمن أعزاءنا في فوج (عمرة شعبان 1447 المباركة)*
+السلام عليكم ورحمة الله وبركاته، تقبل الله منكم وجعلها عمرة مقبولة مبرورة.
+
+نذكركم بأهم التجهيزات قبل التوجه للمطار:
+1️⃣ *ملابس الإحرام:* (إزار ورداء أبيضين نظيفين وحزام للرجال)، ونعال مريحة غير مخيطة عند الكعب.
+2️⃣ *حقيبة اليد الصغيرة:* جواز السفر، تذاكر الطيران، أدوية الأمراض المزمنة في مكان يسهل الوصول إليه، وشاحن متنقل (Power Bank).
+3️⃣ *مستلزمات النظافة:* صابون وشامبو بدون رائحة/عطر، مقص صغير، ومظلة شمسية خفيفة.
+4️⃣ *الاستعداد البدني:* أخذ قسط كافٍ من النوم وشرب الماء بانتظام.
+
+📍 موعد تجمعنا بصالة المطار: *قبل موعد إقلاع الرحلة بـ 4 ساعات*.
+في خدمتكم طوال الرحلة: *مشرف الفوج (أبو عبد الرحمن)* 📞</div>
+      </div>
+
+      <!-- Phase 2: Miqat Announcement -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">✈️ 2. في الطائرة / الحافلة: تنبيه اقتراب الميقات وعقد النية</div>
+          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-2')">
+            📋 نسخ الرسالة بالكامل للواتساب
+          </button>
+        </div>
+        <div class="whatsapp-box" id="post-2">📢 *تنبيه هام وعاجل لجميع معتمري الفوج* 🕋
+
+نحن نقترب الآن من *محاذاة الميقات* بحمد الله وتوفيقه.
+
+📌 *المطلوب من كل معتمر الآن:*
+1️⃣ عقد النية بالقلب والتلفظ بالتلبية النبوية:
+*«لَبَّيْكَ اللَّهُمَّ عُمْرَةً»*
+*«لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لا شَرِيكَ لَكَ»*
+
+2️⃣ *محظورات الإحرام تبدأ من هذه اللحظة:*
+❌ تجنب الطيب والعطور والصابون المعطر تماماً.
+❌ تجنب قص الشعر أو تقليم الأظافر.
+❌ للرجال: تجنب تغطية الرأس بملاصق وتجنب لبس المخيط كالجلباب والقميص.
+
+أكثروا من التلبية والذكر والدعاء حتى نصل إلى الكعبة المشرفة آمنين إن شاء الله.</div>
+      </div>
+
+      <!-- Phase 3: Roommate Charter -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🤝 3. عند الوصول للفندق: ميثاق رفقاء الغرفة وآداب السكن</div>
+          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-3')">
+            📋 نسخ الرسالة بالكامل للواتساب
+          </button>
+        </div>
+        <div class="whatsapp-box" id="post-3">*ميثاق الأخوة والسكن المبارك في فندق (أبراج الكسوة)* 🏨🌿
+
+أخي المعتمر الكريم، أختي المعتمرة الفاضلة:
+إن رفيق الغرفة هو صاحبك في رحلة الطاعة، وإحسانك إليه وتيسيرك عليه من أعظم القربات.
+
+نرجو التكرم بالالتزام بهذه الآداب النبوية الراقية:
+🛌 *1. مراعاة مواعيد النوم والراحة:*
+• خفض الصوت وعدم التحدث في الهاتف بصوت مرتفع عند نوم الرفقاء.
+• استخدام سماعات الأذن (Headphones) عند الاستماع للقرآن أو الدروس.
+• تجنب تشغيل الإضاءة القوية فجأة على من هو نائم واستخدام كشاف الهاتف الخافت عند الحاجة.
+
+🚿 *2. إتيكيت استخدام الحمام المشترك:*
+• عدم الإطالة في الحمام خاصة قبل مواعيد الصلوات ليتسنى للجميع الوضوء.
+• الحرص على تجفيف أرضية الحمام وتركه نظيفاً ومرتباً لمن يأتي بعدك.
+
+🔌 *3. الكهرباء والمقابس:*
+• التعاون في استخدام مقابس الشحن وعدم احتكارها، ومشاركة التوصيلات بود.
+
+🧹 *4. الترتيب وحفظ الأسرار:*
+• إبقاء الحقائب والأغراض في الجانب المخصص لكل شخص.
+• ما تراه أو تسمعه من خصوصيات رفيقك أمانة استر عليها.
+
+قال ﷺ: *«أَحَبُّ النَّاسِ إِلَى اللَّهِ أَنْفَعُهُمْ لِلنَّاسِ»*.
+مع تحيات مشرفكم: *إدارة الفوج*</div>
+      </div>
+
+      <!-- Phase 4: Tawaf Preparation & Meeting Point -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🕋 4. الاستعداد للنزول لطواف وسعي العمرة كفوج واحد</div>
+          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-4')">
+            📋 نسخ الرسالة بالكامل للواتساب
+          </button>
+        </div>
+        <div class="whatsapp-box" id="post-4">📣 *نداء الانطلاق لأداء مناسك العمرة كفوج واحد* 🕋
+
+إخواني وأخواتي ضيوف الرحمن:
+سنتحرك بإذن الله تعالى لأداء مناسك العمرة (طواف وسعي).
+
+⏰ *الموعد:* التجمع في بهو الفندق الساعة *بعد صلاة العصر مباشرة (4:00 عصراً)*.
+📍 *نقطة التجمع بالحرم:* *بوابة الملك عبد العزيز (بوابة رقم 1)*.
+
+💡 *توجيهات ضرورية لسلامتكم:*
+• إحضار *كيس خفيف لحذائك* لحمله معك في حقيبة الظهر (لا تتركه في الممرات).
+• ارتداء *بطاقة المعتمر الذكية* الخاصة بالحملة حول عنقك دائماً.
+• حمل قارورة ماء صغيرة، والحرص على المشي في جماعة وعدم الاستعجال.
+• كبار السن وأصحاب الكراسي المتحركة: سيتم توجيههم لمسار العربات الرسمي بالدور العلوي حفاظاً على سلامتهم.
+
+وفقكم الله وتقبل منا ومنكم صالح الأعمال.</div>
+      </div>
+
+      <!-- Phase 5: Rawdah Permit Timing -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🕌 5. تنبيه تصاريح الروضة الشريفة بالمسجد النبوي</div>
+          <button class="btn btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="copyPost('post-5')">
+            📋 نسخ الرسالة بالكامل للواتساب
+          </button>
+        </div>
+        <div class="whatsapp-box" id="post-5">🌸 *إشعار هام: موعد زيارة الروضة الشريفة والسلام على رسول الله ﷺ* 🕌
+
+إلى معتمرينا الكرام في المدينة المنورة:
+تم بحمد الله تأكيد تصاريح الروضة الشريفة عبر تطبيق نسك وفق المواعيد التالية:
+
+👨 *مجموعة الرجال:*
+• الموعد: *الليلة بعد صلاة العشاء (الساعة 9:30 مساءً)*
+• بوابة الدخول: *باب السلام أو باب بلال*
+• التجمع في بهو الفندق قبل الموعد بـ 45 دقيقة.
+
+🧕 *مجموعة النساء:*
+• الموعد: *صباح الغد بعد صلاة الفجر (الساعة 6:00 صباحاً)*
+• بوابة الدخول: *باب عثمان بن عفان (بوابة 24/37)*
+• التنسيق بإشراف مشرفة الفوج (أم فاطمة).
+
+⚠️ *تنبيه ضروري:*
+يجب إبراز رمز الاستجابة السريعة (QR) للتصريح على تطبيق "نسك" مع الهوية عند الدخول. الدخول دقيق جداً ولا يقبل التأخير دقيقة واحدة.</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 3: GAM'EYA & INSTALLMENTS LEDGER                       -->
+    <!-- ========================================================== -->
+    <div id="tab-gameya" class="tab-view">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">💰 جدول جمعية وتقسيط العمرة (جمعية رمضان 1447)</div>
+          <span class="badge badge-primary">الاشتراك: 4,000 ج.م / شهر لمدة 10 أشهر</span>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: #f1f5f9; color: var(--text-muted);">
+                <th style="padding: 0.75rem 1rem;">المشترك</th>
+                <th style="padding: 0.75rem 1rem;">رقم الهاتف</th>
+                <th style="padding: 0.75rem 1rem;">دور الرحلة</th>
+                <th style="padding: 0.75rem 1rem;">المسدد حتى الآن</th>
+                <th style="padding: 0.75rem 1rem;">القسط القادم</th>
+                <th style="padding: 0.75rem 1rem;">الحالة</th>
+                <th style="padding: 0.75rem 1rem;">إجراء سريع</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong>خالد عبد الله</strong></td>
+                <td style="padding: 0.75rem 1rem;" dir="ltr">+201111111111</td>
+                <td style="padding: 0.75rem 1rem;">شهر 1</td>
+                <td style="padding: 0.75rem 1rem;">40,000 ج.م</td>
+                <td style="padding: 0.75rem 1rem;">0.00 ج.م</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-success">مكتمل السداد 🎉</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="showToast('تم طباعة الإيصال')">📄 الإيصال</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong>سعيد إبراهيم</strong></td>
+                <td style="padding: 0.75rem 1rem;" dir="ltr">+201200000000</td>
+                <td style="padding: 0.75rem 1rem;">شهر 3</td>
+                <td style="padding: 0.75rem 1rem;">20,000 ج.م</td>
+                <td style="padding: 0.75rem 1rem;">4,000.00 ج.م</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">مستحق خلال 3 أيام</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyInstallmentReminder('سعيد إبراهيم')">
+                    📲 تذكير الواتساب
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 0.75rem 1rem;"><strong>أحمد محمود</strong></td>
+                <td style="padding: 0.75rem 1rem;" dir="ltr">+201000000001</td>
+                <td style="padding: 0.75rem 1rem;">شهر 5</td>
+                <td style="padding: 0.75rem 1rem;">16,000 ج.م</td>
+                <td style="padding: 0.75rem 1rem;">4,000.00 ج.م</td>
+                <td style="padding: 0.75rem 1rem;"><span class="badge badge-warning">قيد السداد</span></td>
+                <td style="padding: 0.75rem 1rem;">
+                  <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="copyInstallmentReminder('أحمد محمود')">
+                    📲 تذكير الواتساب
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 4: PRINT CENTER (مركز الوثائق والطباعة)                -->
+    <!-- ========================================================== -->
+    <div id="tab-print" class="tab-view">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🖨️ مركز طباعة الوثائق الرسمية للمشرف</div>
+          <span class="badge badge-primary">نماذج معتمدة للطباعة الفورية</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          يمكنك طباعة أساور المعصم الذكية لجميع معتمري الفوج، إقرارات سداد الجمعية لتوثيق الأقساط، وشهادات إتمام العمرة.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 0.5rem;">🖨️ معصم وبطاقة المعتمر الذكية</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">طباعة بطاقة مضادة للماء تحتوي على كود QR وبيانات الفندق ورقم المشرف.</p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="openWristbandModal()">معاينة وطباعة الأساور</button>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 0.5rem;">📄 إقرار التزام وسداد الجمعية</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">وثيقة قانونية وعرفية لتوثيق أقساط المشتركين والتزامهم بمواعيد السداد.</p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="openAgreementModal()">معاينة وطباعة الإقرار</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 5: ACTIVE SOS & EMERGENCY CENTER                       -->
+    <!-- ========================================================== -->
+    <div id="tab-sos" class="tab-view">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🚨 غرفة بلاغات الطوارئ والتائهين بالحرمين</div>
+          <span class="badge badge-success">اتصال مباشر بـ GPS</span>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🟢</div>
+          <h3 style="color: var(--primary); font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">لا توجد بلاغات تائهين نشطة حالياً</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            عند قيام أي معتمر بالضغط على زر الطوارئ (SOS) في تطبيقه، سيظهر موقعه الجغرافي الدقيق هنا فوراً مع المسافة المتبقية حتى فندق الفوج.
+          </p>
+        </div>
+
+        <div style="border: 1px dashed var(--gold); border-radius: 12px; padding: 1rem; background: #fffdf5;">
+          <h4 style="color: var(--gold-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🚕 كارت التاكسي الخاص بفندق الفوج (أبراج الكسوة):</h4>
+          <p style="font-size: 0.85rem; line-height: 1.7;">
+            🏨 <strong>فندق أبراج الكسوة</strong> — التيسير، جرول، مكة المكرمة.<br>
+            📞 هاتف الاستقبال: +966 12 530 0000 | 📱 هاتف المشرف: +966 50 123 4567
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modals -->
+  <!-- Modal: Printable Wristband / Badge -->
+  <div class="modal-overlay" id="wristband-modal" onclick="closeModal('wristband-modal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">🖨️ نموذج معصم اليد وبطاقة المعتمر للطباعة</h3>
+        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('wristband-modal')">&times;</button>
+      </div>
+
+      <div style="border: 2px solid #064e3b; border-radius: 12px; padding: 1.25rem; background: #ecfdf5; margin-bottom: 1.25rem; text-align: center;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: #064e3b;">فوج الرحمة للعمرة 🕋 #UMR-1447</div>
+        <div style="font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0;">أحمد محمود الشريف (A12345678)</div>
+        <div style="font-size: 0.85rem; color: #065f46;">فندق أبراج الكسوة - جرول، مكة المكرمة</div>
+        <div style="font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem;">هاتف المشرف للطوارئ: +966 50 123 4567</div>
+        <div style="margin-top: 1rem; font-size: 2.5rem;">📱 [ QR CODE ]</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">امسح الكود عبر الكاميرا لإظهار بيانات المعتمر وموقعه</div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
+        🖨️ طباعة البطاقة / المعصم
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Gam'eya Trust Agreement -->
+  <div class="modal-overlay" id="agreement-modal" onclick="closeModal('agreement-modal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">📄 إقرار التزام وسداد جمعية العمرة</h3>
+        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('agreement-modal')">&times;</button>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; font-size: 0.9rem; line-height: 1.9; margin-bottom: 1.25rem;">
+        <h4 style="text-align: center; color: var(--primary); margin-bottom: 0.75rem;">إقرار والتزام بسداد أقساط رحلة العمرة</h4>
+        أقر أنا المشترك / المعتمر: <strong>................................................</strong><br>
+        ورقم بطاقتي / جوازي: <strong>................................................</strong><br>
+        بأنني انضممت لـ (جمعية عمرة رمضان 1447هـ) بإشراف المشرف، وملتزم بسداد القسط الشهري وقدره: <strong>4,000 ج.م</strong> في موعد أقصاه اليوم الخامس من كل شهر ميلادي حتى استكمال كامل تكلفة الرحلة المقدرة بـ <strong>40,000 ج.م</strong>.<br>
+        <div style="margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between;">
+          <div>توقيع المشترك: ...................</div>
+          <div>اعتماد المشرف: ...................</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
+        🖨️ طباعة الإقرار للتوثيق
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast-msg">تم بنجاح!</div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+
+      const tabs = ['manifest', 'whatsapp', 'gameya', 'print', 'sos'];
+      const index = tabs.indexOf(tab);
+      if (index !== -1) {
+        document.querySelectorAll('.mode-btn')[index].classList.add('active');
+        document.getElementById(`tab-${tab}`).classList.add('active');
+      }
+    }
+
+    function openWristbandModal() { document.getElementById('wristband-modal').classList.add('active'); }
+    function openAgreementModal() { document.getElementById('agreement-modal').classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function copyPost(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ تم نسخ منشور الواتساب بالكامل إلى الحافظة!');
+      });
+    }
+
+    function copySingleWhatsApp(name) {
+      const msg = `السلام عليكم ورحمة الله وبركاته يا أخي الكريم (${name})، باص الفوج يستعد للانطلاق الآن، نرجو التكرم بالصعود سريعاً لسلامة المواعيد. تقبل الله طاعتكم.`;
+      navigator.clipboard.writeText(msg).then(() => {
+        showToast(`تم نسخ تنبيه (${name})`);
+      });
+    }
+
+    function copyInstallmentReminder(name) {
+      const msg = `السلام عليكم ورحمة الله وبركاته يا أخي الكريم (${name})، نود تذكيركم بموعد قسط جمعية العمرة لشهر (رمضان) بمبلغ (4,000 ج.م). تقبل الله طاعتكم ويسر أمركم.`;
+      navigator.clipboard.writeText(msg).then(() => {
+        showToast(`تم نسخ تذكير القسط لـ (${name})`);
+      });
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast-msg');
+      toast.innerText = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>
