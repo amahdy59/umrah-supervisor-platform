@@ -8,3 +8,5 @@ export * from './operations/trip-logistics.js';
 // Ritual Guidance & Best Practices
 export * from './guidance/rituals-and-best-practices.js';
 export * from './guidance/whatsapp-and-fiqh.js';
+export * from './guidance/prayer-times.js';
+export * from './guidance/ziyarat-guide.js';
