@@ -1,0 +1,28 @@
+{
+  "name": "umrah-supervisor-platform",
+  "version": "1.0.0",
+  "description": "Comprehensive platform for Umrah trip supervisors: logistics, pilgrims, ritual guidance, hotel/Haram best practices, and Gam'eya installment management.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "keywords": [
+    "umrah",
+    "hajj",
+    "supervisor",
+    "gameya",
+    "installments",
+    "pilgrim-guide",
+    "tawaf-counter"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
