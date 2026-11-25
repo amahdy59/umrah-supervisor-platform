@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <script>
     try {
@@ -21,35 +21,36 @@
   <style>
     :root {
       color-scheme: light dark;
+      --target-size: 40px;
+      --header-height: 5.5rem;
       --primary: #064e3b;
       --primary-light: #047857;
       --primary-dark: #022c22;
-      --primary-ink: light-dark(#022c22, #6ee7b7);
+      --primary-ink: light-dark(#064e3b, #6ee7b7);
       --gold: #d97706;
       --gold-light: light-dark(#fef3c7, #451a03);
-      --gold-dark: light-dark(#b45309, #fbbf24);
+      --gold-dark: light-dark(#92400e, #fbbf24);
       --bg: light-dark(#f8fafc, #090d16);
       --surface-muted: light-dark(#f1f5f9, #1e293b);
       --card-bg: light-dark(#ffffff, #111827);
-      --text: light-dark(#0f172a, #f1f5f9);
-      --text-muted: light-dark(#475569, #94a3b8);
-      --border: light-dark(#e2e8f0, #334155);
+      --text: light-dark(#0f172a, #f8fafc);
+      --text-muted: light-dark(#334155, #cbd5e1);
+      --border: light-dark(#cbd5e1, #334155);
       --success: light-dark(#15803d, #4ade80);
-      --danger: light-dark(#dc2626, #f87171);
-      --women-accent: light-dark(#9d174d, #f472b6);
+      --danger: light-dark(#b91c1c, #fca5a5);
+      --women-accent: light-dark(#831843, #f9a8d4);
       --women-bg: light-dark(#fdf2f8, #2a1220);
-      --women-border: light-dark(#fbcfe8, #831843);
+      --women-border: light-dark(#f9a8d4, #831843);
       --radius: 16px;
       --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
     }
 
-    :root:has(> head > meta[name="color-scheme"][content="dark"]) {
-      color-scheme: dark;
+    @media (pointer: coarse) {
+      :root { --target-size: 44px; }
     }
 
-    :root:has(> head > meta[name="color-scheme"][content="light"]) {
-      color-scheme: light;
-    }
+    :root:has(> head > meta[name="color-scheme"][content="dark"]) { color-scheme: dark; }
+    :root:has(> head > meta[name="color-scheme"][content="light"]) { color-scheme: light; }
 
     * {
       box-sizing: border-box;
@@ -58,63 +59,126 @@
       font-family: 'Cairo', system-ui, -apple-system, sans-serif;
     }
 
+    html {
+      scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+      scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
+
     body {
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-wrap: break-word;
     }
 
-    :focus-visible {
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    :where(a:any-link, button, input, select, textarea):focus-visible {
       outline: 3px solid var(--gold);
       outline-offset: 2px;
     }
 
-    header {
-      background: linear-gradient(135deg, #0f172a 0%, #022c22 100%);
-      color: white;
-      padding: 1rem 1.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
 
-    .header-content {
+    .skip-link {
+      position: absolute;
+      inset-block-start: -120px;
+      inset-inline-start: 1rem;
+      z-index: 2000;
+      background: #b45309;
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { inset-block-start: 0.75rem; }
+
+    /* Compact Sticky Header + Group Context Switcher */
+    .sticky-bar-container {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 800;
+      container-type: scroll-state;
+      container-name: sup-top-nav;
+      background: linear-gradient(135deg, #0f172a 0%, #022c22 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .sticky-header-inner {
       max-width: 1280px;
       margin: 0 auto;
+      padding: 0.65rem 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.9rem;
+      gap: 0.65rem;
+      transition: padding 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .logo-area { display: flex; align-items: center; gap: 0.75rem; }
+    .sticky-bar-container.is-stuck .sticky-header-inner {
+      padding: 0.45rem 1rem;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @container sup-top-nav scroll-state(stuck: top) {
+      .sticky-header-inner { padding: 0.45rem 1rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 0.6rem; min-inline-size: 0; }
     .logo-icon {
-      font-size: 2rem;
-      background: rgba(255, 255, 255, 0.12);
-      width: 48px; height: 48px;
+      font-size: 1.6rem;
+      background: rgba(255, 255, 255, 0.14);
+      width: 40px; height: 40px;
+      flex: none;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
     }
-    .app-title h1 { font-size: 1.25rem; font-weight: 800; }
-    .app-title p { font-size: 0.82rem; color: #cbd5e1; }
+    .app-title h1 { font-size: 1.08rem; font-weight: 800; text-wrap: balance; }
+    .app-title p { font-size: 0.76rem; color: #cbd5e1; }
 
-    .header-tools {
+    .group-switcher-bar {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
 
-    .header-chip-btn {
-      background: rgba(255, 255, 255, 0.14);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 10px;
-      padding: 0.45rem 0.85rem;
+    .group-select {
       min-height: 40px;
+      padding: 0.35rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      font-weight: 700;
       font-size: 0.84rem;
+      max-width: 260px;
+    }
+    .group-select option { background: #0f172a; color: #ffffff; }
+
+    .header-chip-btn {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 0.4rem 0.75rem;
+      min-height: var(--target-size);
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
@@ -123,73 +187,144 @@
       text-decoration: none;
     }
 
-    .mode-nav {
+    /* Adaptive Primary Nav */
+    .top-primary-nav {
       max-width: 1280px;
-      margin: 0.85rem auto 0;
+      margin: 0 auto;
+      padding: 0 1rem 0.55rem;
       display: flex;
-      flex-wrap: wrap;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 0.35rem;
-      border-radius: 12px;
+      align-items: center;
+      justify-content: space-between;
       gap: 0.35rem;
     }
 
+    .nav-list-inline {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
     .mode-btn {
-      flex: 0 1 auto;
-      background: transparent;
-      border: none;
-      color: #e2e8f0;
-      padding: 0.45rem 0.72rem;
-      min-height: 44px;
-      font-size: 0.82rem;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      padding: 0.42rem 0.72rem;
+      min-height: var(--target-size);
+      font-size: 0.83rem;
       font-weight: 700;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
     }
 
-    .mode-btn.active {
-      background: white;
+    .mode-btn.active, .mode-btn[aria-current="page"] {
+      background: #ffffff;
       color: #022c22;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      border-bottom: 3px solid var(--gold);
     }
+
+    .tablet-only-more { display: none; }
+    .mobile-bottom-nav { display: none; }
+
+    @media (max-width: 1024px) {
+      .desktop-only-tools { display: none; }
+      .tablet-secondary-tab { display: none; }
+      .tablet-only-more { display: inline-flex; }
+    }
+
+    @media (max-width: 767px) {
+      .top-primary-nav { display: none; }
+      .app-title p { display: none; }
+      .group-select { max-width: 185px; font-size: 0.78rem; }
+      main { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px)); }
+      .toast { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important; }
+
+      .mobile-bottom-nav {
+        position: fixed;
+        inset-block-end: 0;
+        inset-inline: 0;
+        z-index: 900;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        background: var(--card-bg);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.14);
+        padding: 0.3rem 0.25rem max(0.3rem, env(safe-area-inset-bottom, 0px));
+        gap: 0.2rem;
+      }
+
+      .mobile-nav-btn {
+        min-width: 0;
+        min-height: 48px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        border-radius: 10px;
+        padding: 0.25rem 0.1rem;
+        font-size: 0.71rem;
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.12rem;
+        cursor: pointer;
+      }
+
+      .mobile-nav-btn.active, .mobile-nav-btn[aria-current="page"] {
+        background: light-dark(#ecfdf5, #064e3b);
+        color: var(--primary-ink);
+        border-bottom: 3px solid var(--primary);
+      }
+    }
+
+    .more-popover {
+      position: fixed;
+      inset: auto;
+      inset-block-end: calc(4.8rem + env(safe-area-inset-bottom, 0px));
+      inset-inline-end: 1rem;
+      margin: 0;
+      width: min(92vw, 330px);
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0.9rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    @media (min-width: 768px) {
+      .more-popover { inset-block-end: auto; inset-block-start: 4.75rem; }
+    }
+
+    .more-popover-grid { display: flex; flex-direction: column; gap: 0.45rem; }
 
     main {
       max-width: 1280px;
-      margin: 1.5rem auto;
+      margin: 1.25rem auto;
       padding: 0 1rem 2rem;
       flex: 1;
       width: 100%;
     }
 
     .tab-view { display: none; }
-    .tab-view.active { display: block; animation: fadeIn 0.25s ease; }
+    .tab-view.active { display: block; animation: fadeIn 0.2s ease; }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem; margin-bottom: 1.25rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; margin-bottom: 1.35rem; }
 
     .card {
       background: var(--card-bg);
       border-radius: var(--radius);
-      padding: 1.35rem;
+      padding: 1.3rem;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
@@ -202,113 +337,44 @@
       gap: 0.5rem;
       margin-bottom: 1rem;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 0.7rem;
+      padding-bottom: 0.65rem;
     }
 
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--primary-ink);
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
+    .card-title { font-size: 1.08rem; font-weight: 800; color: var(--primary-ink); display: flex; align-items: center; gap: 0.45rem; text-wrap: balance; }
 
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.7rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border-radius: 20px;
-    }
-
+    .badge { display: inline-block; padding: 0.24rem 0.68rem; font-size: 0.76rem; font-weight: 700; border-radius: 20px; }
     .badge-success { background: light-dark(#dcfce7, #052e16); color: var(--success); }
     .badge-warning { background: var(--gold-light); color: var(--gold-dark); }
     .badge-primary { background: light-dark(#d1fae5, #064e3b); color: light-dark(#064e3b, #a7f3d0); }
     .badge-danger { background: light-dark(#fee2e2, #450a0a); color: var(--danger); }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      padding: 0.6rem 1.1rem;
-      min-height: 44px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+      padding: 0.6rem 1.05rem; min-height: var(--target-size);
+      font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer;
     }
-
-    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary { background: var(--primary); color: #ffffff; }
     .btn-primary:hover { background: var(--primary-light); }
     .btn-secondary { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--surface-muted); }
-    .btn-gold { background: var(--gold); color: white; }
-    .btn-gold:hover { background: #b45309; }
-    .btn-danger { background: #dc2626; color: white; }
+    .btn-gold { background: #b45309; color: #ffffff; }
+    .btn-gold:hover { background: #92400e; }
+    .btn-danger { background: #b91c1c; color: #ffffff; }
 
-    .info-box-neutral {
-      background: var(--surface-muted);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      line-height: 1.7;
-    }
+    .info-box-neutral { background: var(--surface-muted); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; font-size: 0.9rem; line-height: 1.7; }
+    .info-box-warn { background: var(--gold-light); border: 1px solid var(--gold); border-radius: 12px; padding: 0.9rem 1rem; font-size: 0.9rem; line-height: 1.75; }
+    .info-box-danger { background: light-dark(#fef2f2, #450a0a); border: 1px solid light-dark(#fecaca, #991b1b); border-radius: 12px; padding: 0.9rem 1rem; font-size: 0.9rem; line-height: 1.7; }
 
-    .info-box-warn {
-      background: var(--gold-light);
-      border: 1px solid var(--gold);
-      border-radius: 12px;
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      line-height: 1.75;
-    }
+    .field-label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text-muted); }
+    .field-input { width: 100%; min-height: var(--target-size); padding: 0.5rem 0.8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; }
+    .form-inline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 0.75rem; align-items: end; margin-bottom: 1rem; }
 
-    .info-box-danger {
-      background: light-dark(#fef2f2, #450a0a);
-      border: 1px solid light-dark(#fecaca, #991b1b);
-      border-radius: 12px;
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      line-height: 1.7;
-    }
-
-    .field-label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      color: var(--text-muted);
-    }
-
-    .field-input {
-      width: 100%;
-      padding: 0.55rem 0.8rem;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.9rem;
-    }
-
-    .form-inline-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-      gap: 0.75rem;
-      align-items: end;
-      margin-bottom: 1rem;
-    }
-
-    .whatsapp-box,
-    .whatsapp-textarea {
+    .whatsapp-box, .whatsapp-textarea {
       width: 100%;
       background: light-dark(#eefbf4, #052e16);
       color: var(--text);
       border: 1px solid light-dark(#c7f0d8, #14532d);
-      border-right: 5px solid #25d366;
+      border-inline-start: 5px solid #16a34a;
       border-radius: 12px;
       padding: 1rem;
       font-size: 0.92rem;
@@ -316,81 +382,32 @@
       white-space: pre-wrap;
     }
 
-    /* Responsive Tables (modern-web-guidance pattern) */
-    .table-wrapper {
-      overflow: auto;
-      max-inline-size: 100%;
-      max-block-size: min(560px, 75vh);
-      container-type: inline-size;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      text-align: right;
-      font-size: 0.9rem;
-    }
-
-    thead th {
-      position: sticky;
-      inset-block-start: 0;
-      z-index: 2;
-      background: var(--surface-muted);
-      color: var(--text-muted);
-      padding: 0.75rem 0.9rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    tbody th, tbody td {
-      padding: 0.75rem 0.9rem;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-
-    tbody th {
-      position: sticky;
-      inset-inline-start: 0;
-      z-index: 1;
-      background: var(--card-bg);
-      font-weight: 800;
-    }
-
-    tr.row-pending td,
-    tr.row-pending th {
-      background: light-dark(#fff7ed, #2a1807);
-    }
+    /* Responsive Tables */
+    .table-wrapper { overflow: auto; max-inline-size: 100%; max-block-size: min(560px, 75vh); container-type: inline-size; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; font-size: 0.9rem; }
+    thead th { position: sticky; inset-block-start: 0; z-index: 2; background: var(--surface-muted); color: var(--text-muted); padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); }
+    tbody th, tbody td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody th { position: sticky; inset-inline-start: 0; z-index: 1; background: var(--card-bg); font-weight: 800; }
+    tr.row-pending td, tr.row-pending th { background: light-dark(#fff7ed, #2a1807); }
 
     @container (width < 640px) {
       table, thead, tbody, tr, th, td { display: block; }
       thead { display: none; }
-      tr {
-        margin-block-end: 0.9rem;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      tbody th {
-        position: static;
-        background: var(--surface-muted);
-        border-bottom: 1px solid var(--border);
-      }
-      tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.5rem;
-      }
+      tr { margin-block-end: 0.9rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      tbody th { position: static; background: var(--surface-muted); border-bottom: 1px solid var(--border); }
+      tbody td { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
       .manifest-table td:nth-child(2)::before { content: "الجواز: "; font-weight: 700; color: var(--text-muted); }
       .manifest-table td:nth-child(3)::before { content: "الغرفة: "; font-weight: 700; color: var(--text-muted); }
       .manifest-table td:nth-child(4)::before { content: "نُسك: "; font-weight: 700; color: var(--text-muted); }
       .manifest-table td:nth-child(5)::before { content: "الباص: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(2)::before { content: "الهاتف: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(3)::before { content: "الدور: "; font-weight: 700; color: var(--text-muted); }
+      .people-table td:nth-child(2)::before { content: "الجواز: "; font-weight: 700; color: var(--text-muted); }
+      .people-table td:nth-child(3)::before { content: "الهاتف: "; font-weight: 700; color: var(--text-muted); }
+      .people-table td:nth-child(4)::before { content: "الصحة: "; font-weight: 700; color: var(--text-muted); }
+      .people-table td:nth-child(5)::before { content: "السجل: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(2)::before { content: "الخطة: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(3)::before { content: "الإجمالي: "; font-weight: 700; color: var(--text-muted); }
       .gameya-table td:nth-child(4)::before { content: "المسدد: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(5)::before { content: "القسط القادم: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(5)::before { content: "القادم: "; font-weight: 700; color: var(--text-muted); }
       .gameya-table td:nth-child(6)::before { content: "الحالة: "; font-weight: 700; color: var(--text-muted); }
       .luggage-table td:nth-child(2)::before { content: "المعتمر: "; font-weight: 700; color: var(--text-muted); }
       .luggage-table td:nth-child(3)::before { content: "الغرفة: "; font-weight: 700; color: var(--text-muted); }
@@ -398,162 +415,126 @@
     }
 
     dialog {
-      margin: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--card-bg);
-      color: var(--text);
-      max-width: 660px;
-      width: calc(100% - 2rem);
-      max-height: 90dvh;
-      overflow-y: auto;
-      padding: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      margin: auto; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--card-bg); color: var(--text); max-width: 680px; width: calc(100% - 2rem);
+      max-height: 90dvh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
     }
-
     dialog:modal { overscroll-behavior: contain; }
-    dialog::backdrop {
-      background: rgba(2, 6, 23, 0.72);
-      backdrop-filter: blur(4px);
-      overflow: hidden;
-      overscroll-behavior: contain;
-    }
-
-    .dialog-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .dialog-close-btn {
-      background: var(--surface-muted);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      width: 40px; height: 40px;
-      font-size: 1.35rem;
-      cursor: pointer;
-    }
+    dialog::backdrop { background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(4px); overflow: hidden; overscroll-behavior: contain; }
+    .dialog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .dialog-close-btn { background: var(--surface-muted); color: var(--text); border: 1px solid var(--border); border-radius: 10px; width: 44px; height: 44px; font-size: 1.35rem; cursor: pointer; }
 
     .toast {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%) translateY(90px);
-      background: #0f172a;
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 30px;
-      font-weight: 700;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      transition: transform 0.25s ease, opacity 0.25s ease;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(90px);
+      background: #0f172a; color: #ffffff; padding: 0.8rem 1.5rem; border-radius: 30px; font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); transition: transform 0.25s ease, opacity 0.25s ease; z-index: 9999; opacity: 0; pointer-events: none;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* Clean Document Printing */
     @media print {
       header, nav, main, .toast, .no-print { display: none !important; }
-      dialog[open] {
-        position: static;
-        border: none;
-        box-shadow: none;
-        max-width: 100%;
-        width: 100%;
-        max-height: none;
-        overflow: visible;
-        background: white !important;
-        color: black !important;
-      }
+      dialog[open] { position: static; border: none; box-shadow: none; max-width: 100%; width: 100%; max-height: none; overflow: visible; background: white !important; color: black !important; }
       dialog:not([open]) { display: none !important; }
     }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">تخطي إلى المحتوى الرئيسي</a>
+  <div id="sticky-header-sentinel" aria-hidden="true" style="height:1px;"></div>
 
-  <header>
-    <div class="header-content">
+  <header class="sticky-bar-container">
+    <div class="sticky-header-inner">
       <div class="logo-area">
         <div class="logo-icon" aria-hidden="true">📋</div>
         <div class="app-title">
-          <h1>غرفة عمليات مشرف العمرة <span dir="ltr" style="display:inline-block;font-size:0.95rem;font-weight:700;">(Mission Control)</span></h1>
-          <p>إدارة الفوج، التسكين الشرعي، كشف الباص، منشورات الواتساب، الجمعية، والطباعة</p>
+          <h1>غرفة عمليات مشرف العمرة <span dir="ltr" style="display:inline-block;font-size:0.88rem;font-weight:700;">(Mission Control)</span></h1>
+          <p id="header-active-stage">إدارة الأفواج المتزامنة والمتتابعة، سجل الأشخاص، والأقساط</p>
         </div>
       </div>
 
-      <div class="header-tools">
-        <span id="network-status-pill" class="badge badge-success">جاهز ✅</span>
-        <button type="button" id="btn-open-settings" class="header-chip-btn">⚙️ إعدادات الفوج والفندق</button>
-        <button type="button" id="theme-toggle-btn" class="header-chip-btn" aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
-        <button type="button" id="btn-reset-demo" class="header-chip-btn" title="استعادة البيانات الافتراضية">🔄 استعادة الافتراضي</button>
-        <a href="/" class="header-chip-btn" style="background:var(--gold);border-color:#fde68a;">🤲 تطبيق المعتمر</a>
+      <div class="group-switcher-bar">
+        <label for="active-group-switcher" class="sr-only">اختر الفوج النشط</label>
+        <select id="active-group-switcher" class="group-select"></select>
+        <button type="button" id="btn-new-group" class="header-chip-btn" style="background:#b45309;border-color:#fde68a;">➕ فوج جديد</button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings>⚙️ إعدادات الفوج</button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
+        <a href="/" class="header-chip-btn desktop-only-tools">🤲 تطبيق المعتمر</a>
       </div>
     </div>
 
-    <nav class="mode-nav" aria-label="أقسام لوحة المشرف">
-      <button type="button" class="mode-btn active" data-tab-target="manifest" aria-current="page">🚌 الفوج والتسكين</button>
-      <button type="button" class="mode-btn" data-tab-target="whatsapp">💬 منشورات الواتساب (7)</button>
-      <button type="button" class="mode-btn" data-tab-target="gameya">💰 جمعية وتقسيط العمرة</button>
-      <button type="button" class="mode-btn" data-tab-target="print">🖨️ مركز الطباعة و QR</button>
-      <button type="button" class="mode-btn" data-tab-target="sos">🚨 الطوارئ والموارد الرسمية</button>
-      <button type="button" class="mode-btn" data-tab-target="women-guide">🧕 فقه النساء والروضة</button>
-      <button type="button" class="mode-btn" data-tab-target="logistics-health">🧳 الأمتعة والسجل الطبي</button>
+    <nav class="top-primary-nav" aria-label="أقسام لوحة المشرف">
+      <div class="nav-list-inline">
+        <button type="button" class="mode-btn active" data-tab-target="manifest" aria-current="page">🚌 الأفواج والتسكين</button>
+        <button type="button" class="mode-btn" data-tab-target="people">👥 سجل الأشخاص</button>
+        <button type="button" class="mode-btn" data-tab-target="gameya">💰 الأقساط والجمعية</button>
+        <button type="button" class="mode-btn" data-tab-target="whatsapp">💬 منشورات الواتساب</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="print">🖨️ الطباعة و QR</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos">🚨 الطوارئ</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-guide">🧕 فقه النساء</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health">🧳 الأمتعة والطب</button>
+      </div>
+      <button type="button" class="mode-btn tablet-only-more" popovertarget="sup-more-popover" aria-haspopup="true">
+        ☰ المزيد والأدوات
+      </button>
     </nav>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <!-- Live Metrics Bar -->
-    <section class="metrics-grid" aria-label="ملخص حالة الفوج">
+    <section class="metrics-grid" aria-label="ملخص حالة الفوج والأفواج">
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">الرحلة النشطة</div>
-        <div style="font-size:1.2rem;font-weight:800;color:var(--primary-ink);" id="metric-trip-title">عمرة شعبان 1447</div>
-        <span class="badge badge-success" style="margin-top:0.3rem;" id="metric-trip-stage">مكة المكرمة</span>
+        <div style="font-size:0.8rem;color:var(--text-muted);">الفوج النشط حالياً</div>
+        <div style="font-size:1.15rem;font-weight:800;color:var(--primary-ink);" id="metric-trip-title"></div>
+        <span class="badge badge-success" style="margin-top:0.3rem;" id="metric-trip-stage"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
         <div style="font-size:0.8rem;color:var(--text-muted);">المعتمرون وكشف الحافلة</div>
-        <div style="font-size:1.35rem;font-weight:800;" id="metric-pilgrim-count">4 معتمرين</div>
-        <span style="font-size:0.78rem;color:var(--text-muted);" id="metric-bus-summary"></span>
+        <div style="font-size:1.25rem;font-weight:800;" id="metric-pilgrim-count"></div>
+        <span style="font-size:0.8rem;color:var(--text-muted);" id="metric-bus-summary"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">المحصل من الجمعية</div>
-        <div style="font-size:1.35rem;font-weight:800;color:var(--gold-dark);" id="metric-gameya-total">0 ج.م</div>
-        <span class="badge badge-warning" style="margin-top:0.3rem;" id="metric-gameya-pct">نسبة التحصيل: 0%</span>
+        <div style="font-size:0.8rem;color:var(--text-muted);">المحصل من باقات السداد</div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--gold-dark);" id="metric-gameya-total"></div>
+        <span class="badge badge-warning" style="margin-top:0.3rem;" id="metric-gameya-pct"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
         <div style="font-size:0.8rem;color:var(--text-muted);">بلاغات التائهين النشطة</div>
-        <div style="font-size:1.35rem;font-weight:800;color:var(--success);" id="sup-sos-count">0 بلاغات</div>
-        <span style="font-size:0.78rem;" id="sup-sos-sub">جميع المعتمرين في نطاق الأمان</span>
+        <div style="font-size:1.25rem;font-weight:800;color:var(--success);" id="sup-sos-count"></div>
+        <span style="font-size:0.8rem;" id="sup-sos-sub"></span>
       </div>
     </section>
 
-    <!-- TAB 1: MANIFEST & ROOMING ENGINE -->
+    <!-- TAB 1: MULTI-GROUP BOARD, MANIFEST & ROOMING -->
     <section id="tab-manifest" class="tab-view active">
-      <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card" style="margin-bottom:1.35rem;">
         <div class="card-header">
-          <div class="card-title">🚌 كشف المعتمرين وحضور الباص + توليد روابط QR</div>
+          <h2 class="card-title">🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة</h2>
+          <span class="badge badge-primary">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
+        </div>
+        <div id="multi-groups-board" class="grid-2" style="margin-bottom:0;"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.35rem;">
+        <div class="card-header">
+          <h2 class="card-title">🚌 كشف حضور باص الفوج النشط + روابط QR</h2>
           <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary" id="manifest-count-badge"></span>
-            <button type="button" id="btn-export-csv" class="btn btn-secondary" style="min-height:38px;font-size:0.82rem;">📥 تصدير CSV / Excel</button>
+            <button type="button" id="btn-export-csv" class="btn btn-secondary" style="min-height:40px;font-size:0.84rem;">📥 تصدير CSV</button>
           </div>
         </div>
 
         <form id="add-pilgrim-form" class="form-inline-grid">
-          <div><label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label><input id="new-pilgrim-name" class="field-input" placeholder="الاسم الثلاثي" required></div>
+          <div><label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label><input id="new-pilgrim-name" autocomplete="name" class="field-input" placeholder="الاسم الثلاثي" required></div>
           <div><label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label><input id="new-pilgrim-passport" class="field-input" placeholder="A98765432" required></div>
-          <div><label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label><input id="new-pilgrim-phone" dir="ltr" class="field-input" placeholder="+2010..."></div>
+          <div><label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label><input id="new-pilgrim-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
           <div>
-            <label for="new-pilgrim-gender" class="field-label">النوع (للتسكين):</label>
+            <label for="new-pilgrim-gender" class="field-label">النوع:</label>
             <select id="new-pilgrim-gender" class="field-input">
               <option value="MALE">رجل</option>
               <option value="FEMALE">امرأة</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">➕ إضافة معتمر</button>
+          <button type="submit" class="btn btn-primary">➕ إضافة للفوج والسجل</button>
         </form>
 
         <div style="margin-bottom:0.85rem;">
@@ -561,16 +542,17 @@
           <input type="search" id="manifest-search" class="field-input" placeholder="ابحث بالاسم أو الجواز أو رقم الغرفة...">
         </div>
 
-        <div class="table-wrapper" tabindex="0" role="region" aria-label="كشف حضور الباص والمعتمرين">
+        <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="manifest-caption">
           <table class="manifest-table">
+            <caption id="manifest-caption" class="sr-only">كشف حضور الباص والمعتمرين للفوج النشط</caption>
             <thead>
               <tr>
-                <th>اسم المعتمر</th>
-                <th>رقم الجواز</th>
-                <th>الغرفة</th>
-                <th>تصريح نُسك</th>
-                <th>حالة الباص</th>
-                <th>إجراءات سريعة</th>
+                <th scope="col">اسم المعتمر</th>
+                <th scope="col">رقم الجواز</th>
+                <th scope="col">الغرفة</th>
+                <th scope="col">نُسك</th>
+                <th scope="col">الباص</th>
+                <th scope="col">إجراءات</th>
               </tr>
             </thead>
             <tbody id="manifest-tbody"></tbody>
@@ -578,16 +560,15 @@
         </div>
       </div>
 
-      <!-- Interactive Rooming Allocation Engine -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)</div>
+          <h2 class="card-title">🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)</h2>
           <span class="badge badge-success">يمنع الخلط غير العائلي وتجاوز السعة</span>
         </div>
 
         <div class="grid-2" style="margin-bottom:1rem;">
           <form id="add-room-form" class="info-box-neutral">
-            <strong style="display:block;margin-bottom:0.5rem;">1. إضافة غرفة جديدة للفوج</strong>
+            <strong style="display:block;margin-bottom:0.5rem;">1. إضافة غرفة جديدة</strong>
             <div class="form-inline-grid" style="margin-bottom:0.5rem;">
               <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" class="field-input" placeholder="508" required></div>
               <div>
@@ -600,8 +581,8 @@
                 </select>
               </div>
             </div>
-            <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.65rem;cursor:pointer;">
-              <input type="checkbox" id="new-room-family" style="width:18px;height:18px;">
+            <label for="new-room-family" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.65rem;cursor:pointer;min-height:44px;">
+              <input type="checkbox" id="new-room-family" style="width:20px;height:20px;">
               <span>غرفة عائلية (يُسمح بسكن المحارم معاً)</span>
             </label>
             <button type="submit" class="btn btn-secondary" style="width:100%;">➕ فتح غرفة</button>
@@ -621,47 +602,103 @@
       </div>
     </section>
 
-    <!-- TAB 2: WHATSAPP BROADCAST HUB -->
-    <section id="tab-whatsapp" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;">
+    <!-- TAB 2: PERSISTENT PEOPLE DIRECTORY (CRM) -->
+    <section id="tab-people" class="tab-view" hidden>
+      <div class="card">
         <div class="card-header">
-          <div class="card-title">💬 منشورات الواتساب المحدثة عبر مراحل الرحلة (7 مراحل)</div>
-          <span class="badge badge-success">تتحدث تلقائياً ببيانات الفوج</span>
+          <h2 class="card-title">👥 سجل الأشخاص الدائم عبر الرحلات (CRM)</h2>
+          <span class="badge badge-warning" id="people-count-badge"></span>
         </div>
-        <p style="font-size:0.9rem;color:var(--text-muted);">
-          تشمل قائمة الحقيبة، الميقات، ميثاق رفقاء الغرفة، النزول للطواف، أخلاق الحرمين، تنبيه الروضة الشريفة (بوابة 25 ومسارات نُسك)، وختام الرحلة مع ضوابط عبوات زمزم الرسمية بالمطار.
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">
+          احتفظ بملفات الأشخاص الدائمة (الجواز وتاريخ انتهائه، المرافق، الاحتياجات الطبية، وتاريخ عمراتهم السابقة)، وأدرجهم في أي فوج جديد بنقرة واحدة مع فحص تلقائي لصلاحية الجواز (6 أشهر).
         </p>
+
+        <form id="add-person-form" class="form-inline-grid">
+          <div><label for="crm-name" class="field-label">الاسم الكامل:</label><input id="crm-name" autocomplete="name" class="field-input" required></div>
+          <div><label for="crm-passport" class="field-label">رقم الجواز:</label><input id="crm-passport" class="field-input" required></div>
+          <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" type="date" class="field-input"></div>
+          <div><label for="crm-phone" class="field-label">الهاتف / واتساب:</label><input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
+          <div>
+            <label for="crm-gender" class="field-label">النوع:</label>
+            <select id="crm-gender" class="field-input">
+              <option value="MALE">رجل</option>
+              <option value="FEMALE">امرأة</option>
+            </select>
+          </div>
+          <div><label for="crm-ec-phone" class="field-label">هاتف طوارئ قريب:</label><input id="crm-ec-phone" type="tel" dir="ltr" class="field-input"></div>
+          <div><label for="crm-notes" class="field-label">ملاحظات طبية / سكنية:</label><input id="crm-notes" class="field-input"></div>
+          <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.84rem;">
+            <label for="crm-wheelchair"><input type="checkbox" id="crm-wheelchair"> كرسي متحرك</label>
+            <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 حفظ بالسجل الدائم</button>
+        </form>
+
+        <div style="margin-bottom:0.85rem;">
+          <label for="people-search" class="field-label">بحث في سجل الأشخاص:</label>
+          <input type="search" id="people-search" class="field-input" placeholder="ابحث بالاسم، رقم الجواز، أو الهاتف...">
+        </div>
+
+        <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="people-caption">
+          <table class="people-table">
+            <caption id="people-caption" class="sr-only">سجل الأشخاص الدائم وتاريخ مشاركاتهم</caption>
+            <thead>
+              <tr>
+                <th scope="col">الاسم</th>
+                <th scope="col">الجواز والصلاحية</th>
+                <th scope="col">الهاتف</th>
+                <th scope="col">الحالة الصحية</th>
+                <th scope="col">الرحلات السابقة</th>
+                <th scope="col">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="people-tbody"></tbody>
+          </table>
+        </div>
       </div>
-      <div id="whatsapp-posts-container"></div>
     </section>
 
-    <!-- TAB 3: GAM'EYA LEDGER -->
+    <!-- TAB 3: ENHANCED INSTALLMENT PLANS & GAMEYA -->
     <section id="tab-gameya" class="tab-view" hidden>
       <div class="card">
         <div class="card-header">
-          <div class="card-title">💰 سجل جمعية وتقسيط العمرة التفاعلي</div>
-          <span class="badge badge-primary">إيصالات واتساب وتحصيل فوري</span>
+          <h2 class="card-title">💰 خطط الأقساط المرنة والجمعية</h2>
+          <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
         </div>
 
         <form id="add-gameya-form" class="form-inline-grid">
           <div><label for="new-gam-name" class="field-label">اسم المشترك:</label><input id="new-gam-name" class="field-input" required></div>
-          <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" dir="ltr" class="field-input" placeholder="+2010..."></div>
-          <div><label for="new-gam-target" class="field-label">إجمالي التكلفة (ج.م):</label><input id="new-gam-target" type="number" value="40000" class="field-input"></div>
-          <div><label for="new-gam-monthly" class="field-label">القسط الشهري:</label><input id="new-gam-monthly" type="number" value="4000" class="field-input"></div>
+          <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" type="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
+          <div>
+            <label for="new-gam-plan" class="field-label">نظام السداد:</label>
+            <select id="new-gam-plan" class="field-input">
+              <option value="DEPOSIT_PLUS_MONTHLY">مقدم حجز + أقساط شهرية</option>
+              <option value="DIRECT_INSTALLMENT">تقسيط شهري متساوٍ</option>
+              <option value="ROTATING_ROSCA">جمعية دورية بالأدوار</option>
+              <option value="DEPOSIT_PLUS_FINAL">مقدم + الباقي قبل السفر</option>
+              <option value="BIWEEKLY_INSTALLMENT">تقسيط كل أسبوعين</option>
+              <option value="FULL_CASH">سداد نقدي كامل</option>
+            </select>
+          </div>
+          <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" type="number" value="40000" min="100" class="field-input"></div>
+          <div><label for="new-gam-down" class="field-label">المقدم (إن وجد):</label><input id="new-gam-down" type="number" value="10000" min="0" class="field-input"></div>
+          <div><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" type="number" value="6" min="1" max="24" class="field-input"></div>
+          <div><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" type="number" value="1" min="1" max="24" class="field-input"></div>
           <button type="submit" class="btn btn-primary">➕ إضافة مشترك</button>
         </form>
 
-        <div class="table-wrapper" tabindex="0" role="region" aria-label="جدول أقساط الجمعية">
+        <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="gameya-caption">
           <table class="gameya-table">
+            <caption id="gameya-caption" class="sr-only">جدول خطط الأقساط والجمعية للفوج النشط</caption>
             <thead>
               <tr>
-                <th>المشترك</th>
-                <th>رقم الهاتف</th>
-                <th>الدور</th>
-                <th>المسدد</th>
-                <th>القسط القادم</th>
-                <th>الحالة</th>
-                <th>إجراءات</th>
+                <th scope="col">المشترك</th>
+                <th scope="col">نظام السداد</th>
+                <th scope="col">الإجمالي</th>
+                <th scope="col">المسدد</th>
+                <th scope="col">الدفعة القادمة</th>
+                <th scope="col">الحالة</th>
+                <th scope="col">إجراءات</th>
               </tr>
             </thead>
             <tbody id="gameya-tbody"></tbody>
@@ -670,23 +707,37 @@
       </div>
     </section>
 
-    <!-- TAB 4: PRINT CENTER -->
+    <!-- TAB 4: WHATSAPP BROADCAST HUB -->
+    <section id="tab-whatsapp" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+          <h2 class="card-title">💬 منشورات الواتساب المحدثة (7 مراحل)</h2>
+          <span class="badge badge-success">تتحدث تلقائياً ببيانات الفوج النشط</span>
+        </div>
+        <p style="font-size:0.9rem;color:var(--text-muted);">
+          رسائل منسقة للمشرف تتحدث آلياً باسم الفوج والفندق واسم المشرف ونقطة التجمع، مع ضوابط عبوات زمزم الرسمية بالمطار وبوابة 25 للروضة.
+        </p>
+      </div>
+      <div id="whatsapp-posts-container"></div>
+    </section>
+
+    <!-- TAB 5: PRINT CENTER -->
     <section id="tab-print" class="tab-view" hidden>
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🖨️ مركز الطباعة النظيفة وأكواد QR الحقيقية</div>
+          <h2 class="card-title">🖨️ مركز الطباعة النظيفة وأكواد QR الحقيقية</h2>
           <span class="badge badge-success">طباعة بدون قوائم أو أزرار</span>
         </div>
         <div class="grid-2" style="margin-bottom:0;">
           <div class="info-box-neutral">
-            <h2 style="font-size:1rem;margin-bottom:0.5rem;">🪪 معصم وبطاقة المعتمر الذكية (QR حقيقي)</h2>
+            <h3 style="font-size:1rem;margin-bottom:0.5rem;">🪪 معصم وبطاقة المعتمر الذكية (QR حقيقي)</h3>
             <label for="print-wristband-pilgrim" class="field-label">اختر المعتمر:</label>
             <select id="print-wristband-pilgrim" class="field-input" style="margin-bottom:0.75rem;"></select>
             <button type="button" id="btn-open-wristband" class="btn btn-primary" style="width:100%;">معاينة وطباعة البطاقة</button>
           </div>
 
           <div class="info-box-neutral">
-            <h2 style="font-size:1rem;margin-bottom:0.5rem;">📄 إقرار سداد والتزام الجمعية</h2>
+            <h3 style="font-size:1rem;margin-bottom:0.5rem;">📄 إقرار سداد والتزام خطة الرحلة</h3>
             <label for="print-agreement-member" class="field-label">اختر المشترك:</label>
             <select id="print-agreement-member" class="field-input" style="margin-bottom:0.75rem;"></select>
             <button type="button" id="btn-open-agreement" class="btn btn-primary" style="width:100%;">معاينة وطباعة الإقرار</button>
@@ -695,17 +746,17 @@
       </div>
     </section>
 
-    <!-- TAB 5: SOS & OFFICIAL RESOURCES -->
+    <!-- TAB 6: SOS & OFFICIAL RESOURCES -->
     <section id="tab-sos" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <div class="card-title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</div>
+          <h2 class="card-title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
           <span class="badge badge-danger">حساب المسافة للفندق</span>
         </div>
 
         <form id="add-sos-form" class="form-inline-grid">
           <div><label for="sos-pilgrim-name" class="field-label">اسم المعتمر التائه:</label><input id="sos-pilgrim-name" class="field-input" placeholder="مثال: سعيد إبراهيم" required></div>
-          <div><label for="sos-coords" class="field-label">الإحداثيات (lat, lng) من الواتساب:</label><input id="sos-coords" dir="ltr" class="field-input" placeholder="21.4195, 39.8236"></div>
+          <div><label for="sos-coords" class="field-label">الإحداثيات (lat, lng):</label><input id="sos-coords" dir="ltr" class="field-input" placeholder="21.4195, 39.8236"></div>
           <div><label for="sos-notes" class="field-label">رقم البوابة / وصف المكان:</label><input id="sos-notes" class="field-input" placeholder="بجوار باب الملك فهد 79"></div>
           <button type="submit" class="btn btn-danger">🆘 تسجيل بلاغ نشط</button>
         </form>
@@ -719,18 +770,16 @@
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">🏛️ أرقام الطوارئ ومنصات المملكة الرسمية</div>
-        </div>
+        <div class="card-header"><h2 class="card-title">🏛️ أرقام الطوارئ ومنصات المملكة الرسمية</h2></div>
         <div id="sup-official-resources" class="grid-2" style="margin-bottom:0;"></div>
       </div>
     </section>
 
-    <!-- TAB 6: WOMEN'S GUIDANCE & RAWDAH -->
+    <!-- TAB 7: WOMEN'S GUIDANCE & RAWDAH -->
     <section id="tab-women-guide" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
         <div class="card-header" style="border-bottom-color:var(--women-border);">
-          <div class="card-title" style="color:var(--women-accent);">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</div>
+          <h2 class="card-title" style="color:var(--women-accent);">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</h2>
           <span class="badge" style="background:var(--women-border);color:var(--women-accent);">دليل المعتمر وتنظيم نُسك</span>
         </div>
         <p style="font-size:0.92rem;line-height:1.75;">
@@ -741,7 +790,7 @@
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🕌 تنظيم دخول الروضة الشريفة للنساء (نُسك)</div>
+            <h3 class="card-title">🕌 تنظيم دخول الروضة الشريفة للنساء (نُسك)</h3>
             <span class="badge badge-success">حسب تصريح التطبيق</span>
           </div>
           <div class="info-box-neutral" style="margin-bottom:0.75rem;">
@@ -750,56 +799,44 @@
           </div>
           <div class="info-box-warn">
             <strong>توجيهات المشرفة:</strong><br>
-            1. الحضور قبل موعد التصريح بـ 15–30 دقيقة والتقيد باللوحات الإرشادية والمشرفات.<br>
+            1. الحضور قبل موعد التصريح بـ 15–30 دقيقة والتقيد باللوحات الإرشادية.<br>
             2. حفظ لقطة شاشة واضحة للـ QR كاحتياط لضعف الشبكة، مع إبقاء التطبيق مفتوحاً.<br>
-            3. إذا تعذر الحجز المسبق، تجربة خيار <strong>«المسار الفوري»</strong> في نُسك عند التواجد داخل المدينة وتفعيل GPS.
+            3. تجربة خيار <strong>«المسار الفوري»</strong> في نُسك عند التواجد داخل المدينة وتفعيل GPS.
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</div>
-          </div>
+          <div class="card-header"><h3 class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</h3></div>
           <div style="display:flex;flex-direction:column;gap:0.65rem;font-size:0.88rem;">
-            <div class="info-box-neutral" style="border-right:4px solid #db2777;"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى.</div>
-            <div class="info-box-neutral" style="border-right:4px solid #db2777;"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة.</div>
-            <div class="info-box-neutral" style="border-right:4px solid #db2777;"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف.</div>
-            <div class="info-box-neutral" style="border-right:4px solid #db2777;"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له.</div>
+            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى.</div>
+            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة.</div>
+            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف.</div>
+            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له.</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">💬 رسائل واتساب جاهزة لمجموعة الأخوات</div>
-        </div>
+        <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
         <div class="grid-2" style="margin-bottom:0;">
           <div>
-            <div class="whatsapp-box" id="post-women-ihram">السلام عليكم ورحمة الله وبركاته أخواتي معتمرات فوجنا المبارك 🌸
-تذكير سريع بأحكام إحرام المرأة:
-1. احرمي في عباءتك الساترة المعتادة (لا يخصص ثوب أبيض أو أخضر).
-2. يحرم النقاب المفصل والقفازان فقط، وتسدلين خمارك عند مرور الرجال.
-3. يجوز لبس الجوارب والأحذية المخيطة، وتُمنع العطور بعد النية.</div>
+            <div class="whatsapp-box" id="post-women-ihram"></div>
             <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-ihram">📋 نسخ المنشور</button>
           </div>
           <div>
-            <div class="whatsapp-box" id="post-women-rawdah">السلام عليكم أخواتنا الكريمات 🌸
-موعد تجمع زيارة الروضة الشريفة للأخوات (بتصاريح نُسك):
-⏰ التجمع ببهو الفندق قبل الموعد بـ 45 دقيقة.
-📍 الاتجاه لبوابة عثمان بن عفان (بوابة 25) أو المسار المحدد ميدانياً.
-📱 تجهيز تصريح نُسك والهوية الأصلية ورفع سطوع الشاشة.</div>
+            <div class="whatsapp-box" id="post-women-rawdah"></div>
             <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-rawdah">📋 نسخ المنشور</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 7: LUGGAGE & MEDICAL REGISTRY -->
+    <!-- TAB 8: LUGGAGE & MEDICAL REGISTRY -->
     <section id="tab-logistics-health" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.5rem;">
         <div class="card-header">
-          <div class="card-title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</div>
-          <button type="button" id="btn-open-luggage-print" class="btn btn-primary" style="min-height:38px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
+          <h2 class="card-title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
+          <button type="button" id="btn-open-luggage-print" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
         </div>
 
         <div class="metrics-grid" style="margin-bottom:1rem;">
@@ -823,15 +860,16 @@
           <button type="submit" class="btn btn-primary">➕ إضافة حقيبة</button>
         </form>
 
-        <div class="table-wrapper" tabindex="0" role="region" aria-label="سجل الأمتعة">
+        <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="luggage-caption">
           <table class="luggage-table">
+            <caption id="luggage-caption" class="sr-only">سجل أمتعة الفوج النشط</caption>
             <thead>
               <tr>
-                <th>كود الحقيبة</th>
-                <th>المعتمر</th>
-                <th>الغرفة</th>
-                <th>الحالة</th>
-                <th>تحديث</th>
+                <th scope="col">كود الحقيبة</th>
+                <th scope="col">المعتمر</th>
+                <th scope="col">الغرفة</th>
+                <th scope="col">الحالة</th>
+                <th scope="col">تحديث</th>
               </tr>
             </thead>
             <tbody id="luggage-tbody"></tbody>
@@ -841,7 +879,7 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">♿ السجل الطبي ورعاية كبار السن (العربات والإنسولين)</div>
+          <h2 class="card-title">♿ السجل الطبي ورعاية كبار السن</h2>
           <span class="badge badge-warning" id="medical-count-badge">0 حالات</span>
         </div>
 
@@ -849,12 +887,12 @@
           <div><label for="new-med-name" class="field-label">اسم المعتمر:</label><input id="new-med-name" class="field-input" required></div>
           <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" class="field-input" placeholder="504"></div>
           <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" class="field-input"></div>
-          <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" dir="ltr" class="field-input"></div>
+          <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" type="tel" dir="ltr" class="field-input"></div>
           <div><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" class="field-input" placeholder="ضغط / سكري / عربة"></div>
-          <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.82rem;">
-            <label><input type="checkbox" id="new-med-wheelchair"> كرسي متحرك</label>
-            <label><input type="checkbox" id="new-med-cart"> عربة غولف (نُسك)</label>
-            <label><input type="checkbox" id="new-med-insulin"> ثلاجة إنسولين</label>
+          <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.84rem;">
+            <label for="new-med-wheelchair"><input type="checkbox" id="new-med-wheelchair"> كرسي متحرك</label>
+            <label for="new-med-cart"><input type="checkbox" id="new-med-cart"> عربة غولف (نُسك)</label>
+            <label for="new-med-insulin"><input type="checkbox" id="new-med-insulin"> ثلاجة إنسولين</label>
           </div>
           <button type="submit" class="btn btn-primary">➕ إضافة حالة</button>
         </form>
@@ -864,16 +902,80 @@
     </section>
   </main>
 
+  <!-- Mobile Bottom Bar (5 spacious slots) -->
+  <nav class="mobile-bottom-nav" aria-label="التنقل السريع للمشرف">
+    <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span>الأفواج</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span>الأشخاص</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span>الأقساط</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span>الواتساب</span></button>
+    <button type="button" class="mobile-nav-btn" popovertarget="sup-more-popover" aria-haspopup="true"><span aria-hidden="true">☰</span><span>المزيد</span></button>
+  </nav>
+
+  <!-- Shared Mobile & Tablet "More" Popover -->
+  <div id="sup-more-popover" class="more-popover" popover="auto">
+    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);">أقسام وأدوات المشرف</div>
+    <nav class="more-popover-grid" aria-label="أقسام إضافية للمشرف">
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="print">🖨️ مركز الطباعة و QR</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos">🚨 الطوارئ والموارد الرسمية</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-guide">🧕 فقه النساء والروضة</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health">🧳 الأمتعة والسجل الطبي</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings>⚙️ إعدادات الفوج النشط</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo>🔄 استعادة البيانات الافتراضية</button>
+      <a href="/" class="btn btn-gold" style="text-decoration:none;">🤲 معاينة تطبيق المعتمر</a>
+    </nav>
+  </div>
+
   <!-- NATIVE DIALOGS -->
+  <dialog id="new-group-modal" closedby="any" aria-labelledby="ng-modal-title">
+    <div class="dialog-header">
+      <h1 id="ng-modal-title" style="font-size:1.15rem;">➕ إنشاء فوج جديد (متزامن أو تالي)</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="new-group-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="new-group-form">
+      <div class="form-inline-grid">
+        <div><label for="ng-title" class="field-label">اسم الفوج:</label><input id="ng-title" class="field-input" placeholder="مثال: فوج شوال 1447" required></div>
+        <div><label for="ng-code" class="field-label">كود الفوج:</label><input id="ng-code" class="field-input" placeholder="#SHW-1447"></div>
+        <div><label for="ng-start" class="field-label">تاريخ السفر:</label><input id="ng-start" type="date" class="field-input"></div>
+        <div><label for="ng-end" class="field-label">تاريخ العودة:</label><input id="ng-end" type="date" class="field-input"></div>
+        <div>
+          <label for="ng-hotel" class="field-label">فندق مكة:</label>
+          <select id="ng-hotel" class="field-input">
+            <option value="kiswah">فندق أبراج الكسوة</option>
+            <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
+            <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
+            <option value="ghazza">فنادق الغزة وريع بخش</option>
+          </select>
+        </div>
+        <div><label for="ng-sup-name" class="field-label">مشرف الفوج:</label><input id="ng-sup-name" class="field-input" required></div>
+        <div><label for="ng-sup-phone" class="field-label">هاتف المشرف:</label><input id="ng-sup-phone" type="tel" dir="ltr" class="field-input" placeholder="+9665..." required></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">✅ إنشاء وفتح الفوج</button>
+    </form>
+  </dialog>
+
   <dialog id="settings-modal" closedby="any" aria-labelledby="settings-title">
     <div class="dialog-header">
-      <h1 id="settings-title" style="font-size:1.15rem;">⚙️ إعدادات الفوج والفندق والمشرف</h1>
+      <h1 id="settings-title" style="font-size:1.15rem;">⚙️ إعدادات الفوج النشط</h1>
       <button type="button" class="dialog-close-btn" data-close-dialog="settings-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="settings-form">
       <div class="form-inline-grid">
         <div><label for="set-trip-title" class="field-label">اسم الرحلة:</label><input id="set-trip-title" class="field-input" required></div>
         <div><label for="set-trip-code" class="field-label">كود الفوج:</label><input id="set-trip-code" class="field-input" required></div>
+        <div>
+          <label for="set-trip-stage" class="field-label">مرحلة الفوج الحالية:</label>
+          <select id="set-trip-stage" class="field-input">
+            <option value="DRAFT">مسودة الإعداد</option>
+            <option value="REGISTRATION_OPEN">باب التسجيل مفتوح</option>
+            <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
+            <option value="IN_TRANSIT">في الطريق / الميقات</option>
+            <option value="IN_MAKKAH">في مكة المكرمة</option>
+            <option value="IN_MADINAH">في المدينة المنورة</option>
+            <option value="RETURN_TRANSIT">الاستعداد للعودة</option>
+            <option value="COMPLETED">رحلة مكتملة (أرشيف)</option>
+          </select>
+        </div>
         <div><label for="set-bus-num" class="field-label">رقم الباص:</label><input id="set-bus-num" class="field-input"></div>
         <div>
           <label for="set-hotel-key" class="field-label">فندق مكة المعتمد:</label>
@@ -885,14 +987,48 @@
           </select>
         </div>
         <div><label for="set-sup-name" class="field-label">اسم المشرف:</label><input id="set-sup-name" class="field-input" required></div>
-        <div><label for="set-sup-phone" class="field-label">واتساب المشرف:</label><input id="set-sup-phone" dir="ltr" class="field-input" required></div>
+        <div><label for="set-sup-phone" class="field-label">واتساب المشرف:</label><input id="set-sup-phone" type="tel" dir="ltr" class="field-input" required></div>
       </div>
       <div style="margin-bottom:1rem;">
         <label for="set-meeting" class="field-label">نقطة التجمع المعتمدة بالحرم:</label>
         <input id="set-meeting" class="field-input">
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق على كافة المنصة</button>
+      <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق</button>
     </form>
+  </dialog>
+
+  <dialog id="payment-modal" closedby="any" aria-labelledby="pay-modal-title">
+    <div class="dialog-header">
+      <h1 id="pay-modal-title" style="font-size:1.15rem;">💳 تسجيل دفعة مالية مرنة</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="payment-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div id="pay-modal-member" class="info-box-neutral" style="margin-bottom:0.85rem;font-weight:700;"></div>
+    <form id="payment-form">
+      <div class="form-inline-grid">
+        <div><label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label><input id="pay-amount" type="number" min="1" step="0.01" class="field-input" required></div>
+        <div>
+          <label for="pay-method" class="field-label">وسيلة الدفع:</label>
+          <select id="pay-method" class="field-input">
+            <option value="INSTAPAY">إنستاباي (InstaPay)</option>
+            <option value="CASH">نقدي (كاش)</option>
+            <option value="VODAFONE_CASH">محفظة إلكترونية</option>
+            <option value="BANK_TRANSFER">تحويل بنكي</option>
+            <option value="CARD">بطاقة بنكية</option>
+          </select>
+        </div>
+        <div><label for="pay-ref" class="field-label">رقم المرجع (اختياري):</label><input id="pay-ref" class="field-input" placeholder="IPN-12345"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">✅ تأكيد استلام الدفعة</button>
+    </form>
+  </dialog>
+
+  <dialog id="schedule-modal" closedby="any" aria-labelledby="schedule-modal-title">
+    <div class="dialog-header">
+      <h1 id="schedule-modal-title" style="font-size:1.1rem;">📅 جدول الأقساط والدفعات</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="schedule-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div id="schedule-modal-body" style="margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="schedule-modal">إغلاق</button>
   </dialog>
 
   <dialog id="share-pilgrim-modal" closedby="any" aria-labelledby="share-pilgrim-title">
@@ -901,13 +1037,14 @@
       <button type="button" class="dialog-close-btn" data-close-dialog="share-pilgrim-modal" aria-label="إغلاق">&times;</button>
     </div>
     <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.85rem;">
-      عند مسح هذا الباركود أو فتح الرابط من جوال المعتمر، تُحمّل بياناته وفندقه ورقمك فوراً في تطبيق «رفيق المعتمر» وتُحفظ أوفلاين على جهازه.
+      عند مسح الباركود أو فتح الرابط، تُحمّل بيانات المعتمر وفندقه ومرحلة الفوج الحالية فوراً في تطبيقه وتُحفظ أوفلاين.
     </p>
     <div id="share-pilgrim-qr" style="text-align:center;background:white;padding:1rem;border-radius:12px;margin-bottom:0.85rem;"></div>
+    <label for="share-pilgrim-url" class="sr-only">رابط بطاقة المعتمر</label>
     <input id="share-pilgrim-url" readonly dir="ltr" class="field-input" style="margin-bottom:0.75rem;">
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button type="button" id="btn-copy-share-url" class="btn btn-primary" style="flex:1;">📋 نسخ الرابط</button>
-      <a id="share-pilgrim-wa" href="#" target="_blank" rel="noopener" class="btn btn-gold" style="flex:1;text-decoration:none;">📲 إرسال للمعتمر بالواتساب</a>
+      <a id="share-pilgrim-wa" href="#" target="_blank" rel="noopener" class="btn btn-gold" style="flex:1;text-decoration:none;">📲 إرسال بالواتساب</a>
     </div>
   </dialog>
 
@@ -922,7 +1059,7 @@
 
   <dialog id="agreement-modal" closedby="any" aria-labelledby="ag-title">
     <div class="dialog-header no-print">
-      <h1 id="ag-title" style="font-size:1.15rem;">📄 معاينة طباعة إقرار الجمعية</h1>
+      <h1 id="ag-title" style="font-size:1.15rem;">📄 معاينة طباعة إقرار خطة السداد</h1>
       <button type="button" class="dialog-close-btn" data-close-dialog="agreement-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="agreement-print-content" style="margin-bottom:1rem;"></div>
@@ -938,7 +1075,9 @@
     <button type="button" class="btn btn-primary btn-print-active no-print" style="width:100%;">🖨️ طباعة جميع البطاقات</button>
   </dialog>
 
-  <div class="toast" id="toast-msg" role="status" aria-live="polite"></div>
+  <div id="a11y-polite-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="a11y-assertive-region" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+  <div class="toast" id="toast-msg" aria-hidden="true"></div>
 
   <script type="module" src="/src/ui/supervisor-app.ts"></script>
 </body>

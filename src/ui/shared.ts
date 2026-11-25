@@ -1,4 +1,16 @@
 import qrcode from 'qrcode-generator';
+import { TripStatus } from '../operations/trip-logistics.js';
+
+export const TRIP_STAGE_LABELS: Record<TripStatus, string> = {
+  [TripStatus.DRAFT]: 'مسودة الإعداد',
+  [TripStatus.REGISTRATION_OPEN]: 'باب التسجيل مفتوح',
+  [TripStatus.PRE_DEPARTURE]: 'تجهيز ما قبل السفر',
+  [TripStatus.IN_TRANSIT]: 'في الطريق / الميقات',
+  [TripStatus.IN_MAKKAH]: 'في مكة المكرمة',
+  [TripStatus.IN_MADINAH]: 'في المدينة المنورة',
+  [TripStatus.RETURN_TRANSIT]: 'الاستعداد للعودة',
+  [TripStatus.COMPLETED]: 'رحلة مكتملة (أرشيف)',
+};
 
 export function escapeHtml(str: string): string {
   return String(str)
@@ -29,7 +41,10 @@ export function renderQrSvg(data: string, altLabel: string = 'QR Code'): string 
   qr.addData(data || 'https://umrah-supervisor.pages.dev');
   qr.make();
   const svg = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
-  return svg.replace('<svg ', `<svg role="img" aria-label="${escapeHtml(altLabel)}" style="max-width:140px;width:100%;height:auto;display:inline-block;" `);
+  return svg.replace(
+    '<svg ',
+    `<svg role="img" aria-label="${escapeHtml(altLabel)}" style="max-width:140px;width:100%;height:auto;display:inline-block;" `
+  );
 }
 
 export function getMakkahHijriDate(date: Date = new Date()): string {
@@ -51,12 +66,23 @@ export function getMakkahHijriDate(date: Date = new Date()): string {
   }
 }
 
-export function showToast(text: string): void {
+export function announceToScreenReader(text: string, urgent: boolean = false): void {
+  const region = document.getElementById(urgent ? 'a11y-assertive-region' : 'a11y-polite-region');
+  if (!region) return;
+  region.textContent = '';
+  window.setTimeout(() => {
+    region.textContent = text;
+  }, 40);
+}
+
+export function showToast(text: string, urgent: boolean = false): void {
   const toast = document.getElementById('toast-msg');
-  if (!toast) return;
-  toast.textContent = text;
-  toast.classList.add('show');
-  window.setTimeout(() => toast.classList.remove('show'), 3000);
+  if (toast) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    window.setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+  announceToScreenReader(text, urgent);
 }
 
 export async function copyToClipboard(text: string, successMessage: string): Promise<void> {
@@ -126,6 +152,25 @@ export function closeDialogById(id: string): void {
   }
 }
 
+/**
+ * Progressive-enhancement sticky header observer: adds .is-stuck fallback class
+ * for browsers without @container scroll-state(stuck: top).
+ */
+export function initStickyHeaders(): void {
+  const sentinel = document.getElementById('sticky-header-sentinel');
+  const stickyNav = document.querySelector<HTMLElement>('.sticky-bar-container');
+  if (!sentinel || !stickyNav || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const stuck = entries[0] ? !entries[0].isIntersecting : false;
+      stickyNav.classList.toggle('is-stuck', stuck);
+    },
+    { threshold: 0 }
+  );
+  observer.observe(sentinel);
+}
+
 const THEME_STORAGE_KEY = 'umrah_color_scheme';
 
 export function getResolvedTheme(): 'light' | 'dark' {
@@ -164,13 +209,13 @@ export function toggleColorScheme(): void {
 }
 
 export function updateThemeButtonLabel(): void {
-  const btn = document.getElementById('theme-toggle-btn');
-  if (!btn) return;
   const isDark = getResolvedTheme() === 'dark';
-  btn.innerHTML = isDark
-    ? '<span aria-hidden="true">☀️</span> <span>الوضع النهاري</span>'
-    : '<span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>';
-  btn.setAttribute('aria-pressed', String(isDark));
+  document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((btn) => {
+    btn.innerHTML = isDark
+      ? '<span aria-hidden="true">☀️</span> <span>الوضع النهاري</span>'
+      : '<span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>';
+    btn.setAttribute('aria-pressed', String(isDark));
+  });
 }
 
 export function initThemeSync(): void {
@@ -202,7 +247,7 @@ export function registerServiceWorkerAndNetworkStatus(): void {
       el.textContent = 'متصل • جاهز أوفلاين ✅';
       el.className = 'badge badge-success';
     } else {
-      el.textContent = 'وضع بدون إنترنت (أوفلاين) 📴';
+      el.textContent = 'وضع بدون إنترنت 📴';
       el.className = 'badge badge-warning';
     }
   };

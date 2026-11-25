@@ -33,7 +33,6 @@ describe('Money Value Object', () => {
   });
 
   it('allocates amounts without losing penny fractions', () => {
-    // 100 EGP divided equally across 3 installments -> 33.34, 33.33, 33.33
     const total = Money.fromDecimal(100, 'EGP');
     const parts = total.allocate(3);
     expect(parts.length).toBe(3);
@@ -41,7 +40,6 @@ describe('Money Value Object', () => {
     expect(parts[1].toDecimal()).toBe(33.33);
     expect(parts[2].toDecimal()).toBe(33.33);
 
-    // Sum of allocated parts must exactly equal original total
     const reconciled = parts.reduce((acc, p) => acc.add(p), Money.zero('EGP'));
     expect(reconciled.minorAmount).toBe(total.minorAmount);
   });
@@ -68,15 +66,77 @@ describe('Gam\'eya & Installment System', () => {
 
     const schedule = group.generateMemberSchedule(member.id);
     expect(schedule.length).toBe(10);
-    // 40,000 / 10 = 4,000 per month
     expect(schedule[0].amountDue.toDecimal()).toBe(4000);
     expect(schedule[0].status).toBe(InstallmentStatus.PENDING);
 
-    const totalScheduled = schedule.reduce(
-      (acc, s) => acc.add(s.amountDue),
-      Money.zero('EGP')
-    );
+    const totalScheduled = schedule.reduce((acc, s) => acc.add(s.amountDue), Money.zero('EGP'));
     expect(totalScheduled.minorAmount).toBe(Money.fromDecimal(40000, 'EGP').minorAmount);
+  });
+
+  it('supports Deposit + Monthly, Deposit + Final, Biweekly, and Full Cash installment plans', () => {
+    const group = new GameyaGroup({
+      id: 'grp-flex-1',
+      name: 'باقات تقسيط مرنة',
+      type: GameyaType.DEPOSIT_PLUS_MONTHLY,
+      targetAmountPerMember: Money.fromDecimal(40000, 'EGP'),
+      downPayment: Money.fromDecimal(10000, 'EGP'),
+      durationMonths: 6,
+      startDate: new Date('2026-01-01'),
+      departureDate: new Date('2026-07-15'),
+      currency: 'EGP',
+    });
+
+    const m1 = group.registerMember({ id: 'm1', pilgrimId: 'p1', fullName: 'مقدم + شهري', phone: '+2010' });
+    const s1 = group.generateMemberSchedule(m1.id);
+    expect(s1.length).toBe(7); // 1 deposit + 6 monthly
+    expect(s1[0].amountDue.toDecimal()).toBe(10000);
+    expect(s1[1].amountDue.toDecimal()).toBe(5000);
+
+    const m2 = group.registerMember({ id: 'm2', pilgrimId: 'p2', fullName: 'مقدم + قبل السفر', phone: '+2011' });
+    const s2 = group.generateMemberSchedule(m2.id, { planType: GameyaType.DEPOSIT_PLUS_FINAL });
+    expect(s2.length).toBe(2);
+    expect(s2[0].amountDue.toDecimal()).toBe(10000);
+    expect(s2[1].amountDue.toDecimal()).toBe(30000);
+
+    const m3 = group.registerMember({ id: 'm3', pilgrimId: 'p3', fullName: 'نصف شهري', phone: '+2012' });
+    const s3 = group.generateMemberSchedule(m3.id, { planType: GameyaType.BIWEEKLY_INSTALLMENT, installmentCount: 4 });
+    expect(s3.length).toBe(4);
+    expect(s3[0].amountDue.toDecimal()).toBe(10000);
+
+    const m4 = group.registerMember({ id: 'm4', pilgrimId: 'p4', fullName: 'نقدي', phone: '+2013' });
+    const s4 = group.generateMemberSchedule(m4.id, { planType: GameyaType.FULL_CASH });
+    expect(s4.length).toBe(1);
+    expect(s4[0].amountDue.toDecimal()).toBe(40000);
+  });
+
+  it('allocates flexible custom payments sequentially across multiple installments', () => {
+    const group = new GameyaGroup({
+      id: 'grp-flex-pay',
+      name: 'سداد متدرج',
+      type: GameyaType.DIRECT_INSTALLMENT,
+      targetAmountPerMember: Money.fromDecimal(12000, 'EGP'),
+      durationMonths: 3,
+      startDate: new Date('2026-01-01'),
+      currency: 'EGP',
+    });
+
+    const m = group.registerMember({ id: 'm-seq', pilgrimId: 'p-seq', fullName: 'محمود علي', phone: '+2015' });
+    group.generateMemberSchedule(m.id);
+
+    // Pay 5,500 EGP across 4,000 + 4,000 + 4,000 -> closes #1 (4,000) and partially pays #2 (1,500)
+    const receipts = group.recordFlexiblePayment({
+      memberId: m.id,
+      amount: Money.fromDecimal(5500, 'EGP'),
+      method: PaymentMethod.INSTAPAY,
+      transactionRef: 'IPN-5500',
+      supervisorId: 'sup-1',
+    });
+
+    expect(receipts.length).toBe(2);
+    const summary = group.getMemberSummary(m.id, new Date('2026-02-15'));
+    expect(summary.totalPaid.toDecimal()).toBe(5500);
+    expect(summary.totalRemaining.toDecimal()).toBe(6500);
+    expect(summary.overdueCount).toBe(1); // installment #2 was due 2026-02-01
   });
 
   it('generates rotating ROSCA group schedule with turn slots', () => {
@@ -91,7 +151,6 @@ describe('Gam\'eya & Installment System', () => {
       currency: 'EGP',
     });
 
-    // 10 members join
     for (let i = 1; i <= 10; i++) {
       rosca.registerMember({
         id: `mem-${i}`,
@@ -128,9 +187,8 @@ describe('Gam\'eya & Installment System', () => {
     });
 
     const schedule = group.generateMemberSchedule(member.id);
-    const inst1 = schedule[0]; // 5,000 EGP
+    const inst1 = schedule[0];
 
-    // 1. Partial payment: pays 2,000 EGP
     const receipt1 = group.recordPayment({
       scheduleId: inst1.id,
       amount: Money.fromDecimal(2000, 'EGP'),
@@ -145,7 +203,6 @@ describe('Gam\'eya & Installment System', () => {
     expect(inst1.amountPaid.toDecimal()).toBe(2000);
     expect(inst1.remainingBalance.toDecimal()).toBe(3000);
 
-    // 2. Complete payment: pays remaining 3,000 EGP
     const receipt2 = group.recordPayment({
       scheduleId: inst1.id,
       amount: Money.fromDecimal(3000, 'EGP'),

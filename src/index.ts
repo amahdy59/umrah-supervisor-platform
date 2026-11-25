@@ -7,6 +7,8 @@ export * from './financial/currency-and-taxi.js';
 export * from './operations/trip-logistics.js';
 export * from './operations/luggage-tracker.js';
 export * from './operations/medical-profile.js';
+export * from './operations/people-directory.js';
+export * from './operations/multi-group-manager.js';
 
 // Ritual Guidance & Best Practices
 export * from './guidance/rituals-and-best-practices.js';
