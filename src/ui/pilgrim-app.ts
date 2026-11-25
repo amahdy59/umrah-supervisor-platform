@@ -9,6 +9,7 @@ import { FiqhAssistant } from '../guidance/whatsapp-and-fiqh.js';
 import { WomenFiqhCatalog } from '../guidance/women-fiqh.js';
 import { PackingCatalog, ChecklistCategory } from '../guidance/packing-checklist.js';
 import { HaramGatesGuide } from '../guidance/haram-gates-guide.js';
+import { HaramainAtlasCatalog } from '../guidance/haramain-gates-and-services.js';
 import { CurrencyAndTaxiService } from '../financial/currency-and-taxi.js';
 import { EmergencySOSDispatcher, Hotel, TripStatus } from '../operations/trip-logistics.js';
 import { OFFICIAL_SAUDI_RESOURCES, MIQAT_ROUTE_GUIDES } from '../guidance/official-resources.js';
@@ -141,6 +142,7 @@ const fiqhAssistant = new FiqhAssistant();
 const womenFiqhCatalog = new WomenFiqhCatalog();
 const packingCatalog = new PackingCatalog();
 const gatesGuide = new HaramGatesGuide();
+const haramainAtlas = new HaramainAtlasCatalog();
 const currencyService = new CurrencyAndTaxiService();
 
 let profile: PilgrimProfile = { ...DEFAULT_PROFILE };
@@ -860,6 +862,11 @@ function renderZiyaratAndFieldGuides(): void {
   const makkahContainer = document.getElementById('ziyarat-makkah-grid');
   const renderCard = (s: ReturnType<ZiyaratGuideCatalog['getAllSites']>[number]) => `
     <article class="card">
+      ${
+        s.imageUrl
+          ? `<img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" width="640" height="400">`
+          : ''
+      }
       <div class="card-header">
         <h3 class="card-title">${escapeHtml(s.nameAr)}</h3>
         <span class="badge badge-primary">${s.city === ZiyaratCity.MADINAH ? 'المدينة المنورة' : 'مكة المكرمة'}</span>
@@ -1107,6 +1114,71 @@ function handleNusukImageUpload(slot: 'umrah' | 'rawdah', file: File): void {
   reader.readAsDataURL(file);
 }
 
+function renderHaramAtlasSection(filter: string = 'ALL'): void {
+  const cardsContainer = document.getElementById('haram-atlas-cards');
+  const benefitsContainer = document.getElementById('haram-benefits-grid');
+  if (cardsContainer) {
+    const all = haramainAtlas.getAllLandmarksAndGates();
+    const filtered = all.filter((item) => {
+      if (filter === 'ALL') return true;
+      if (filter === 'KAABA_CORE') return item.category === 'KAABA_CORE' || item.category === 'MAKKAH_FACILITY';
+      if (filter === 'MAKKAH_GATE') return item.category === 'MAKKAH_GATE';
+      if (filter === 'MADINAH_ALL') return item.city === 'MADINAH';
+      return true;
+    });
+
+    cardsContainer.innerHTML = filtered
+      .map(
+        (item) => `
+      <article class="card">
+        <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" width="640" height="400">
+        <div class="card-header">
+          <h3 class="card-title">${escapeHtml(item.nameAr)}</h3>
+          <span class="badge ${item.city === 'MADINAH' ? 'badge-warning' : 'badge-primary'}">
+            ${item.gateNumber ? `بوابة ${item.gateNumber}` : item.city === 'MADINAH' ? 'المسجد النبوي' : 'المسجد الحرام'}
+          </span>
+        </div>
+        <div style="font-size:0.82rem;font-weight:700;color:var(--gold-dark);margin-bottom:0.4rem;">
+          🧭 ${escapeHtml(item.directionAr)} • ${escapeHtml(item.areaOrLandmarkAr)}
+        </div>
+        <p style="font-size:0.9rem;line-height:1.75;margin-bottom:0.65rem;">${escapeHtml(item.summaryAr)}</p>
+        <div class="info-box-neutral">
+          <strong>الخدمات والمنافع المتاحة هنا:</strong>
+          <ul class="benefits-list">
+            ${item.benefitsAndServicesAr.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}
+          </ul>
+          ${item.hotelAccessNoteAr ? `<div style="margin-top:0.45rem;font-size:0.84rem;color:var(--primary-ink);font-weight:700;">🏨 ${escapeHtml(item.hotelAccessNoteAr)}</div>` : ''}
+        </div>
+      </article>
+    `
+      )
+      .join('');
+  }
+
+  if (benefitsContainer) {
+    benefitsContainer.innerHTML = haramainAtlas
+      .getAllBenefits()
+      .map(
+        (b) => `
+      <article class="info-box-neutral">
+        ${
+          b.imageUrl
+            ? `<img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" width="640" height="400">`
+            : ''
+        }
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+          <strong style="color:var(--primary-ink);">${escapeHtml(b.titleAr)}</strong>
+          <span class="badge badge-success">${escapeHtml(b.categoryAr)}</span>
+        </div>
+        <div style="font-size:0.84rem;color:var(--gold-dark);font-weight:700;margin-bottom:0.35rem;">📍 ${escapeHtml(b.whereToFindAr)}</div>
+        <p style="font-size:0.88rem;line-height:1.7;">${escapeHtml(b.howToBenefitAr)}</p>
+      </article>
+    `
+      )
+      .join('');
+  }
+}
+
 function renderGateWayfinder(): void {
   const selector = document.getElementById('hotel-gate-selector') as HTMLSelectElement | null;
   const box = document.getElementById('gate-result-box');
@@ -1128,6 +1200,11 @@ function renderGateWayfinder(): void {
     .map(
       (g) => `
     <div style="margin-bottom:0.85rem;">
+      ${
+        g!.imageUrl
+          ? `<img class="gate-photo-thumb" src="${escapeHtml(g!.imageUrl)}" alt="${escapeHtml(g!.imageAltAr || g!.nameAr)}" loading="lazy" width="340" height="212">`
+          : ''
+      }
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.35rem;">
         <span style="font-size:1.05rem;font-weight:800;color:var(--primary-ink);">🚪 ${escapeHtml(g!.nameAr)} (بوابة ${g!.gateNumber})</span>
         <span class="badge badge-success">أقرب مخرج: ${escapeHtml(g!.nearestAreaAr)}</span>
@@ -1210,7 +1287,7 @@ function updateCurrencyCalculation(): void {
 }
 
 function switchTab(tab: string): void {
-  const tabs = ['rituals', 'ziyarat', 'fiqh', 'women-fiqh', 'packing', 'gates-taxi'];
+  const tabs = ['rituals', 'ziyarat', 'fiqh', 'women-fiqh', 'packing', 'gates-taxi', 'haram-atlas'];
   if (!tabs.includes(tab)) return;
 
   document.querySelectorAll<HTMLElement>('.tab-view').forEach((view) => {
@@ -1253,6 +1330,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderWomenFiqhSection();
   renderPackingChecklist();
   void loadNusukWalletImages();
+  renderHaramAtlasSection();
   renderCurrencyAndTaxi();
   updatePrayerUI();
   window.setInterval(updatePrayerUI, 60000);
@@ -1394,6 +1472,16 @@ window.addEventListener('DOMContentLoaded', () => {
     try { localStorage.removeItem(STORAGE_KEYS.NUSUK_RAWDAH_IMG); } catch {}
     void idbDeleteBlob(STORAGE_KEYS.NUSUK_RAWDAH_IMG).then(() => loadNusukWalletImages());
     showToast('تم مسح صورة تصريح الروضة');
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.atlasFilter || 'ALL';
+      document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      renderHaramAtlasSection(f);
+    });
   });
 
   document.getElementById('hotel-gate-selector')?.addEventListener('change', renderGateWayfinder);

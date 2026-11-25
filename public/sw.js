@@ -1,9 +1,20 @@
-const CACHE_NAME = 'umrah-companion-v3';
+const CACHE_NAME = 'umrah-companion-v5';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/supervisor.html',
   '/manifest.json',
+  '/images/makkah/kaaba-door.jpg',
+  '/images/makkah/gate-abdulaziz.jpg',
+  '/images/makkah/gate-fahd.jpg',
+  '/images/makkah/king-abdullah-gate.jpg',
+  '/images/makkah/bab-al-umrah.jpg',
+  '/images/makkah/safa-marwah-masa.jpg',
+  '/images/makkah/zamzam-stations.jpg',
+  '/images/madinah/nabawi-bab-salam.jpg',
+  '/images/madinah/nabawi-bab-uthman-25.jpg',
+  '/images/madinah/nabawi-rawdah.jpg',
+  '/images/madinah/quba-mosque.jpg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -52,8 +63,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin bundled assets (/assets/*) and manifest: cache-first + dynamic cache
-  if (url.origin === self.location.origin) {
+  // Skip Vite dev / HMR module endpoints
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/@') ||
+      url.pathname.startsWith('/src/') ||
+      url.pathname.startsWith('/node_modules/'))
+  ) {
+    return;
+  }
+
+  // Immutable hashed production bundles (/assets/*) and local images (/images/*): cache-first
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/images/'))
+  ) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
@@ -65,6 +89,22 @@ self.addEventListener('fetch', (event) => {
           return response;
         });
       })
+    );
+    return;
+  }
+
+  // Other same-origin static files (e.g. manifest.json): network-first with cache fallback
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }

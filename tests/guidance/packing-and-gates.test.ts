@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest';
+import { existsSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   PackingCatalog,
   ChecklistCategory,
 } from '../../src/guidance/packing-checklist.js';
 import { HaramGatesGuide } from '../../src/guidance/haram-gates-guide.js';
+import { HaramainAtlasCatalog } from '../../src/guidance/haramain-gates-and-services.js';
+import { ZiyaratGuideCatalog } from '../../src/guidance/ziyarat-guide.js';
 
 describe('PackingCatalog - قائمة تجهيز حقيبة المعتمر', () => {
   const catalog = new PackingCatalog();
@@ -58,5 +62,39 @@ describe('HaramGatesGuide - دليل بوابات الحرم ومسار الفن
     expect(gate1).toBeDefined();
     expect(gate1?.nameAr).toContain('الملك عبد العزيز');
     expect(gate1?.nearestAreaAr).toContain('أجياد');
+  });
+});
+
+describe('HaramainAtlasCatalog & Ziyarat Image Integrity', () => {
+  const atlas = new HaramainAtlasCatalog();
+  const ziyarat = new ZiyaratGuideCatalog();
+  const gates = new HaramGatesGuide();
+
+  it('includes Makkah Kaaba core, all major gates, Madinah mosque areas, and free Haram services', () => {
+    const makkah = atlas.getByCity('MAKKAH');
+    const madinah = atlas.getByCity('MADINAH');
+    const benefits = atlas.getAllBenefits();
+
+    expect(makkah.length).toBeGreaterThanOrEqual(7);
+    expect(madinah.length).toBeGreaterThanOrEqual(4);
+    expect(benefits.length).toBeGreaterThanOrEqual(6);
+    expect(atlas.getById('KAABA_DOOR_MULTAZAM')).toBeDefined();
+    expect(atlas.getById('NABAWI_RAWDAH_GREEN_DOME')).toBeDefined();
+  });
+
+  it('verifies every referenced image path across gates, atlas, benefits, and ziyarat exists locally in public/', () => {
+    const urls = [
+      ...atlas.getAllLandmarksAndGates().map((x) => x.imageUrl),
+      ...atlas.getAllBenefits().map((b) => b.imageUrl).filter(Boolean) as string[],
+      ...gates.getAllGates().map((g) => g.imageUrl).filter(Boolean) as string[],
+      ...ziyarat.getAllSites().map((s) => s.imageUrl).filter(Boolean) as string[],
+    ];
+
+    expect(urls.length).toBeGreaterThanOrEqual(20);
+    for (const rel of urls) {
+      const fullPath = resolve(process.cwd(), 'public', rel.replace(/^\/+/, ''));
+      expect(existsSync(fullPath), `Missing image asset: ${fullPath}`).toBe(true);
+      expect(statSync(fullPath).size).toBeGreaterThan(10000);
+    }
   });
 });

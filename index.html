@@ -206,6 +206,7 @@
         <button type="button" class="mode-btn" data-tab-target="fiqh">📖 الفقه</button>
         <button type="button" class="mode-btn" data-tab-target="packing">🧳 الحقيبة ونُسك</button>
         <button type="button" class="mode-btn" data-tab-target="gates-taxi">🧭 البوابات والطوارئ</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas">⛩️ أبواب ومنافع الحرمين</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="ziyarat">🕌 المزارات والميقات</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-fiqh">🧕 فقه المرأة</button>
       </div>
@@ -555,7 +556,7 @@
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
           <h2 class="card-title">🧭 دليل بوابات الحرم المكي المصحح ومسار الفندق</h2>
-          <span class="badge badge-success">أرقام أبواب محققة</span>
+          <button type="button" id="btn-jump-haram-atlas" class="btn btn-primary" style="font-size:0.84rem;" data-tab-target="haram-atlas">⛩️ أطلس كل الأبواب والمنافع بالصور</button>
         </div>
         <div style="margin-bottom:1rem;">
           <label for="hotel-gate-selector" class="field-label">اختر منطقة فندق إقامتك:</label>
@@ -613,6 +614,35 @@
         <div id="official-resources-grid" class="grid-2" style="margin-bottom:0;"></div>
       </div>
     </section>
+
+    <!-- TAB 7: HARAMAIN GATES, KAABA DOORS & SERVICES ATLAS -->
+    <section id="tab-haram-atlas" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+          <h2 class="card-title">⛩️ أطلس أبواب الكعبة والحرمين الشريفين ومنافعهما (بالصور الحقيقية)</h2>
+          <span class="badge badge-success">مكة المكرمة + المدينة المنورة</span>
+        </div>
+        <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;">
+          تعرّف بالصور الواقعية على باب الكعبة المشرفة والملتزم وحِجر إسماعيل والمسعى، وأهم بوابات المسجد الحرام والمسجد النبوي، مع شرح كل الخدمات والمنافع المجانية المتاحة لخدمة المعتمر وكبار السن.
+        </p>
+        <div class="atlas-filter-bar" role="group" aria-label="تصفية أبواب ومعالم الحرمين">
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="ALL" aria-pressed="true">🕌 الكل</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="KAABA_CORE" aria-pressed="false">🕋 الكعبة والمسعى</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MAKKAH_GATE" aria-pressed="false">🚪 أبواب الحرم المكي</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MADINAH_ALL" aria-pressed="false">🌴 المسجد النبوي والروضة</button>
+        </div>
+      </div>
+
+      <div id="haram-atlas-cards" class="grid-2"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🎁 الخدمات والمنافع المجانية وفضائل العبادة داخل الحرمين</h2>
+          <span class="badge badge-warning">اغتنمها في رحلتك</span>
+        </div>
+        <div id="haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
+      </div>
+    </section>
   </main>
 
   <!-- Sticky Mobile Bottom Bar (5 clean spacious slots) -->
@@ -628,6 +658,7 @@
   <div id="pilgrim-more-popover" class="more-popover" popover="auto">
     <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);">أقسام وأدوات إضافية</div>
     <nav class="more-popover-grid" aria-label="أقسام إضافية">
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="haram-atlas">⛩️ أبواب ومنافع الحرمين</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="ziyarat">🕌 المزارات والميقات</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-fiqh">🧕 فقه المرأة المعتمرة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>

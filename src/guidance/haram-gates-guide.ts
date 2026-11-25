@@ -12,6 +12,8 @@ export interface HaramGate {
   descriptionAr: string;
   howToReachHotelAr: string;
   avoidWarningAr?: string;
+  imageUrl?: string;
+  imageAltAr?: string;
 }
 
 export class HaramGatesGuide {
@@ -27,6 +29,8 @@ export class HaramGatesGuide {
         'اخرج من باب الملك فهد (79) واتجه نحو الساحات الغربية إلى أنفاق جرول المؤدية لشارع التيسير (12–15 دقيقة مشياً أو عبر حافلات النقل الترددي المجانية).',
       avoidWarningAr:
         'تجنب الخروج من باب الملك عبد العزيز (1) لأنه يخرجك لجهة أجياد الجنوبية ويضطرك للالتفاف مسافة ~3 كم حول الحرم للوصول لجرول.',
+      imageUrl: '/images/makkah/gate-fahd.jpg',
+      imageAltAr: 'صورة باب الملك فهد (بوابة 79) بالمسجد الحرام',
     },
     {
       gateNumber: 100,
@@ -37,6 +41,8 @@ export class HaramGatesGuide {
       descriptionAr: 'بوابة فسيحة ومكيفة في التوسعة السعودية الثالثة، تخرجك مباشرة للساحات الشمالية باتجاه جرول والغزة.',
       howToReachHotelAr:
         'اخرج للساحات الشمالية واتجه يساراً نحو أنفاق جرول والتيسير أو يميناً نحو الغزة ومواقف الحافلات.',
+      imageUrl: '/images/makkah/king-abdullah-gate.jpg',
+      imageAltAr: 'صورة بوابة الملك عبد الله التوسعة الشمالية (بوابة 100)',
     },
     {
       gateNumber: 1,
@@ -47,6 +53,8 @@ export class HaramGatesGuide {
       descriptionAr: 'المدخل والمخرج الرئيسي لمنطقة أجياد ووقف الملك عبد العزيز (برج الساعة).',
       howToReachHotelAr:
         'يخرجك مباشرة إلى الساحة الجنوبية أمام مجمع وقف الملك عبد العزيز وبرج الساعة وشارع أجياد (دقيقتان مشياً).',
+      imageUrl: '/images/makkah/gate-abdulaziz.jpg',
+      imageAltAr: 'صورة باب الملك عبد العزيز (بوابة 1) بالمسجد الحرام',
     },
     {
       gateNumber: 45,
@@ -57,6 +65,8 @@ export class HaramGatesGuide {
       descriptionAr: 'بوابة رئيسية في الجهة الشمالية/الشرقية قرب المروة، مثالية للخروج بعد إتمام الشوط السابع من السعي.',
       howToReachHotelAr:
         'بعد انتهاء السعي عند جبل المروة، اخرج عبر مخارج المروة أو باب الفتح (45) لتجد نفسك في ساحة الغزة والمدعى وريع بخش.',
+      imageUrl: '/images/makkah/gate-main-entrance.jpg',
+      imageAltAr: 'صورة باب الفتح (بوابة 45) جهة المروة بالمسجد الحرام',
     },
     {
       gateNumber: 62,
@@ -67,6 +77,8 @@ export class HaramGatesGuide {
       descriptionAr: 'البوابة التاريخية الرئيسية في الجهة الشمالية الغربية باتجاه الشبيكة ومشروع جبل عمر (وبجواره مداخل 63–64).',
       howToReachHotelAr:
         'اخرج من باب العمرة (62) باتجاه ساحة الشبيكة ومدخل فنادق جبل عمر وشارع إبراهيم الخليل (5 دقائق مشياً).',
+      imageUrl: '/images/makkah/bab-al-umrah.jpg',
+      imageAltAr: 'صورة باب العمرة (بوابة 62) بالمسجد الحرام',
     },
   ];
 
