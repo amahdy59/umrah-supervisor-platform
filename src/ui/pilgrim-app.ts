@@ -217,7 +217,10 @@ function renderProfileUI(): void {
   }
 
   // Taxi & Security card
-  setText('taxi-hotel-ar', `${profile.hotelNameAr} (${profile.hotelNameEn})`);
+  const hotelEnEl = document.getElementById('taxi-hotel-ar');
+  if (hotelEnEl) {
+    hotelEnEl.innerHTML = `${escapeHtml(profile.hotelNameAr)} <span dir="ltr" style="display:inline-block;">(${escapeHtml(profile.hotelNameEn)})</span>`;
+  }
   setText('taxi-hotel-addr', profile.hotelAddressAr);
   setText('taxi-hotel-phone', profile.hotelPhone);
   setText('taxi-sup-phone', profile.supervisorPhone);
