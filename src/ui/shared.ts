@@ -244,7 +244,7 @@ export function registerServiceWorkerAndNetworkStatus(): void {
     const el = document.getElementById('network-status-pill');
     if (!el) return;
     if (navigator.onLine) {
-      el.textContent = 'متصل • جاهز أوفلاين ✅';
+      el.textContent = 'جاهز أوفلاين ✅';
       el.className = 'badge badge-success';
     } else {
       el.textContent = 'وضع بدون إنترنت 📴';

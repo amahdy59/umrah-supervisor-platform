@@ -1256,7 +1256,7 @@ function renderGameyaTable(): void {
             : '';
         body.innerHTML = `
           <div class="table-wrapper" tabindex="0" role="region" aria-label="تفاصيل الأقساط">
-            <table><thead><tr><th>البند</th><th>الاستحقاق</th><th>المطلوب</th><th>المسدد</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+            <table class="schedule-table"><thead><tr><th>البند</th><th>الاستحقاق</th><th>المطلوب</th><th>المسدد</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
           </div>
           ${logHtml}
         `;
