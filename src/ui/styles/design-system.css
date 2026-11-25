@@ -15,7 +15,7 @@
   --text: light-dark(#0f172a, #f8fafc);
   --text-muted: light-dark(#334155, #cbd5e1);
   --border: light-dark(#cbd5e1, #334155);
-  --success: light-dark(#15803d, #4ade80);
+  --success: light-dark(#166534, #4ade80);
   --danger: light-dark(#b91c1c, #fca5a5);
   --women-accent: light-dark(#831843, #f9a8d4);
   --women-bg: light-dark(#fdf2f8, #2a1220);
@@ -393,6 +393,61 @@ img { max-width: 100%; }
   background: var(--surface-muted);
   display: block;
   margin-bottom: 0.65rem;
+}
+
+.img-zoom-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: zoom-in;
+  border-radius: 12px;
+  position: relative;
+  text-align: inherit;
+}
+
+.img-zoom-btn-thumb {
+  max-width: 340px;
+}
+
+.img-zoom-btn::after {
+  content: '🔍';
+  position: absolute;
+  inset-block-end: 0.55rem;
+  inset-inline-end: 0.55rem;
+  background: rgba(2, 6, 23, 0.72);
+  color: #ffffff;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.35rem 0.45rem;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.img-zoom-btn .landmark-card-img,
+.img-zoom-btn .gate-photo-thumb {
+  transition: transform 0.2s ease;
+}
+
+.img-zoom-btn:hover .landmark-card-img,
+.img-zoom-btn:hover .gate-photo-thumb {
+  transform: scale(1.01);
+}
+
+.lightbox-dialog {
+  max-width: min(92vw, 920px);
+  padding: 1rem 1.15rem;
+}
+
+.lightbox-img {
+  width: 100%;
+  height: auto;
+  max-height: 72dvh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  display: block;
 }
 
 .atlas-filter-bar {

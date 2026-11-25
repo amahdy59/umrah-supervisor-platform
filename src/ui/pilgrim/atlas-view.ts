@@ -17,7 +17,9 @@ export function renderZiyaratAndFieldGuides(): void {
     <article class="card">
       ${
         s.imageUrl
-          ? `<img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" width="800" height="500">`
+          ? `<button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(s.imageUrl)}" data-zoom-title="${escapeHtml(s.nameAr)}" data-zoom-alt="${escapeHtml(s.imageAltAr || s.nameAr)}" aria-label="تكبير صورة ${escapeHtml(s.nameAr)}">
+              <img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" decoding="async" width="800" height="500">
+            </button>`
           : ''
       }
       <div class="card-header">
@@ -89,7 +91,9 @@ export function renderHaramAtlasSection(filter: string = 'ALL'): void {
       .map(
         (item) => `
       <article class="card">
-        <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" width="800" height="500">
+        <button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(item.imageUrl)}" data-zoom-title="${escapeHtml(item.nameAr)}" data-zoom-alt="${escapeHtml(item.imageAltAr)}" aria-label="تكبير صورة ${escapeHtml(item.nameAr)}">
+          <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" decoding="async" width="800" height="500">
+        </button>
         <div class="card-header">
           <h3 class="card-title">${escapeHtml(item.nameAr)}</h3>
           <span class="badge ${item.city === 'MADINAH' ? 'badge-warning' : 'badge-primary'}">
@@ -121,7 +125,9 @@ export function renderHaramAtlasSection(filter: string = 'ALL'): void {
       <article class="info-box-neutral">
         ${
           b.imageUrl
-            ? `<img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" width="800" height="500">`
+            ? `<button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(b.imageUrl)}" data-zoom-title="${escapeHtml(b.titleAr)}" data-zoom-alt="${escapeHtml(b.imageAltAr || b.titleAr)}" aria-label="تكبير صورة ${escapeHtml(b.titleAr)}">
+                <img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" decoding="async" width="800" height="500">
+              </button>`
             : ''
         }
         <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem;">
@@ -160,7 +166,9 @@ export function renderGateWayfinder(): void {
     <div style="margin-bottom:0.85rem;">
       ${
         g!.imageUrl
-          ? `<img class="gate-photo-thumb" src="${escapeHtml(g!.imageUrl)}" alt="${escapeHtml(g!.imageAltAr || g!.nameAr)}" loading="lazy" width="340" height="212">`
+          ? `<button type="button" class="img-zoom-btn img-zoom-btn-thumb" data-zoom-src="${escapeHtml(g!.imageUrl)}" data-zoom-title="${escapeHtml(g!.nameAr)}" data-zoom-alt="${escapeHtml(g!.imageAltAr || g!.nameAr)}" aria-label="تكبير صورة ${escapeHtml(g!.nameAr)}">
+              <img class="gate-photo-thumb" src="${escapeHtml(g!.imageUrl)}" alt="${escapeHtml(g!.imageAltAr || g!.nameAr)}" loading="lazy" decoding="async" width="340" height="212">
+            </button>`
           : ''
       }
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.35rem;">

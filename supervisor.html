@@ -23,6 +23,9 @@
   <link rel="stylesheet" href="/src/ui/styles/design-system.css">
   <style>
     :root { --header-height: 5.5rem; }
+    @media (min-width: 768px) {
+      :root { --header-height: 7.75rem; }
+    }
 
     .sticky-bar-container {
       container-name: sup-top-nav;
@@ -647,7 +650,7 @@
   <!-- NATIVE DIALOGS -->
   <dialog id="new-group-modal" closedby="any" aria-labelledby="ng-modal-title">
     <div class="dialog-header">
-      <h1 id="ng-modal-title" style="font-size:1.15rem;">➕ إنشاء فوج جديد (متزامن أو تالي)</h1>
+      <h2 id="ng-modal-title" style="font-size:1.15rem;">➕ إنشاء فوج جديد (متزامن أو تالي)</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="new-group-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="new-group-form">
@@ -674,7 +677,7 @@
 
   <dialog id="settings-modal" closedby="any" aria-labelledby="settings-title">
     <div class="dialog-header">
-      <h1 id="settings-title" style="font-size:1.15rem;">⚙️ إعدادات الفوج النشط</h1>
+      <h2 id="settings-title" style="font-size:1.15rem;">⚙️ إعدادات الفوج النشط</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="settings-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="settings-form">
@@ -717,7 +720,7 @@
 
   <dialog id="payment-modal" closedby="any" aria-labelledby="pay-modal-title">
     <div class="dialog-header">
-      <h1 id="pay-modal-title" style="font-size:1.15rem;">💳 تسجيل دفعة مالية مرنة</h1>
+      <h2 id="pay-modal-title" style="font-size:1.15rem;">💳 تسجيل دفعة مالية مرنة</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="payment-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="pay-modal-member" class="info-box-neutral" style="margin-bottom:0.85rem;font-weight:700;"></div>
@@ -742,7 +745,7 @@
 
   <dialog id="schedule-modal" closedby="any" aria-labelledby="schedule-modal-title">
     <div class="dialog-header">
-      <h1 id="schedule-modal-title" style="font-size:1.1rem;">📅 جدول الأقساط والدفعات</h1>
+      <h2 id="schedule-modal-title" style="font-size:1.1rem;">📅 جدول الأقساط والدفعات</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="schedule-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="schedule-modal-body" style="margin-bottom:1rem;"></div>
@@ -751,7 +754,7 @@
 
   <dialog id="share-pilgrim-modal" closedby="any" aria-labelledby="share-pilgrim-title">
     <div class="dialog-header">
-      <h1 id="share-pilgrim-title" style="font-size:1.15rem;">🔗 رابط وباركود بطاقة: <span id="share-pilgrim-name"></span></h1>
+      <h2 id="share-pilgrim-title" style="font-size:1.15rem;">🔗 رابط وباركود بطاقة: <span id="share-pilgrim-name"></span></h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="share-pilgrim-modal" aria-label="إغلاق">&times;</button>
     </div>
     <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.85rem;">
@@ -768,7 +771,7 @@
 
   <dialog id="wristband-modal" closedby="any" aria-labelledby="wb-title">
     <div class="dialog-header no-print">
-      <h1 id="wb-title" style="font-size:1.15rem;">🖨️ معاينة طباعة بطاقة/معصم المعتمر</h1>
+      <h2 id="wb-title" style="font-size:1.15rem;">🖨️ معاينة طباعة بطاقة/معصم المعتمر</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="wristband-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="wristband-print-content" style="margin-bottom:1rem;"></div>
@@ -777,7 +780,7 @@
 
   <dialog id="agreement-modal" closedby="any" aria-labelledby="ag-title">
     <div class="dialog-header no-print">
-      <h1 id="ag-title" style="font-size:1.15rem;">📄 معاينة طباعة إقرار خطة السداد</h1>
+      <h2 id="ag-title" style="font-size:1.15rem;">📄 معاينة طباعة إقرار خطة السداد</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="agreement-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="agreement-print-content" style="margin-bottom:1rem;"></div>
@@ -786,7 +789,7 @@
 
   <dialog id="luggage-modal" closedby="any" aria-labelledby="lug-print-title">
     <div class="dialog-header no-print">
-      <h1 id="lug-print-title" style="font-size:1.15rem;">🧳 بطاقات الأمتعة الجاهزة للطباعة (QR)</h1>
+      <h2 id="lug-print-title" style="font-size:1.15rem;">🧳 بطاقات الأمتعة الجاهزة للطباعة (QR)</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="luggage-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="luggage-tags-print-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.85rem;margin-bottom:1rem;"></div>
@@ -795,7 +798,7 @@
 
   <dialog id="pin-unlock-modal" aria-labelledby="pin-unlock-title">
     <div class="dialog-header">
-      <h1 id="pin-unlock-title" style="font-size:1.15rem;">🔐 لوحة المشرف محمية برمز سري</h1>
+      <h2 id="pin-unlock-title" style="font-size:1.15rem;">🔐 لوحة المشرف محمية برمز سري</h2>
     </div>
     <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
       أدخل رمز الخصوصية المكون من 4–6 أرقام للوصول لبيانات الجوازات والملفات الطبية والأقساط.
@@ -809,7 +812,7 @@
 
   <dialog id="pin-setup-modal" closedby="any" aria-labelledby="pin-setup-title">
     <div class="dialog-header">
-      <h1 id="pin-setup-title" style="font-size:1.15rem;">🔒 إدارة قفل الخصوصية (PIN)</h1>
+      <h2 id="pin-setup-title" style="font-size:1.15rem;">🔒 إدارة قفل الخصوصية (PIN)</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="pin-setup-modal" aria-label="إغلاق">&times;</button>
     </div>
     <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.85rem;">

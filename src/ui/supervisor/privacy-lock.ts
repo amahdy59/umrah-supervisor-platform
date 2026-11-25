@@ -2,6 +2,20 @@ import { closeDialogById, openDialogById, showToast } from '../shared.js';
 
 const PIN_HASH_KEY = 'umrah_supervisor_pin_hash_v1';
 const SESSION_UNLOCK_KEY = 'umrah_supervisor_unlocked_v1';
+const AUTO_LOCK_IDLE_MS = 10 * 60 * 1000;
+let idleLockTimer: number | null = null;
+
+function resetIdleAutoLockTimer(): void {
+  if (idleLockTimer !== null) {
+    window.clearTimeout(idleLockTimer);
+    idleLockTimer = null;
+  }
+  if (!hasPinProtection() || !isSessionUnlocked()) return;
+  idleLockTimer = window.setTimeout(() => {
+    lockSupervisorSessionNow();
+    showToast('🔒 تم قفل اللوحة تلقائياً بعد 10 دقائق من عدم النشاط');
+  }, AUTO_LOCK_IDLE_MS);
+}
 
 export async function hashSupervisorPin(pin: string): Promise<string> {
   const normalized = `umrah-sup:${pin.trim()}`;
@@ -94,6 +108,7 @@ export function wirePrivacyLockHandlers(): void {
       document.getElementById('main-content')?.removeAttribute('inert');
       input.value = '';
       closeDialogById('pin-unlock-modal');
+      resetIdleAutoLockTimer();
       showToast('🔓 تم فتح لوحة المشرف بنجاح');
     } else {
       input.setCustomValidity('الرمز غير صحيح');
@@ -138,8 +153,14 @@ export function wirePrivacyLockHandlers(): void {
     pinInput.value = '';
     closeDialogById('pin-setup-modal');
     updatePinStatusUi();
+    resetIdleAutoLockTimer();
     showToast('🔒 تم تفعيل قفل الحماية لحماية بيانات المعتمرين');
   });
+
+  ['pointerdown', 'keydown'].forEach((evt) => {
+    window.addEventListener(evt, resetIdleAutoLockTimer, { passive: true });
+  });
+  resetIdleAutoLockTimer();
 
   document.getElementById('btn-pin-remove')?.addEventListener('click', () => {
     try {

@@ -28,6 +28,8 @@ import {
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
+  updateThemeButtonLabel,
+  initImageLightbox,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
@@ -1566,8 +1568,12 @@ function switchTab(tab: string): void {
   });
 
   const morePop = document.getElementById('sup-more-popover') as HTMLElement & { hidePopover?: () => void };
+  const wasInPopover = Boolean(morePop && document.activeElement && morePop.contains(document.activeElement));
   if (morePop && morePop.matches(':popover-open') && morePop.hidePopover) {
     morePop.hidePopover();
+  }
+  if (wasInPopover) {
+    document.getElementById('main-content')?.focus({ preventScroll: true });
   }
 
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -1650,7 +1656,9 @@ async function syncActiveGroupToCloud(notifyUser: boolean): Promise<void> {
 window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
   initLanguage();
+  updateThemeButtonLabel();
   setupDialogs();
+  initImageLightbox();
   initStickyHeaders();
   registerServiceWorkerAndNetworkStatus();
 
@@ -1678,6 +1686,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll<HTMLElement>('[data-lang-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const next = toggleLanguage();
+      updateThemeButtonLabel();
       showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
     });
   });
@@ -2163,13 +2172,43 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  let resetConfirmDialog: HTMLDialogElement | null = null;
+  const openResetConfirmDialog = () => {
+    if (!resetConfirmDialog) {
+      resetConfirmDialog = document.createElement('dialog');
+      resetConfirmDialog.id = 'confirm-reset-modal';
+      resetConfirmDialog.setAttribute('closedby', 'any');
+      resetConfirmDialog.setAttribute('aria-labelledby', 'confirm-reset-title');
+      resetConfirmDialog.innerHTML = `
+        <div class="dialog-header">
+          <h2 id="confirm-reset-title" style="font-size:1.1rem;color:var(--danger);">⚠️ تأكيد استعادة البيانات الافتراضية</h2>
+          <button type="button" class="dialog-close-btn" data-cancel-reset aria-label="إغلاق">&times;</button>
+        </div>
+        <p style="font-size:0.92rem;line-height:1.7;margin-bottom:1rem;">
+          سيؤدي هذا الإجراء إلى استبدال جميع بيانات الأفواج والمعتمرين والأقساط الحالية بالبيانات التجريبية الافتراضية. يُنصح بتنزيل نسخة احتياطية (JSON) أولاً.
+        </p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button type="button" id="btn-confirm-reset-yes" class="btn btn-danger" style="flex:1;">نعم، استعادة الافتراضي</button>
+          <button type="button" class="btn btn-secondary" data-cancel-reset style="flex:1;">إلغاء</button>
+        </div>
+      `;
+      document.body.appendChild(resetConfirmDialog);
+      resetConfirmDialog.querySelectorAll('[data-cancel-reset]').forEach((el) => {
+        el.addEventListener('click', () => resetConfirmDialog?.close());
+      });
+      resetConfirmDialog.querySelector('#btn-confirm-reset-yes')?.addEventListener('click', () => {
+        rootState = createInitialState();
+        saveState();
+        renderAll();
+        resetConfirmDialog?.close();
+        showToast('🔄 تمت استعادة البيانات الافتراضية لكافة الأفواج');
+      });
+    }
+    if (!resetConfirmDialog.open) resetConfirmDialog.showModal();
+  };
+
   document.querySelectorAll<HTMLElement>('[data-reset-demo]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      rootState = createInitialState();
-      saveState();
-      renderAll();
-      showToast('🔄 تمت استعادة البيانات الافتراضية لكافة الأفواج');
-    });
+    btn.addEventListener('click', openResetConfirmDialog);
   });
 
   document.getElementById('btn-export-backup-json')?.addEventListener('click', () => {

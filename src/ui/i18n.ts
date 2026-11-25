@@ -25,6 +25,7 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'tools.sos': { ar: 'طوارئ', en: 'SOS' },
   'tools.senior': { ar: 'وضع كبار السن', en: 'Senior Mode' },
   'tools.theme': { ar: 'الوضع الليلي', en: 'Dark Mode' },
+  'tools.themeLight': { ar: 'الوضع النهاري', en: 'Light Mode' },
   'tools.wake': { ar: 'منع إغلاق الشاشة', en: 'Keep Screen On' },
   'tools.lang': { ar: '🌐 English', en: '🌐 العربية' },
   'badge.cardTitle': { ar: 'بطاقة معتمر رقمية', en: 'Digital Pilgrim Badge' },

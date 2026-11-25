@@ -1,5 +1,6 @@
 import qrcode from 'qrcode-generator';
 import { TripStatus } from '../operations/trip-logistics.js';
+import { t } from './i18n.js';
 
 export const TRIP_STAGE_LABELS: Record<TripStatus, string> = {
   [TripStatus.DRAFT]: 'مسودة الإعداد',
@@ -75,12 +76,20 @@ export function announceToScreenReader(text: string, urgent: boolean = false): v
   }, 40);
 }
 
+let toastTimer: number | null = null;
+
 export function showToast(text: string, urgent: boolean = false): void {
   const toast = document.getElementById('toast-msg');
   if (toast) {
     toast.textContent = text;
     toast.classList.add('show');
-    window.setTimeout(() => toast.classList.remove('show'), 3200);
+    if (toastTimer !== null) {
+      window.clearTimeout(toastTimer);
+    }
+    toastTimer = window.setTimeout(() => {
+      toast.classList.remove('show');
+      toastTimer = null;
+    }, 3200);
   }
   announceToScreenReader(text, urgent);
 }
@@ -210,10 +219,10 @@ export function toggleColorScheme(): void {
 
 export function updateThemeButtonLabel(): void {
   const isDark = getResolvedTheme() === 'dark';
+  const label = isDark ? t('tools.themeLight') : t('tools.theme');
+  const icon = isDark ? '☀️' : '🌙';
   document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((btn) => {
-    btn.innerHTML = isDark
-      ? '<span aria-hidden="true">☀️</span> <span>الوضع النهاري</span>'
-      : '<span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>';
+    btn.innerHTML = `<span aria-hidden="true">${icon}</span> <span>${escapeHtml(label)}</span>`;
     btn.setAttribute('aria-pressed', String(isDark));
   });
 }
@@ -255,4 +264,59 @@ export function registerServiceWorkerAndNetworkStatus(): void {
   window.addEventListener('online', updateBadge);
   window.addEventListener('offline', updateBadge);
   updateBadge();
+}
+
+let lightboxWired = false;
+
+/**
+ * Enables tap-to-zoom lightbox previews on Atlas, Ziyarat, and Gate photos
+ * using a shared native <dialog> without duplicating modal markup.
+ */
+export function initImageLightbox(): void {
+  if (lightboxWired) return;
+  lightboxWired = true;
+
+  let dialog = document.getElementById('image-lightbox-modal') as HTMLDialogElement | null;
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'image-lightbox-modal';
+    dialog.className = 'lightbox-dialog';
+    dialog.setAttribute('closedby', 'any');
+    dialog.setAttribute('aria-labelledby', 'lightbox-title');
+    dialog.innerHTML = `
+      <div class="dialog-header">
+        <h2 id="lightbox-title" style="font-size:1.05rem;"></h2>
+        <button type="button" class="dialog-close-btn" data-close-lightbox aria-label="إغلاق">&times;</button>
+      </div>
+      <img id="lightbox-img" class="lightbox-img" src="" alt="">
+      <p id="lightbox-caption" style="font-size:0.86rem;color:var(--text-muted);margin-top:0.65rem;line-height:1.6;"></p>
+    `;
+    document.body.appendChild(dialog);
+
+    dialog.querySelector('[data-close-lightbox]')?.addEventListener('click', () => {
+      dialog?.close();
+    });
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog?.close();
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const trigger = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-zoom-src]');
+    if (!trigger || !dialog) return;
+    const src = trigger.dataset.zoomSrc;
+    if (!src) return;
+    const title = trigger.dataset.zoomTitle || '';
+    const alt = trigger.dataset.zoomAlt || title;
+    const imgEl = dialog.querySelector<HTMLImageElement>('#lightbox-img');
+    const titleEl = dialog.querySelector<HTMLElement>('#lightbox-title');
+    const capEl = dialog.querySelector<HTMLElement>('#lightbox-caption');
+    if (imgEl) {
+      imgEl.src = src;
+      imgEl.alt = alt;
+    }
+    if (titleEl) titleEl.textContent = title;
+    if (capEl) capEl.textContent = alt !== title ? alt : '';
+    if (!dialog.open) dialog.showModal();
+  });
 }

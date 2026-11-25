@@ -20,6 +20,8 @@ import {
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
+  updateThemeButtonLabel,
+  initImageLightbox,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
@@ -1149,8 +1151,12 @@ function switchTab(tab: string): void {
 
   // Close mobile/tablet More popover if open
   const morePop = document.getElementById('pilgrim-more-popover') as HTMLElement & { hidePopover?: () => void };
+  const wasInPopover = Boolean(morePop && document.activeElement && morePop.contains(document.activeElement));
   if (morePop && morePop.matches(':popover-open') && morePop.hidePopover) {
     morePop.hidePopover();
+  }
+  if (wasInPopover) {
+    document.getElementById('main-content')?.focus({ preventScroll: true });
   }
 
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -1160,7 +1166,9 @@ function switchTab(tab: string): void {
 window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
   initLanguage();
+  updateThemeButtonLabel();
   setupDialogs();
+  initImageLightbox();
   initStickyHeaders();
   registerServiceWorkerAndNetworkStatus();
 
@@ -1220,6 +1228,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll<HTMLElement>('[data-lang-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const next = toggleLanguage();
+      updateThemeButtonLabel();
       showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
     });
   });

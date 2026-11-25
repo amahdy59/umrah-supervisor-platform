@@ -5,6 +5,7 @@ const OUTBOX_KEY = 'umrah_cloud_sync_outbox_v1';
 export interface OutboxMutation {
   id: string;
   endpoint: string;
+  groupId?: string;
   payload: unknown;
   createdAt: string;
 }
@@ -23,17 +24,25 @@ async function saveOutbox(items: OutboxMutation[]): Promise<void> {
   await idbSetJson(OUTBOX_KEY, items);
 }
 
+function enqueueMutation(queue: OutboxMutation[], mutation: OutboxMutation): OutboxMutation[] {
+  const filtered = queue.filter(
+    (x) => !(x.endpoint === mutation.endpoint && (x.groupId ?? '') === (mutation.groupId ?? ''))
+  );
+  return [...filtered.slice(-19), mutation];
+}
+
 export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayload: unknown): Promise<SyncPushResult> {
   const mutation: OutboxMutation = {
     id: `mut-${Date.now()}`,
     endpoint: '/api/sync',
+    groupId,
     payload: { groupId, workspace: workspacePayload, updatedAt: new Date().toISOString() },
     createdAt: new Date().toISOString(),
   };
 
   if (!navigator.onLine) {
     const queue = await getOutbox();
-    const deduped = [...queue.filter((x) => x.endpoint !== '/api/sync'), mutation];
+    const deduped = enqueueMutation(queue, mutation);
     await saveOutbox(deduped);
     return { mode: 'offline-queued', synced: false, pendingCount: deduped.length };
   }
@@ -49,14 +58,18 @@ export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayloa
     }
     const data = (await res.json()) as { mode?: string; synced?: boolean };
     if (data.mode === 'd1' && data.synced) {
-      await saveOutbox([]);
-      return { mode: 'd1', synced: true, pendingCount: 0 };
+      const remaining = (await getOutbox()).filter(
+        (x) => !(x.endpoint === '/api/sync' && (x.groupId ?? '') === groupId)
+      );
+      await saveOutbox(remaining);
+      return { mode: 'd1', synced: true, pendingCount: remaining.length };
     }
     return { mode: 'local-only', synced: false, pendingCount: 0 };
   } catch {
     const queue = await getOutbox();
-    await saveOutbox([...queue.slice(-9), mutation]);
-    return { mode: 'offline-queued', synced: false, pendingCount: queue.length + 1 };
+    const deduped = enqueueMutation(queue, mutation);
+    await saveOutbox(deduped);
+    return { mode: 'offline-queued', synced: false, pendingCount: deduped.length };
   }
 }
 
@@ -68,24 +81,34 @@ export async function flushSyncOutbox(): Promise<SyncPushResult> {
   if (!navigator.onLine) {
     return { mode: 'offline-queued', synced: false, pendingCount: queue.length };
   }
-  const latest = queue[queue.length - 1];
-  try {
-    const res = await fetch(latest.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(latest.payload),
-    });
-    if (res.ok) {
-      const data = (await res.json()) as { mode?: string; synced?: boolean };
-      if (data.mode === 'd1' && data.synced) {
-        await saveOutbox([]);
-        return { mode: 'd1', synced: true, pendingCount: 0 };
+
+  const remaining: OutboxMutation[] = [];
+  let anyD1Synced = false;
+  for (const item of queue) {
+    try {
+      const res = await fetch(item.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { mode?: string; synced?: boolean };
+        if (data.mode === 'd1' && data.synced) {
+          anyD1Synced = true;
+          continue;
+        }
       }
+      remaining.push(item);
+    } catch {
+      remaining.push(item);
     }
-  } catch {
-    // stay queued
   }
-  return { mode: 'local-only', synced: false, pendingCount: queue.length };
+  await saveOutbox(remaining);
+  return {
+    mode: anyD1Synced ? 'd1' : 'local-only',
+    synced: remaining.length === 0,
+    pendingCount: remaining.length,
+  };
 }
 
 export async function fetchBadgeFromCloud(token: string): Promise<Record<string, unknown> | null> {

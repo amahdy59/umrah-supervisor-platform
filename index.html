@@ -23,6 +23,9 @@
   <link rel="stylesheet" href="/src/ui/styles/design-system.css">
   <style>
     :root { --header-height: 4.5rem; }
+    @media (min-width: 768px) {
+      :root { --header-height: 7.25rem; }
+    }
 
     /* Senior Citizen Easy Mode */
     body.senior-mode { font-size: 1.22rem !important; line-height: 1.85; }
@@ -143,8 +146,19 @@
       align-items: center;
       min-height: 48px;
     }
-    .accordion-header::after { content: '➕'; font-size: 0.9rem; }
-    .accordion-item[open] .accordion-header::after { content: '➖'; }
+    .accordion-header::after {
+      content: '';
+      width: 0.55rem;
+      height: 0.55rem;
+      flex: none;
+      border-inline-end: 2px solid var(--primary-ink);
+      border-bottom: 2px solid var(--primary-ink);
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+    .accordion-item[open] .accordion-header::after {
+      transform: rotate(-135deg);
+    }
     .accordion-body { padding: 1rem 1.1rem; border-top: 1px solid var(--border); background: var(--card-bg); font-size: 0.92rem; line-height: 1.85; }
 
     .women-fatwa-box { background: var(--women-bg); border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-inline-start: 3px solid #db2777; }
@@ -682,7 +696,7 @@
   <!-- NATIVE DIALOGS -->
   <dialog id="taxi-modal" closedby="any" aria-labelledby="taxi-modal-title">
     <div class="dialog-header">
-      <h1 id="taxi-modal-title" style="font-size:1.15rem;">🚕 كارت التاكسي وإظهار الهوية لرجل الأمن</h1>
+      <h2 id="taxi-modal-title" style="font-size:1.15rem;">🚕 كارت التاكسي وإظهار الهوية لرجل الأمن</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="taxi-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div class="info-box-warn" style="margin-bottom:1rem;">
@@ -701,7 +715,7 @@
 
   <dialog id="sos-modal" closedby="any" aria-labelledby="sos-modal-title">
     <div class="dialog-header">
-      <h1 id="sos-modal-title" style="font-size:1.15rem;color:var(--danger);">🆘 غرفة طوارئ المعتمر التائه</h1>
+      <h2 id="sos-modal-title" style="font-size:1.15rem;color:var(--danger);">🆘 غرفة طوارئ المعتمر التائه</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="sos-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div class="info-box-neutral" style="margin-bottom:0.85rem;">
@@ -720,7 +734,7 @@
 
   <dialog id="profile-modal" closedby="any" aria-labelledby="profile-modal-title">
     <div class="dialog-header">
-      <h1 id="profile-modal-title" style="font-size:1.15rem;">✏️ تخصيص بيانات المعتمر والفوج</h1>
+      <h2 id="profile-modal-title" style="font-size:1.15rem;">✏️ تخصيص بيانات المعتمر والفوج</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="profile-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="profile-form">
@@ -765,7 +779,7 @@
 
   <dialog id="dhikr-modal" closedby="any" aria-labelledby="dhikr-modal-title">
     <div class="dialog-header">
-      <h1 id="dhikr-modal-title" style="font-size:1.15rem;">الذكر المأثور</h1>
+      <h2 id="dhikr-modal-title" style="font-size:1.15rem;">الذكر المأثور</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="dhikr-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="dhikr-modal-body" style="margin-bottom:1rem;"></div>
@@ -774,7 +788,7 @@
 
   <dialog id="completion-modal" closedby="any" aria-labelledby="completion-modal-title">
     <div class="dialog-header">
-      <h1 id="completion-modal-title" style="font-size:1.15rem;color:var(--primary-ink);">اكتمل النسك بفضل الله</h1>
+      <h2 id="completion-modal-title" style="font-size:1.15rem;color:var(--primary-ink);">اكتمل النسك بفضل الله</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="completion-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="completion-modal-body" style="line-height:1.8;margin-bottom:1rem;"></div>
@@ -783,12 +797,12 @@
 
   <dialog id="certificate-modal" closedby="any" aria-labelledby="cert-modal-title">
     <div class="dialog-header no-print">
-      <h1 id="cert-modal-title" style="font-size:1.15rem;">📜 شهادة إتمام العمرة المباركة</h1>
+      <h2 id="cert-modal-title" style="font-size:1.15rem;">📜 شهادة إتمام العمرة المباركة</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="certificate-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div class="certificate-card">
       <div style="font-size:2.4rem;margin-bottom:0.4rem;" aria-hidden="true">🕋</div>
-      <h2 style="color:var(--gold-dark);font-size:1.35rem;font-weight:800;margin-bottom:0.4rem;">شهادة إتمام مناسك العمرة</h2>
+      <h3 style="color:var(--gold-dark);font-size:1.35rem;font-weight:800;margin-bottom:0.4rem;">شهادة إتمام مناسك العمرة</h3>
       <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1rem;">قال ﷺ: «العُمْرَةُ إلى العُمْرَةِ كَفَّارَةٌ لِما بيْنَهُما»</p>
       <p style="font-size:1rem;line-height:1.85;">
         تشهد إدارة الفوج بأن المعتمر الكريم:<br>
@@ -806,7 +820,7 @@
 
   <dialog id="focus-ritual-modal" closedby="any" aria-labelledby="focus-ritual-title">
     <div class="dialog-header">
-      <h1 id="focus-ritual-title" style="font-size:1.15rem;">🎯 وضع النسك المركّز</h1>
+      <h2 id="focus-ritual-title" style="font-size:1.15rem;">🎯 وضع النسك المركّز</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="focus-ritual-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div style="text-align:center;">
@@ -827,7 +841,7 @@
 
   <dialog id="my-installments-modal" closedby="any" aria-labelledby="my-installments-title">
     <div class="dialog-header">
-      <h1 id="my-installments-title" style="font-size:1.15rem;">💳 حسابي وأقساطي وإيصالات الرحلة</h1>
+      <h2 id="my-installments-title" style="font-size:1.15rem;">💳 حسابي وأقساطي وإيصالات الرحلة</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="my-installments-modal" aria-label="إغلاق">&times;</button>
     </div>
     <div id="my-installments-body" style="margin-bottom:1rem;"></div>

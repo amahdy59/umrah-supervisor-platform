@@ -20,7 +20,9 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
         <article class="card">
           ${
             s.imageUrl
-              ? `<img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" width="800" height="500">`
+              ? `<button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(s.imageUrl)}" data-zoom-title="${escapeHtml(s.nameAr)}" data-zoom-alt="${escapeHtml(s.imageAltAr || s.nameAr)}" aria-label="تكبير صورة ${escapeHtml(s.nameAr)}">
+                  <img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" decoding="async" width="800" height="500">
+                </button>`
               : ''
           }
           <div class="card-header">
@@ -45,7 +47,9 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
         .map(
           (item) => `
         <article class="card">
-          <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" width="800" height="500">
+          <button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(item.imageUrl)}" data-zoom-title="${escapeHtml(item.nameAr)}" data-zoom-alt="${escapeHtml(item.imageAltAr)}" aria-label="تكبير صورة ${escapeHtml(item.nameAr)}">
+            <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" decoding="async" width="800" height="500">
+          </button>
           <div class="card-header">
             <h3 class="card-title">${escapeHtml(item.nameAr)}</h3>
             <span class="badge ${item.city === 'MADINAH' ? 'badge-warning' : 'badge-primary'}">${item.gateNumber ? `بوابة ${item.gateNumber}` : item.city === 'MADINAH' ? 'المدينة' : 'مكة'}</span>
@@ -68,7 +72,9 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
       <div class="info-box-neutral">
         ${
           b.imageUrl
-            ? `<img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" width="800" height="500">`
+            ? `<button type="button" class="img-zoom-btn" data-zoom-src="${escapeHtml(b.imageUrl)}" data-zoom-title="${escapeHtml(b.titleAr)}" data-zoom-alt="${escapeHtml(b.imageAltAr || b.titleAr)}" aria-label="تكبير صورة ${escapeHtml(b.titleAr)}">
+                <img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" decoding="async" width="800" height="500">
+              </button>`
             : ''
         }
         <div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.35rem;">

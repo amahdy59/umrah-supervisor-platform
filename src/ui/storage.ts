@@ -15,9 +15,13 @@ export interface StorageHealthReport {
   quotaBytesApprox?: number;
 }
 
+let cachedDbPromise: Promise<IDBDatabase> | null = null;
+
 function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (cachedDbPromise) return cachedDbPromise;
+  cachedDbPromise = new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
+      cachedDbPromise = null;
       reject(new Error('IndexedDB unavailable'));
       return;
     }
@@ -31,9 +35,23 @@ function openDatabase(): Promise<IDBDatabase> {
         db.createObjectStore(STORE_BLOBS);
       }
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error || new Error('Failed to open IndexedDB'));
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => {
+        db.close();
+        cachedDbPromise = null;
+      };
+      db.onclose = () => {
+        cachedDbPromise = null;
+      };
+      resolve(db);
+    };
+    req.onerror = () => {
+      cachedDbPromise = null;
+      reject(req.error || new Error('Failed to open IndexedDB'));
+    };
   });
+  return cachedDbPromise;
 }
 
 export async function idbGetJson<T>(key: string): Promise<T | null> {

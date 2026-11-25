@@ -87,7 +87,7 @@ export class HaramGatesGuide {
       latitude: 21.426,
       longitude: 39.8256,
       imageUrl: '/images/makkah/king-abdullah-gate.webp',
-      imageAltAr: 'صورة بوابة الملك عبد الله التوسعة الشمالية (بوابة 100)',
+      imageAltAr: 'صورة حقيقية للوحة وأقواس بوابة الملك عبد الله التوسعة الشمالية (بوابة 100)',
     },
     {
       gateNumber: 1,
@@ -117,7 +117,7 @@ export class HaramGatesGuide {
       latitude: 21.4252,
       longitude: 39.828,
       imageUrl: '/images/makkah/gate-main-entrance.webp',
-      imageAltAr: 'صورة باب الفتح (بوابة 45) جهة المروة بالمسجد الحرام',
+      imageAltAr: 'صورة حقيقية لأروقة المسجد الحرام جهة المروة وباب الفتح (بوابة 45)',
     },
     {
       gateNumber: 62,
@@ -132,7 +132,7 @@ export class HaramGatesGuide {
       latitude: 21.4241,
       longitude: 39.824,
       imageUrl: '/images/makkah/bab-al-umrah.webp',
-      imageAltAr: 'صورة باب العمرة (بوابة 62) بالمسجد الحرام',
+      imageAltAr: 'صورة حقيقية لمدخل ومآذن الجهة الشمالية الغربية باتجاه باب العمرة (بوابة 62)',
     },
   ];
 

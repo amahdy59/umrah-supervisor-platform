@@ -1,4 +1,4 @@
-const CACHE_NAME = 'umrah-companion-v6';
+const CACHE_NAME = 'umrah-companion-v8';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -6,17 +6,27 @@ const PRECACHE_URLS = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon-maskable-512.png',
   '/images/makkah/kaaba-door.webp',
+  '/images/makkah/kaaba-courtyard.webp',
   '/images/makkah/gate-abdulaziz.webp',
   '/images/makkah/gate-fahd.webp',
   '/images/makkah/king-abdullah-gate.webp',
   '/images/makkah/bab-al-umrah.webp',
+  '/images/makkah/gate-main-entrance.webp',
   '/images/makkah/safa-marwah-masa.webp',
   '/images/makkah/zamzam-stations.webp',
+  '/images/makkah/jabal-al-nour.webp',
+  '/images/makkah/jabal-thawr.webp',
+  '/images/makkah/jabal-arafat.webp',
   '/images/madinah/nabawi-bab-salam.webp',
   '/images/madinah/nabawi-bab-uthman-25.webp',
   '/images/madinah/nabawi-rawdah.webp',
+  '/images/madinah/nabawi-umbrellas.webp',
   '/images/madinah/quba-mosque.webp',
+  '/images/madinah/mount-uhud.webp',
+  '/images/madinah/qiblatayn-mosque.webp',
+  '/images/madinah/baqi-cemetery.webp',
 ];
 
 self.addEventListener('install', (event) => {
