@@ -84,7 +84,7 @@ body {
   inset-block-start: -120px;
   inset-inline-start: 1rem;
   z-index: 2000;
-  background: #b45309;
+  background: #92400e;
   color: #ffffff;
   padding: 0.75rem 1.25rem;
   border-radius: var(--control-radius);
@@ -162,7 +162,7 @@ body {
   white-space: nowrap;
 }
 .header-chip-btn[aria-pressed="true"], .senior-toggle-btn.active {
-  background: #b45309;
+  background: #92400e;
   border-color: #fde68a;
 }
 
@@ -502,8 +502,8 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
   color: #ffffff;
   border-color: var(--primary);
 }
-.btn-gold { background: #b45309; color: #ffffff; }
-.btn-gold:hover { background: #92400e; }
+.btn-gold { background: #92400e; color: #ffffff; }
+.btn-gold:hover { background: #78350f; }
 .btn-danger { background: #b91c1c; color: #ffffff; }
 .btn-danger:hover { background: #991b1b; }
 
