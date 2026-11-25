@@ -22,7 +22,18 @@ CREATE TYPE gender_type AS ENUM ('MALE', 'FEMALE');
 
 CREATE TYPE room_type AS ENUM ('DOUBLE', 'TRIPLE', 'QUAD', 'SUITE');
 
-CREATE TYPE gameya_type AS ENUM ('ROTATING_ROSCA', 'DIRECT_INSTALLMENT');
+CREATE TYPE gameya_type AS ENUM (
+  'ROTATING_ROSCA',
+  'DIRECT_INSTALLMENT',
+  'DEPOSIT_PLUS_MONTHLY',
+  'DEPOSIT_PLUS_FINAL',
+  'BIWEEKLY_INSTALLMENT',
+  'FULL_CASH'
+);
+
+CREATE TYPE bag_type AS ENUM ('SUITCASE', 'HANDBAG', 'ZAMZAM');
+
+CREATE TYPE luggage_status AS ENUM ('ON_BUS', 'HOTEL_LOBBY', 'DELIVERED_TO_ROOM');
 
 CREATE TYPE installment_status AS ENUM ('PENDING', 'PARTIALLY_PAID', 'PAID', 'OVERDUE');
 
@@ -80,18 +91,41 @@ CREATE TABLE buses (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 5. Pilgrims Table
+-- 5. Persistent People Directory (CRM across trips)
+CREATE TABLE people_directory (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  supervisor_id UUID NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  gender gender_type NOT NULL,
+  national_id VARCHAR(50),
+  passport_number VARCHAR(50) NOT NULL,
+  passport_expiry_date DATE,
+  phone VARCHAR(50) NOT NULL,
+  emergency_contact_name VARCHAR(100),
+  emergency_contact_phone VARCHAR(50),
+  medical_conditions TEXT[],
+  requires_wheelchair BOOLEAN NOT NULL DEFAULT FALSE,
+  requires_insulin_refrigeration BOOLEAN NOT NULL DEFAULT FALSE,
+  notes TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (supervisor_id, passport_number)
+);
+
+-- 6. Pilgrims Table (Trip Enrollment)
 CREATE TABLE pilgrims (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+  person_id UUID REFERENCES people_directory(id) ON DELETE SET NULL,
   full_name VARCHAR(255) NOT NULL,
   gender gender_type NOT NULL,
   phone VARCHAR(50) NOT NULL,
   saudi_sim_phone VARCHAR(50),
   passport_number VARCHAR(50) NOT NULL,
+  passport_expiry_date DATE,
   national_id VARCHAR(50),
   visa_number VARCHAR(50),
   nusuk_id VARCHAR(50),
+  boarded_bus BOOLEAN NOT NULL DEFAULT FALSE,
   room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
   bus_id UUID REFERENCES buses(id) ON DELETE SET NULL,
   medical_conditions TEXT[],
@@ -102,7 +136,7 @@ CREATE TABLE pilgrims (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 6. Gam'eya Groups (نظام الجمعيات وتقسيط العمرة)
+-- 7. Gam'eya & Flexible Installment Groups
 CREATE TABLE gameya_groups (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   supervisor_id UUID NOT NULL,
@@ -110,30 +144,36 @@ CREATE TABLE gameya_groups (
   name VARCHAR(255) NOT NULL,
   type gameya_type NOT NULL DEFAULT 'DIRECT_INSTALLMENT',
   target_amount_minor BIGINT NOT NULL, -- in minor currency units (cents/piastres)
+  down_payment_minor BIGINT NOT NULL DEFAULT 0,
   duration_months INT NOT NULL,
   start_date DATE NOT NULL,
+  departure_date DATE,
   currency VARCHAR(10) NOT NULL DEFAULT 'EGP',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 7. Gam'eya Members
+-- 8. Gam'eya Members
 CREATE TABLE gameya_members (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   group_id UUID NOT NULL REFERENCES gameya_groups(id) ON DELETE CASCADE,
   pilgrim_id UUID REFERENCES pilgrims(id) ON DELETE SET NULL,
   full_name VARCHAR(255) NOT NULL,
   phone VARCHAR(50) NOT NULL,
+  custom_plan_type gameya_type,
+  down_payment_minor BIGINT NOT NULL DEFAULT 0,
   turn_number INT, -- for ROTATING_ROSCA
   payout_date DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 8. Installment Schedules
+-- 9. Installment Schedules
 CREATE TABLE installment_schedules (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   member_id UUID NOT NULL REFERENCES gameya_members(id) ON DELETE CASCADE,
   installment_number INT NOT NULL,
+  label_ar VARCHAR(120),
+  is_down_payment BOOLEAN NOT NULL DEFAULT FALSE,
   due_date DATE NOT NULL,
   amount_due_minor BIGINT NOT NULL,
   amount_paid_minor BIGINT NOT NULL DEFAULT 0,
@@ -180,13 +220,29 @@ CREATE TABLE broadcasts (
   sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 12. Luggage Tags
+CREATE TABLE luggage_tags (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+  pilgrim_id UUID REFERENCES pilgrims(id) ON DELETE SET NULL,
+  tag_code VARCHAR(80) NOT NULL,
+  bag_type bag_type NOT NULL DEFAULT 'SUITCASE',
+  status luggage_status NOT NULL DEFAULT 'ON_BUS',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (trip_id, tag_code)
+);
+
 -- Indexes for performance
 CREATE INDEX idx_trips_supervisor ON trips(supervisor_id);
+CREATE INDEX idx_people_supervisor_passport ON people_directory(supervisor_id, passport_number);
 CREATE INDEX idx_pilgrims_trip ON pilgrims(trip_id);
+CREATE INDEX idx_pilgrims_trip_passport ON pilgrims(trip_id, passport_number);
 CREATE INDEX idx_pilgrims_room ON pilgrims(room_id);
 CREATE INDEX idx_pilgrims_bus ON pilgrims(bus_id);
 CREATE INDEX idx_gameya_supervisor ON gameya_groups(supervisor_id);
 CREATE INDEX idx_installment_member ON installment_schedules(member_id);
+CREATE INDEX idx_installments_member_due_status ON installment_schedules(member_id, due_date, status);
+CREATE INDEX idx_luggage_trip_status ON luggage_tags(trip_id, status);
 CREATE INDEX idx_sos_unresolved ON sos_alerts(trip_id, resolved) WHERE resolved = FALSE;
 CREATE INDEX idx_hotels_location ON hotels USING GIST (location);
 CREATE INDEX idx_sos_location ON sos_alerts USING GIST (location);

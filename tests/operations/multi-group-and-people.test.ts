@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Gender, TripStatus } from '../../src/operations/trip-logistics.js';
 import { ChronicCondition } from '../../src/operations/medical-profile.js';
 import { PeopleDirectory } from '../../src/operations/people-directory.js';
 import { UmrahGroupRegistry } from '../../src/operations/multi-group-manager.js';
+import { GameyaType } from '../../src/financial/gameya.js';
+import { dataUrlToBlob } from '../../src/ui/storage.js';
 
 describe('PeopleDirectory - سجل الأشخاص الدائم عبر الرحلات', () => {
   it('stores, searches, tracks trip history, and detects passports expiring within 6 months', () => {
@@ -109,5 +113,25 @@ describe('UmrahGroupRegistry - إدارة الأفواج المتزامنة وا
     expect(nextBatch.hotelNameAr).toBe('فندق أبراج الكسوة');
     expect(nextBatch.status).toBe(TripStatus.REGISTRATION_OPEN);
     expect(nextBatch.totalPilgrims).toBe(0);
+  });
+});
+
+describe('Schema Parity & Storage Helpers', () => {
+  it('keeps SQL schema enums and tables aligned with TS domain models', () => {
+    const sql = readFileSync(resolve(process.cwd(), 'packages/database-schema/schema.sql'), 'utf-8');
+    for (const plan of Object.values(GameyaType)) {
+      expect(sql).toContain(`'${plan}'`);
+    }
+    expect(sql).toContain('CREATE TABLE people_directory');
+    expect(sql).toContain('CREATE TABLE luggage_tags');
+    expect(sql).toContain('passport_expiry_date DATE');
+  });
+
+  it('converts base64 data URLs cleanly to binary Blobs for IndexedDB migration', () => {
+    const blob = dataUrlToBlob('data:image/png;base64,iVBORw0KGgo=');
+    expect(blob).not.toBeNull();
+    expect(blob?.type).toBe('image/png');
+    expect(blob?.size).toBeGreaterThan(0);
+    expect(dataUrlToBlob('not-a-data-url')).toBeNull();
   });
 });

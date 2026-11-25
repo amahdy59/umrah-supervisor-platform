@@ -18,102 +18,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/ui/styles/design-system.css">
   <style>
-    :root {
-      color-scheme: light dark;
-      --target-size: 40px;
-      --header-height: 4.5rem;
-      --primary: #064e3b;
-      --primary-light: #047857;
-      --primary-dark: #022c22;
-      --primary-ink: light-dark(#064e3b, #6ee7b7);
-      --gold: #d97706;
-      --gold-light: light-dark(#fef3c7, #451a03);
-      --gold-dark: light-dark(#92400e, #fbbf24);
-      --bg: light-dark(#f8fafc, #090d16);
-      --surface-muted: light-dark(#f1f5f9, #1e293b);
-      --card-bg: light-dark(#ffffff, #111827);
-      --text: light-dark(#0f172a, #f8fafc);
-      --text-muted: light-dark(#334155, #cbd5e1);
-      --border: light-dark(#cbd5e1, #334155);
-      --success: light-dark(#15803d, #4ade80);
-      --danger: light-dark(#b91c1c, #fca5a5);
-      --women-accent: light-dark(#831843, #f9a8d4);
-      --women-bg: light-dark(#fdf2f8, #2a1220);
-      --women-border: light-dark(#f9a8d4, #831843);
-      --radius: 16px;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-    }
-
-    @media (pointer: coarse) {
-      :root { --target-size: 44px; }
-    }
-
-    :root:has(> head > meta[name="color-scheme"][content="dark"]) { color-scheme: dark; }
-    :root:has(> head > meta[name="color-scheme"][content="light"]) { color-scheme: light; }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
-    }
-
-    html {
-      scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
-      scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-wrap: break-word;
-      transition: font-size 0.2s ease;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
-
-    :where(a:any-link, button, input, select, textarea, summary):focus-visible {
-      outline: 3px solid var(--gold);
-      outline-offset: 2px;
-    }
-
-    .sr-only, .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    .skip-link {
-      position: absolute;
-      inset-block-start: -120px;
-      inset-inline-start: 1rem;
-      z-index: 2000;
-      background: var(--gold);
-      color: #ffffff;
-      padding: 0.75rem 1.25rem;
-      border-radius: 10px;
-      font-weight: 800;
-      text-decoration: none;
-    }
-    .skip-link:focus {
-      inset-block-start: 0.75rem;
-    }
+    :root { --header-height: 4.5rem; }
 
     /* Senior Citizen Easy Mode */
     body.senior-mode { font-size: 1.22rem !important; line-height: 1.85; }
@@ -121,207 +28,14 @@
     body.senior-mode .lap-display { font-size: 4.8rem !important; }
     body.senior-mode .dua-arabic { font-size: 1.5rem !important; line-height: 2.2 !important; }
 
-    /* Compact Sticky Header */
     .sticky-bar-container {
-      position: sticky;
-      inset-block-start: 0;
-      z-index: 800;
-      container-type: scroll-state;
-      container-name: top-nav;
       background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-      color: #ffffff;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.16);
-      padding-top: env(safe-area-inset-top, 0px);
     }
-
-    .sticky-header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0.65rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      transition: padding 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .sticky-bar-container.is-stuck .sticky-header-inner {
-      padding: 0.45rem 1rem;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
-    }
-
-    @container top-nav scroll-state(stuck: top) {
-      .sticky-header-inner {
-        padding: 0.45rem 1rem;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
-      }
-    }
-
-    .logo-area { display: flex; align-items: center; gap: 0.65rem; min-inline-size: 0; }
-    .logo-icon {
-      font-size: 1.65rem;
-      background: rgba(255, 255, 255, 0.15);
-      width: 42px; height: 42px;
-      flex: none;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-    }
-    .app-title h1 { font-size: 1.1rem; font-weight: 800; text-wrap: balance; }
-    .app-title p { font-size: 0.78rem; color: #d1fae5; }
 
     .header-tools { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
 
-    .header-chip-btn {
-      background: rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-      padding: 0.4rem 0.75rem;
-      min-height: var(--target-size);
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-    .header-chip-btn[aria-pressed="true"], .senior-toggle-btn.active {
-      background: #b45309;
-      border-color: #fde68a;
-    }
-
-    /* Adaptive Primary Nav (Desktop inline, Tablet compact + More popover, Mobile bottom bar) */
-    .top-primary-nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem 0.55rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.4rem;
-    }
-
-    .nav-list-inline {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-    }
-
-    .mode-btn {
-      background: rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: #f8fafc;
-      padding: 0.42rem 0.8rem;
-      min-height: var(--target-size);
-      font-size: 0.85rem;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .mode-btn.active, .mode-btn[aria-current="page"] {
-      background: #ffffff;
-      color: #022c22;
-      border-bottom: 3px solid var(--gold);
-    }
-
-    .tablet-only-more { display: none; }
-    .mobile-bottom-nav { display: none; }
-
-    @media (max-width: 1024px) {
-      .desktop-only-tools { display: none; }
-      .tablet-secondary-tab { display: none; }
-      .tablet-only-more { display: inline-flex; }
-    }
-
     @media (max-width: 767px) {
-      .top-primary-nav { display: none; }
-      .app-title p { display: none; }
-      main { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px)); }
-      footer { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px)); }
       .prayer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-      .grid-2 { grid-template-columns: 1fr !important; }
-      .toast { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important; }
-
-      .mobile-bottom-nav {
-        position: fixed;
-        inset-block-end: 0;
-        inset-inline: 0;
-        z-index: 900;
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        background: var(--card-bg);
-        border-top: 1px solid var(--border);
-        box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.14);
-        padding: 0.3rem 0.25rem max(0.3rem, env(safe-area-inset-bottom, 0px));
-        gap: 0.2rem;
-      }
-
-      .mobile-nav-btn {
-        min-width: 0;
-        min-height: 48px;
-        border: none;
-        background: transparent;
-        color: var(--text-muted);
-        border-radius: 10px;
-        padding: 0.25rem 0.15rem;
-        font-size: 0.72rem;
-        font-weight: 700;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.12rem;
-        cursor: pointer;
-      }
-
-      .mobile-nav-btn.active, .mobile-nav-btn[aria-current="page"] {
-        background: light-dark(#ecfdf5, #064e3b);
-        color: var(--primary-ink);
-        border-bottom: 3px solid var(--primary);
-      }
-    }
-
-    /* Native Popover More Drawer */
-    .more-popover {
-      position: fixed;
-      inset: auto;
-      inset-block-end: calc(4.8rem + env(safe-area-inset-bottom, 0px));
-      inset-inline-end: 1rem;
-      margin: 0;
-      width: min(92vw, 320px);
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 0.9rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
-    }
-
-    @media (min-width: 768px) {
-      .more-popover {
-        inset-block-end: auto;
-        inset-block-start: 4.5rem;
-      }
-    }
-
-    .more-popover-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 1.15rem auto;
-      padding: 0 1rem 2rem;
-      flex: 1;
-      width: 100%;
     }
 
     .stage-relevance-strip {
@@ -336,14 +50,6 @@
       border-radius: 12px;
       padding: 0.7rem 1rem;
       margin-bottom: 1rem;
-    }
-
-    .tab-view { display: none; }
-    .tab-view.active { display: block; animation: fadeIn 0.2s ease; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .prayer-bar-card {
@@ -390,123 +96,19 @@
     .prayer-pill.active .prayer-pill-name { color: #ffffff; font-weight: 800; }
     .prayer-pill-time { font-size: 0.98rem; font-weight: 800; }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.4rem;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 1.3rem;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.65rem;
-    }
-
-    .card-title {
-      font-size: 1.08rem;
-      font-weight: 800;
-      color: var(--primary-ink);
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      text-wrap: balance;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 0.24rem 0.68rem;
-      font-size: 0.76rem;
-      font-weight: 700;
-      border-radius: 20px;
-    }
-
-    #network-status-pill {
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .badge-success { background: light-dark(#dcfce7, #052e16); color: var(--success); }
-    .badge-warning { background: var(--gold-light); color: var(--gold-dark); }
-    .badge-primary { background: light-dark(#d1fae5, #064e3b); color: light-dark(#064e3b, #a7f3d0); }
-    .badge-danger { background: light-dark(#fee2e2, #450a0a); color: var(--danger); }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      padding: 0.6rem 1.1rem;
-      min-height: var(--target-size);
-      font-size: 0.92rem;
-      font-weight: 700;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-    }
-    .btn-primary { background: var(--primary); color: #ffffff; }
-    .btn-primary:hover { background: var(--primary-light); }
-    .btn-secondary { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--surface-muted); }
-    .btn-gold { background: #b45309; color: #ffffff; }
-    .btn-gold:hover { background: #92400e; }
-    .btn-danger { background: #b91c1c; color: #ffffff; }
-    .btn-danger:hover { background: #991b1b; }
-
     .audio-btn {
       background: light-dark(#ecfdf5, #052e16);
       color: var(--primary-ink);
       border: 1px solid light-dark(#a7f3d0, #065f46);
       border-radius: 8px;
       padding: 0.38rem 0.85rem;
-      min-height: 40px;
+      min-height: 44px;
       font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-    }
-
-    .info-box-neutral {
-      background: var(--surface-muted);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      line-height: 1.7;
-    }
-
-    .info-box-warn {
-      background: var(--gold-light);
-      border: 1px solid var(--gold);
-      border-radius: 12px;
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      line-height: 1.75;
-    }
-
-    .info-box-danger {
-      background: light-dark(#fef2f2, #450a0a);
-      border: 1px solid light-dark(#fecaca, #991b1b);
-      color: light-dark(#991b1b, #fecaca);
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
-      font-size: 0.88rem;
-      line-height: 1.7;
     }
 
     .lap-display { font-size: 3.5rem; font-weight: 900; color: var(--primary-ink); margin: 0.5rem 0; }
@@ -548,57 +150,21 @@
     .pack-row { display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; padding: 0.45rem; min-height: 44px; border-radius: 8px; }
     .pack-row input[type="checkbox"] { width: 22px; height: 22px; margin-top: 3px; flex: none; accent-color: var(--primary); }
 
-    dialog {
-      margin: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--card-bg);
-      color: var(--text);
-      max-width: 620px;
-      width: calc(100% - 2rem);
-      max-height: 90dvh;
-      overflow-y: auto;
-      padding: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-    }
-    dialog:modal { overscroll-behavior: contain; }
-    dialog::backdrop { background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(4px); overflow: hidden; overscroll-behavior: contain; }
-
-    .dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
-    .dialog-close-btn { background: var(--surface-muted); color: var(--text); border: 1px solid var(--border); border-radius: 10px; width: 44px; height: 44px; font-size: 1.35rem; cursor: pointer; }
-
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; margin-bottom: 1rem; }
-    .field-label { display: block; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text-muted); }
-    .field-input { width: 100%; min-height: var(--target-size); padding: 0.55rem 0.85rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.92rem; }
-
     .certificate-card { border: 6px double var(--gold); border-radius: 16px; padding: 2rem 1.5rem; text-align: center; background: light-dark(#fffdf7, #1c1917); margin: 0.75rem 0 1.25rem; }
 
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%) translateY(90px);
-      background: #0f172a;
-      color: #ffffff;
-      padding: 0.8rem 1.5rem;
-      border-radius: 30px;
-      font-weight: 700;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      transition: transform 0.25s ease, opacity 0.25s ease;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      max-width: 90vw;
-      text-align: center;
+    .focus-lap-big {
+      font-size: clamp(3.8rem, 12vw, 5.2rem);
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--primary-ink);
+      margin: 0.4rem 0;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    footer { text-align: center; padding: 1rem; font-size: 0.84rem; color: var(--text-muted); border-top: 1px solid var(--border); }
-
-    @media print {
-      header, nav, main, footer, .toast, .no-print { display: none !important; }
-      dialog[open] { position: static; border: none; box-shadow: none; max-width: 100%; width: 100%; background: white !important; color: black !important; }
-      dialog:not([open]) { display: none !important; }
+    .focus-tap-btn {
+      width: 100%;
+      min-height: 74px;
+      font-size: 1.25rem;
+      border-radius: 16px;
     }
   </style>
 </head>
@@ -643,7 +209,7 @@
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="ziyarat">🕌 المزارات والميقات</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-fiqh">🧕 فقه المرأة</button>
       </div>
-      <button type="button" class="mode-btn tablet-only-more" popovertarget="pilgrim-more-popover" aria-haspopup="true">
+      <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="pilgrim-more-popover">
         ☰ المزيد والأدوات
       </button>
     </nav>
@@ -714,7 +280,8 @@
 
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
             <button type="button" id="btn-open-taxi" class="btn btn-gold" style="flex:1;">🚕 كارت التاكسي والأمن</button>
-            <button type="button" id="btn-open-cert" class="btn btn-secondary">📜 شهادة العمرة</button>
+            <button type="button" id="btn-badge-nusuk" class="btn btn-secondary">📲 تصريح نُسك</button>
+            <button type="button" id="btn-open-cert" class="btn btn-secondary">📜 الشهادة</button>
           </div>
         </div>
 
@@ -786,6 +353,9 @@
             <button type="button" id="btn-tawaf-doubt-jump" class="btn btn-secondary" style="width:100%;margin-top:0.6rem;font-size:0.86rem;">
               ⚖️ نسيت أنا في أي شوط؟ احسب القاعدة الفقهية
             </button>
+            <button type="button" id="btn-focus-tawaf" class="btn btn-primary" style="width:100%;margin-top:0.55rem;">
+              🎯 وضع الطواف المركّز (بدون تشتيت)
+            </button>
           </div>
         </div>
 
@@ -812,6 +382,9 @@
             </div>
             <button type="button" class="btn btn-secondary" id="btn-safa-dhikr" style="width:100%;margin-top:0.6rem;font-size:0.86rem;">
               ⛰️ ذكر الوقوف على الصفا والمروة (صحيح مسلم)
+            </button>
+            <button type="button" id="btn-focus-sai" class="btn btn-gold" style="width:100%;margin-top:0.55rem;">
+              🎯 وضع السعي المركّز (بدون تشتيت)
             </button>
           </div>
         </div>
@@ -903,8 +476,10 @@
         <p style="font-size:0.92rem;line-height:1.75;margin-bottom:0.85rem;">
           أحكام موثقة للمرأة المعتمرة (الحيض عند الميقات، الاستحاضة، النقاب والسدل، وتخصيص الألوان)، وفق فتاوى كبار العلماء مع الإشارة للمعتبر من الخلاف في مسائل الزيارة.
         </p>
-        <label for="women-search-input" class="field-label">ابحثي في أحكام المرأة:</label>
-        <input type="search" id="women-search-input" class="field-input" placeholder="مثال: حيض، استحاضة، نقاب، سدل، تقصير، روضة...">
+        <search style="display:block;">
+          <label for="women-search-input" class="field-label">ابحثي في أحكام المرأة:</label>
+          <input type="search" id="women-search-input" name="womenSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="مثال: حيض، استحاضة، نقاب، سدل، تقصير، روضة...">
+        </search>
       </div>
       <div id="women-fiqh-list"></div>
     </section>
@@ -1046,7 +621,7 @@
     <button type="button" class="mobile-nav-btn" data-tab-target="fiqh"><span aria-hidden="true">📖</span><span>الفقه</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="packing"><span aria-hidden="true">🧳</span><span>نُسك</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="gates-taxi"><span aria-hidden="true">🧭</span><span>البوابات</span></button>
-    <button type="button" class="mobile-nav-btn" popovertarget="pilgrim-more-popover" aria-haspopup="true"><span aria-hidden="true">☰</span><span>المزيد</span></button>
+    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="pilgrim-more-popover"><span aria-hidden="true">☰</span><span>المزيد</span></button>
   </nav>
 
   <!-- Shared Mobile & Tablet "More" Popover -->
@@ -1189,6 +764,27 @@
       </div>
     </div>
     <button type="button" id="btn-print-cert" class="btn btn-gold no-print" style="width:100%;">🖨️ طباعة الشهادة</button>
+  </dialog>
+
+  <dialog id="focus-ritual-modal" closedby="any" aria-labelledby="focus-ritual-title">
+    <div class="dialog-header">
+      <h1 id="focus-ritual-title" style="font-size:1.15rem;">🎯 وضع النسك المركّز</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="focus-ritual-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div style="text-align:center;">
+      <div id="focus-ritual-subtitle" style="font-size:0.95rem;font-weight:700;color:var(--gold-dark);margin-bottom:0.35rem;"></div>
+      <div id="focus-ritual-lap" class="focus-lap-big">1 <span class="lap-total">/ 7</span></div>
+      <div class="dua-box" style="margin:0.85rem 0;">
+        <div id="focus-dua-title" style="font-size:0.86rem;font-weight:800;color:var(--primary-ink);margin-bottom:0.3rem;"></div>
+        <div id="focus-dua-ar" class="dua-arabic"></div>
+      </div>
+      <button type="button" id="btn-focus-advance" class="btn btn-primary focus-tap-btn" style="margin-bottom:0.7rem;">✅ أتممت الشوط — التالي</button>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="button" id="btn-focus-undo" class="btn btn-secondary" style="flex:1;">↩️ تراجع شوط</button>
+        <button type="button" id="btn-focus-audio" class="btn btn-secondary" style="flex:1;">🔊 استمع</button>
+        <button type="button" id="btn-focus-sos" class="btn btn-danger" style="flex:1;">🆘 أنا تائه</button>
+      </div>
+    </div>
   </dialog>
 
   <div id="a11y-polite-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>

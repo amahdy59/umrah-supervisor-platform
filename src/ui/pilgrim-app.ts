@@ -28,6 +28,7 @@ import {
   toggleColorScheme,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
+import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
 
 interface PilgrimProfile {
   fullName: string;
@@ -148,6 +149,8 @@ let isSeniorMode = false;
 let isTalbiyahPlaying = false;
 let talbiyahTimer: number | null = null;
 let wakeLockSentinel: WakeLockSentinel | null = null;
+let activeFocusMode: 'tawaf' | 'sai' = 'tawaf';
+const nusukObjectUrls: Partial<Record<'umrah' | 'rawdah', string>> = {};
 
 function loadProfile(): void {
   try {
@@ -573,6 +576,7 @@ function renderTawafUI(): void {
   set('tawaf-dua-tr', info.duaTransliteration);
   set('tawaf-dua-src', `المصدر: ${info.sourceAr}`);
   set('tawaf-sunnah-note', info.sunnahNote);
+  renderFocusModal();
 }
 
 function renderSaiUI(): void {
@@ -584,6 +588,52 @@ function renderSaiUI(): void {
       saiCounter.currentLap % 2 === 1
         ? 'الاتجاه: من الصفا ⬅️ إلى المروة'
         : 'الاتجاه: من المروة ⬅️ إلى الصفا';
+  }
+  renderFocusModal();
+}
+
+function renderFocusModal(): void {
+  const modal = document.getElementById('focus-ritual-modal') as HTMLDialogElement | null;
+  if (!modal || !modal.open) return;
+  const titleEl = document.getElementById('focus-ritual-title');
+  const subEl = document.getElementById('focus-ritual-subtitle');
+  const lapEl = document.getElementById('focus-ritual-lap');
+  const duaTitleEl = document.getElementById('focus-dua-title');
+  const duaArEl = document.getElementById('focus-dua-ar');
+  const advBtn = document.getElementById('btn-focus-advance');
+
+  if (activeFocusMode === 'tawaf') {
+    const info = tawafCounter.getCurrentLapInfo();
+    if (titleEl) titleEl.textContent = '🕋 وضع الطواف المركّز';
+    if (subEl) subEl.textContent = 'الكعبة عن يسارك — من الحجر الأسود إلى الحجر الأسود';
+    if (lapEl) lapEl.innerHTML = `${info.lapNumber} <span class="lap-total">/ 7</span>`;
+    if (duaTitleEl) duaTitleEl.textContent = info.titleAr;
+    if (duaArEl) duaArEl.textContent = info.duaArabic;
+    if (advBtn) {
+      advBtn.className = 'btn btn-primary focus-tap-btn';
+      advBtn.textContent = info.lapNumber === 7 ? '🎉 إنهاء الشوط السابع' : '✅ أتممت الشوط — التالي';
+    }
+  } else {
+    const lap = saiCounter.currentLap;
+    const isOdd = lap % 2 === 1;
+    if (titleEl) titleEl.textContent = '🚶‍♂️ وضع السعي المركّز';
+    if (subEl) subEl.textContent = isOdd ? 'الاتجاه: من الصفا ⬅️ إلى المروة' : 'الاتجاه: من المروة ⬅️ إلى الصفا';
+    if (lapEl) lapEl.innerHTML = `${lap} <span class="lap-total">/ 7</span>`;
+    if (duaTitleEl) duaTitleEl.textContent = 'الذكر المأثور في السعي';
+    if (duaArEl) duaArEl.textContent = 'رَبِّ اغْفِرْ وَارْحَمْ إِنَّكَ أَنْتَ الأَعَزُّ الأَكْرَمُ';
+    if (advBtn) {
+      advBtn.className = 'btn btn-gold focus-tap-btn';
+      advBtn.textContent = lap === 7 ? '🎉 إنهاء الشوط السابع' : '✅ وصلت — الشوط التالي';
+    }
+  }
+}
+
+function openFocusRitual(mode: 'tawaf' | 'sai'): void {
+  activeFocusMode = mode;
+  openDialogById('focus-ritual-modal');
+  renderFocusModal();
+  if ('wakeLock' in navigator && !wakeLockSentinel) {
+    void toggleWakeLock();
   }
 }
 
@@ -968,20 +1018,39 @@ function updatePackingProgress(): void {
   }
 }
 
-function loadNusukWalletImages(): void {
-  const renderSlot = (slot: 'umrah' | 'rawdah', storageKey: string) => {
+async function loadNusukWalletImages(): Promise<void> {
+  const renderSlot = async (slot: 'umrah' | 'rawdah', storageKey: string) => {
     const preview = document.getElementById(`nusuk-preview-${slot}`) as HTMLImageElement | null;
     const empty = document.getElementById(`nusuk-empty-${slot}`);
     const clearBtn = document.getElementById(`nusuk-clear-${slot}`);
-    let dataUrl = '';
-    try {
-      dataUrl = localStorage.getItem(storageKey) || '';
-    } catch {
-      dataUrl = '';
+
+    let blob = await idbGetBlob(storageKey);
+    // Migrate legacy localStorage dataUrl to IndexedDB Blob to free up synchronous storage
+    if (!blob) {
+      try {
+        const legacyDataUrl = localStorage.getItem(storageKey);
+        if (legacyDataUrl) {
+          blob = dataUrlToBlob(legacyDataUrl);
+          if (blob) {
+            await idbSetBlob(storageKey, blob);
+            localStorage.removeItem(storageKey);
+          }
+        }
+      } catch {
+        blob = null;
+      }
     }
+
+    if (nusukObjectUrls[slot]) {
+      URL.revokeObjectURL(nusukObjectUrls[slot]!);
+      delete nusukObjectUrls[slot];
+    }
+
     if (preview && empty) {
-      if (dataUrl) {
-        preview.src = dataUrl;
+      if (blob) {
+        const objectUrl = URL.createObjectURL(blob);
+        nusukObjectUrls[slot] = objectUrl;
+        preview.src = objectUrl;
         preview.style.display = 'block';
         empty.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'inline-flex';
@@ -994,8 +1063,10 @@ function loadNusukWalletImages(): void {
     }
   };
 
-  renderSlot('umrah', STORAGE_KEYS.NUSUK_UMRAH_IMG);
-  renderSlot('rawdah', STORAGE_KEYS.NUSUK_RAWDAH_IMG);
+  await Promise.all([
+    renderSlot('umrah', STORAGE_KEYS.NUSUK_UMRAH_IMG),
+    renderSlot('rawdah', STORAGE_KEYS.NUSUK_RAWDAH_IMG),
+  ]);
 }
 
 function handleNusukImageUpload(slot: 'umrah' | 'rawdah', file: File): void {
@@ -1011,15 +1082,25 @@ function handleNusukImageUpload(slot: 'umrah' | 'rawdah', file: File): void {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const compressed = canvas.toDataURL('image/jpeg', 0.85);
       const storageKey = slot === 'umrah' ? STORAGE_KEYS.NUSUK_UMRAH_IMG : STORAGE_KEYS.NUSUK_RAWDAH_IMG;
-      try {
-        localStorage.setItem(storageKey, compressed);
-        loadNusukWalletImages();
-        showToast('✅ تم حفظ صورة التصريح محلياً للعمل بدون إنترنت');
-      } catch {
-        showToast('⚠️ الصورة كبيرة جداً على مساحة المتصفح؛ جرّب لقطة شاشة أصغر');
-      }
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            showToast('⚠️ تعذر معالجة صورة التصريح');
+            return;
+          }
+          void idbSetBlob(storageKey, blob).then((saved) => {
+            if (saved) {
+              void loadNusukWalletImages();
+              showToast('✅ تم حفظ صورة التصريح في قاعدة البيانات المحلية (IndexedDB)');
+            } else {
+              showToast('⚠️ تعذر حفظ الصورة في المتصفح');
+            }
+          });
+        },
+        'image/jpeg',
+        0.85
+      );
     };
     img.src = String(reader.result);
   };
@@ -1171,7 +1252,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderFiqhSection();
   renderWomenFiqhSection();
   renderPackingChecklist();
-  loadNusukWalletImages();
+  void loadNusukWalletImages();
   renderCurrencyAndTaxi();
   updatePrayerUI();
   window.setInterval(updatePrayerUI, 60000);
@@ -1213,6 +1294,10 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-edit-profile')?.addEventListener('click', openProfileEditModal);
   document.getElementById('profile-form')?.addEventListener('submit', handleProfileSave);
   document.getElementById('btn-open-taxi')?.addEventListener('click', () => openDialogById('taxi-modal'));
+  document.getElementById('btn-badge-nusuk')?.addEventListener('click', () => {
+    switchTab('packing');
+    document.getElementById('nusuk-owner-meta')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
   document.getElementById('btn-open-cert')?.addEventListener('click', () => openDialogById('certificate-modal'));
   document.getElementById('btn-trigger-sos')?.addEventListener('click', () => {
     void triggerSOSAlert();
@@ -1235,11 +1320,29 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-tawaf-reset')?.addEventListener('click', resetTawaf);
   document.getElementById('btn-rukn-yamani')?.addEventListener('click', showRuknYamani);
   document.getElementById('btn-tawaf-doubt-jump')?.addEventListener('click', () => switchTab('fiqh'));
+  document.getElementById('btn-focus-tawaf')?.addEventListener('click', () => openFocusRitual('tawaf'));
 
   document.getElementById('btn-sai-next')?.addEventListener('click', incrementSai);
   document.getElementById('btn-sai-undo')?.addEventListener('click', undoSai);
   document.getElementById('btn-sai-reset')?.addEventListener('click', resetSai);
   document.getElementById('btn-safa-dhikr')?.addEventListener('click', showSafaMarwaDhikr);
+  document.getElementById('btn-focus-sai')?.addEventListener('click', () => openFocusRitual('sai'));
+
+  document.getElementById('btn-focus-advance')?.addEventListener('click', () => {
+    if (activeFocusMode === 'tawaf') incrementTawaf();
+    else incrementSai();
+  });
+  document.getElementById('btn-focus-undo')?.addEventListener('click', () => {
+    if (activeFocusMode === 'tawaf') undoTawaf();
+    else undoSai();
+  });
+  document.getElementById('btn-focus-audio')?.addEventListener('click', () => {
+    speakText(document.getElementById('focus-dua-ar')?.textContent || '');
+  });
+  document.getElementById('btn-focus-sos')?.addEventListener('click', () => {
+    closeDialogById('focus-ritual-modal');
+    void triggerSOSAlert();
+  });
 
   document.getElementById('btn-calc-doubt')?.addEventListener('click', () => {
     const l1 = Number((document.getElementById('lap-doubt-1') as HTMLSelectElement).value);
@@ -1284,12 +1387,12 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('nusuk-clear-umrah')?.addEventListener('click', () => {
     try { localStorage.removeItem(STORAGE_KEYS.NUSUK_UMRAH_IMG); } catch {}
-    loadNusukWalletImages();
+    void idbDeleteBlob(STORAGE_KEYS.NUSUK_UMRAH_IMG).then(() => loadNusukWalletImages());
     showToast('تم مسح صورة تصريح العمرة');
   });
   document.getElementById('nusuk-clear-rawdah')?.addEventListener('click', () => {
     try { localStorage.removeItem(STORAGE_KEYS.NUSUK_RAWDAH_IMG); } catch {}
-    loadNusukWalletImages();
+    void idbDeleteBlob(STORAGE_KEYS.NUSUK_RAWDAH_IMG).then(() => loadNusukWalletImages());
     showToast('تم مسح صورة تصريح الروضة');
   });
 

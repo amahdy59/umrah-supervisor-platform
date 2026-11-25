@@ -30,6 +30,7 @@ import {
   toggleColorScheme,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
+import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
 
 interface PilgrimRecord {
   id: string;
@@ -462,29 +463,58 @@ function getActiveGroup(): GroupWorkspace {
   return rootState.groups.find((g) => g.id === rootState.activeGroupId) || rootState.groups[0];
 }
 
+const syncChannel = createSyncChannel((scope) => {
+  if (scope === 'supervisor') {
+    void hydrateFromIndexedDb();
+  }
+});
+
+function normalizeRootState(parsed: Partial<MultiGroupRootState>): MultiGroupRootState {
+  const fallback = createInitialState();
+  return {
+    activeGroupId: parsed.activeGroupId || fallback.activeGroupId,
+    groups: Array.isArray(parsed.groups) && parsed.groups.length > 0 ? parsed.groups : fallback.groups,
+    people: Array.isArray(parsed.people) ? parsed.people : fallback.people,
+  };
+}
+
 function loadState(): void {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<MultiGroupRootState>;
-      const fallback = createInitialState();
-      rootState = {
-        activeGroupId: parsed.activeGroupId || fallback.activeGroupId,
-        groups: Array.isArray(parsed.groups) && parsed.groups.length > 0 ? parsed.groups : fallback.groups,
-        people: Array.isArray(parsed.people) ? parsed.people : fallback.people,
-      };
+      rootState = normalizeRootState(JSON.parse(raw) as Partial<MultiGroupRootState>);
     }
   } catch {
     rootState = createInitialState();
   }
 }
 
-function saveState(): void {
+async function hydrateFromIndexedDb(): Promise<void> {
+  const stored = await idbGetJson<MultiGroupRootState>(STORAGE_KEY);
+  if (stored && Array.isArray(stored.groups) && stored.groups.length > 0) {
+    rootState = normalizeRootState(stored);
+    renderAll();
+  } else {
+    // Migrate initial/localStorage workspace into IndexedDB on first load
+    await idbSetJson(STORAGE_KEY, rootState);
+  }
+}
+
+function saveState(broadcast: boolean = true): void {
+  let localOk = false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rootState));
+    localOk = true;
   } catch {
-    // ignore storage errors
+    localOk = false;
   }
+  void idbSetJson(STORAGE_KEY, rootState).then((idbOk) => {
+    if (!idbOk && !localOk) {
+      showToast('⚠️ تعذر حفظ التغييرات محلياً — يرجى تنزيل نسخة احتياطية JSON', true);
+    } else if (broadcast) {
+      syncChannel.notify('supervisor');
+    }
+  });
 }
 
 function buildRegistryFromState(): UmrahGroupRegistry {
@@ -518,8 +548,24 @@ function buildPeopleDirectoryFromState(): PeopleDirectory {
   return dir;
 }
 
+function syncPilgrimsDatalist(): void {
+  const list = document.getElementById('pilgrims-directory-datalist');
+  if (!list) return;
+  const active = getActiveGroup();
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const p of [...active.pilgrims, ...rootState.people]) {
+    if (!seen.has(p.fullName)) {
+      seen.add(p.fullName);
+      names.push(p.fullName);
+    }
+  }
+  list.innerHTML = names.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('');
+}
+
 function renderAll(): void {
   renderGroupSwitcher();
+  syncPilgrimsDatalist();
   renderTopMetrics();
   renderGroupsOverviewBoard();
   renderManifestTable();
@@ -1138,7 +1184,19 @@ function buildScheduleSummaryForMember(m: GameyaRecord, departureDateStr: string
     planType: m.planType,
     installmentCount: Math.max(1, m.installmentCount),
   });
-  if (m.totalPaid > 0) {
+  if (m.payments.length > 0) {
+    for (const p of m.payments) {
+      if (p.amount > 0) {
+        group.recordFlexiblePayment({
+          memberId: m.id,
+          amount: Money.fromDecimal(p.amount, 'EGP'),
+          method: p.method,
+          supervisorId: 'sup',
+          transactionRef: p.ref,
+        });
+      }
+    }
+  } else if (m.totalPaid > 0) {
     group.recordFlexiblePayment({
       memberId: m.id,
       amount: Money.fromDecimal(Math.min(m.totalPaid, m.totalTarget), 'EGP'),
@@ -1147,7 +1205,7 @@ function buildScheduleSummaryForMember(m: GameyaRecord, departureDateStr: string
     });
   }
   const summary = group.getMemberSummary(m.id);
-  return { items, summary };
+  return { group, items, summary };
 }
 
 function renderGameyaTable(): void {
@@ -1644,6 +1702,30 @@ function exportManifestCSV(): void {
 // =========================================================================
 // BOOTSTRAP
 // =========================================================================
+function updateGameyaFormFields(): void {
+  const plan = ((document.getElementById('new-gam-plan') as HTMLSelectElement | null)?.value ||
+    GameyaType.DEPOSIT_PLUS_MONTHLY) as GameyaType;
+
+  const setFieldState = (wrapId: string, inputId: string, visible: boolean) => {
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId) as HTMLInputElement | null;
+    if (wrap) wrap.hidden = !visible;
+    if (input) input.disabled = !visible;
+  };
+
+  const showDown = plan === GameyaType.DEPOSIT_PLUS_MONTHLY || plan === GameyaType.DEPOSIT_PLUS_FINAL;
+  const showCount =
+    plan === GameyaType.DEPOSIT_PLUS_MONTHLY ||
+    plan === GameyaType.DIRECT_INSTALLMENT ||
+    plan === GameyaType.ROTATING_ROSCA ||
+    plan === GameyaType.BIWEEKLY_INSTALLMENT;
+  const showTurn = plan === GameyaType.ROTATING_ROSCA;
+
+  setFieldState('gam-down-wrap', 'new-gam-down', showDown);
+  setFieldState('gam-count-wrap', 'new-gam-count', showCount);
+  setFieldState('gam-turn-wrap', 'new-gam-turn', showTurn);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
   setupDialogs();
@@ -1652,6 +1734,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   loadState();
   renderAll();
+  updateGameyaFormFields();
+  void hydrateFromIndexedDb();
 
   document.querySelectorAll<HTMLButtonElement>('[data-tab-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1817,6 +1901,16 @@ window.addEventListener('DOMContentLoaded', () => {
     manifestFilter = (e.target as HTMLInputElement).value;
     renderManifestTable();
   });
+  document.getElementById('btn-board-all')?.addEventListener('click', () => {
+    const active = getActiveGroup();
+    if (active.pilgrims.length === 0) return;
+    active.pilgrims.forEach((p) => {
+      p.boarded = true;
+    });
+    saveState();
+    renderAll();
+    showToast(`✅ تم تأكيد صعود جميع معتمرى الفوج (${active.pilgrims.length}) للباص`);
+  });
   document.getElementById('btn-export-csv')?.addEventListener('click', exportManifestCSV);
 
   // Add Person to CRM directly
@@ -1889,7 +1983,19 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-assign-room')?.addEventListener('click', handleAssignRoom);
 
-  // Gam'eya Enhanced Plan Form + Flexible Payment Modal
+  // Gam'eya Enhanced Plan Form + Progressive Disclosure + Flexible Payment Modal
+  document.getElementById('new-gam-plan')?.addEventListener('change', updateGameyaFormFields);
+  document.getElementById('new-gam-name')?.addEventListener('change', (e) => {
+    const picked = (e.target as HTMLInputElement).value.trim();
+    const active = getActiveGroup();
+    const match =
+      active.pilgrims.find((p) => p.fullName === picked) || rootState.people.find((p) => p.fullName === picked);
+    const phoneEl = document.getElementById('new-gam-phone') as HTMLInputElement | null;
+    if (match?.phone && phoneEl && !phoneEl.value.trim()) {
+      phoneEl.value = match.phone;
+    }
+  });
+
   document.getElementById('add-gameya-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const active = getActiveGroup();
@@ -1897,10 +2003,19 @@ window.addEventListener('DOMContentLoaded', () => {
     const phone = (document.getElementById('new-gam-phone') as HTMLInputElement).value.trim();
     const planType = (document.getElementById('new-gam-plan') as HTMLSelectElement).value as GameyaType;
     const target = Number((document.getElementById('new-gam-target') as HTMLInputElement).value) || 40000;
-    const downPayment = Number((document.getElementById('new-gam-down') as HTMLInputElement).value) || 0;
-    const count = Number((document.getElementById('new-gam-count') as HTMLInputElement).value) || 6;
+    const rawDown = Number((document.getElementById('new-gam-down') as HTMLInputElement).value) || 0;
+    const rawCount = Number((document.getElementById('new-gam-count') as HTMLInputElement).value) || 6;
     const turnMonth = Number((document.getElementById('new-gam-turn') as HTMLInputElement).value) || 1;
     if (!name) return;
+
+    const downPayment =
+      planType === GameyaType.FULL_CASH
+        ? target
+        : planType === GameyaType.DEPOSIT_PLUS_MONTHLY || planType === GameyaType.DEPOSIT_PLUS_FINAL
+          ? rawDown
+          : 0;
+    const installmentCount =
+      planType === GameyaType.FULL_CASH ? 1 : planType === GameyaType.DEPOSIT_PLUS_FINAL ? 2 : rawCount;
 
     active.gameya.push({
       id: `g-${Date.now()}`,
@@ -1909,8 +2024,8 @@ window.addEventListener('DOMContentLoaded', () => {
       planType,
       turnMonth,
       totalTarget: target,
-      downPayment: planType === GameyaType.FULL_CASH ? target : downPayment,
-      installmentCount: planType === GameyaType.FULL_CASH ? 1 : count,
+      downPayment,
+      installmentCount,
       totalPaid: 0,
       startDateIso: new Date().toISOString().slice(0, 10),
       payments: [],
@@ -1918,6 +2033,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderAll();
     (e.target as HTMLFormElement).reset();
+    updateGameyaFormFields();
     showToast(`✅ تم إضافة ${name} بخطة (${PLAN_LABELS[planType]})`);
   });
 
@@ -1931,10 +2047,28 @@ window.addEventListener('DOMContentLoaded', () => {
     const ref = (document.getElementById('pay-ref') as HTMLInputElement).value.trim();
     if (amount <= 0) return;
 
-    m.totalPaid = Math.min(m.totalTarget, m.totalPaid + amount);
+    const { group } = buildScheduleSummaryForMember(m, active.settings.endDate);
+    const prevSummary = group.getMemberSummary(m.id);
+    const remainingDecimal = prevSummary.totalRemaining.toDecimal();
+    const effectiveAmount = Math.min(amount, remainingDecimal);
+    if (effectiveAmount <= 0) {
+      showToast('✅ المشترك أتم السداد بالكامل مسبقاً');
+      closeDialogById('payment-modal');
+      return;
+    }
+
+    group.recordFlexiblePayment({
+      memberId: m.id,
+      amount: Money.fromDecimal(effectiveAmount, 'EGP'),
+      method,
+      supervisorId: active.settings.supervisorName,
+      transactionRef: ref || undefined,
+    });
+    const nextSummary = group.getMemberSummary(m.id);
+    m.totalPaid = nextSummary.totalPaid.toDecimal();
     m.payments.push({
       id: `pay-${Date.now()}`,
-      amount,
+      amount: effectiveAmount,
       method,
       ref: ref || undefined,
       dateIso: new Date().toISOString().slice(0, 10),
@@ -1942,7 +2076,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderAll();
     closeDialogById('payment-modal');
-    showToast(`✅ تم تسجيل دفعة ${amount.toLocaleString('ar-EG')} ج.م (${PAYMENT_METHOD_LABELS[method]})`);
+    showToast(`✅ تم تسجيل دفعة ${effectiveAmount.toLocaleString('ar-EG')} ج.م (${PAYMENT_METHOD_LABELS[method]})`);
   });
 
   // Print Center
@@ -2084,5 +2218,44 @@ window.addEventListener('DOMContentLoaded', () => {
       renderAll();
       showToast('🔄 تمت استعادة البيانات الافتراضية لكافة الأفواج');
     });
+  });
+
+  document.getElementById('btn-export-backup-json')?.addEventListener('click', () => {
+    const payload = JSON.stringify({ exportedAt: new Date().toISOString(), version: 2, data: rootState }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `umrah-supervisor-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('💾 تم تنزيل النسخة الاحتياطية بنجاح');
+  });
+
+  document.getElementById('input-restore-backup-json')?.addEventListener('change', (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result)) as { data?: Partial<MultiGroupRootState> } & Partial<MultiGroupRootState>;
+        const candidate = parsed.data || parsed;
+        if (!Array.isArray(candidate.groups) || candidate.groups.length === 0) {
+          throw new Error('Invalid backup structure');
+        }
+        rootState = normalizeRootState(candidate);
+        saveState();
+        renderAll();
+        showToast('✅ تم استعادة النسخة الاحتياطية بنجاح');
+      } catch {
+        showToast('⚠️ ملف النسخة الاحتياطية غير صالح', true);
+      } finally {
+        input.value = '';
+      }
+    };
+    reader.readAsText(file);
   });
 });
