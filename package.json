@@ -8,7 +8,8 @@
     "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "deploy": "wrangler pages deploy dist --project-name=umrah-supervisor"
   },
   "keywords": [
     "umrah",
