@@ -117,6 +117,41 @@ export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayloa
   }
 }
 
+export interface SyncPullResult {
+  mode: 'd1' | 'local-only' | 'unauthorized';
+  found: boolean;
+  updatedAt?: string;
+  workspace?: unknown;
+}
+
+export async function pullGroupWorkspaceFromCloud(groupId: string): Promise<SyncPullResult> {
+  if (!navigator.onLine || !groupId) {
+    return { mode: 'local-only', found: false };
+  }
+  try {
+    const res = await fetch(`/api/sync?groupId=${encodeURIComponent(groupId)}`, {
+      method: 'GET',
+      headers: buildAuthHeaders(false),
+    });
+    if (res.status === 401) return { mode: 'unauthorized', found: false };
+    if (!res.ok) return { mode: 'local-only', found: false };
+    const data = (await res.json()) as {
+      mode?: string;
+      found?: boolean;
+      updatedAt?: string;
+      workspace?: unknown;
+    };
+    return {
+      mode: data.mode === 'd1' ? 'd1' : 'local-only',
+      found: Boolean(data.found),
+      updatedAt: data.updatedAt,
+      workspace: data.workspace,
+    };
+  } catch {
+    return { mode: 'local-only', found: false };
+  }
+}
+
 export async function flushSyncOutbox(): Promise<SyncPushResult> {
   const queue = await getOutbox();
   if (queue.length === 0) {

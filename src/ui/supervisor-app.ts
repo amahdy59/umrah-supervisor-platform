@@ -38,6 +38,7 @@ import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
 import { getCurrentLanguage, initLanguage, toggleLanguage } from './i18n.js';
 import {
   pushGroupWorkspaceToCloud,
+  pullGroupWorkspaceFromCloud,
   flushSyncOutbox,
   getSyncAuthToken,
   setSyncAuthToken,
@@ -1744,6 +1745,75 @@ async function pullCloudSosAlerts(notifyUser: boolean): Promise<void> {
   }
 }
 
+async function pullActiveGroupFromCloud(): Promise<void> {
+  const active = getActiveGroup();
+  const res = await pullGroupWorkspaceFromCloud(active.id);
+  if (res.mode === 'unauthorized') {
+    showToast('🔐 رُفض السحب (401) — أدخل رمز SYNC_SECRET في إعدادات الفوج', true);
+    return;
+  }
+  if (res.mode === 'local-only') {
+    showToast('💾 وضع الحفظ المحلي نشط — اربط قاعدة D1 لسحب بيانات السحابة');
+    return;
+  }
+  if (!res.found || !res.workspace || typeof res.workspace !== 'object') {
+    showToast('☁️ لا توجد نسخة سحابية محفوظة لهذا الفوج حتى الآن (ارفع بالضغط على مزامنة أولاً)');
+    return;
+  }
+
+  const candidate = res.workspace as Partial<GroupWorkspace>;
+  const existingModal = document.getElementById('confirm-cloud-pull-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('dialog');
+  modal.id = 'confirm-cloud-pull-modal';
+  modal.setAttribute('aria-labelledby', 'cloud-pull-title');
+  modal.setAttribute('closedby', 'any');
+  modal.innerHTML = `
+    <div class="dialog-header">
+      <h2 id="cloud-pull-title" style="font-size:1.1rem;color:var(--primary-ink);">☁️ استيراد نسخة الفوج من السحابة</h2>
+      <button type="button" class="dialog-close-btn" data-pull-cancel aria-label="إغلاق">&times;</button>
+    </div>
+    <p style="font-size:0.92rem;line-height:1.7;margin-bottom:1rem;">
+      تم العثور على نسخة محفوظة في D1 للفوج <strong>${escapeHtml(candidate.settings?.tripTitle || active.settings.tripTitle)}</strong>
+      (آخر تحديث: <span dir="ltr">${escapeHtml(res.updatedAt || '---')}</span>).<br>
+      هل تريد استبدال بيانات هذا الفوج محلياً بالنسخة السحابية؟
+    </p>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button type="button" id="btn-pull-confirm-yes" class="btn btn-primary" style="flex:1;">✅ نعم، تحديث من السحابة</button>
+      <button type="button" class="btn btn-secondary" data-pull-cancel style="flex:1;" autofocus>إلغاء</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.showModal();
+
+  const cleanup = () => {
+    if (modal.isConnected) modal.remove();
+  };
+
+  modal.querySelectorAll('[data-pull-cancel]').forEach((el) => el.addEventListener('click', cleanup));
+  modal.addEventListener('cancel', cleanup);
+  modal.querySelector('#btn-pull-confirm-yes')?.addEventListener('click', () => {
+    const mergedGroup: GroupWorkspace = {
+      ...active,
+      ...candidate,
+      id: active.id,
+      settings: { ...active.settings, ...(candidate.settings || {}) },
+      pilgrims: Array.isArray(candidate.pilgrims) ? candidate.pilgrims : active.pilgrims,
+      rooms: Array.isArray(candidate.rooms) ? candidate.rooms : active.rooms,
+      gameya: Array.isArray(candidate.gameya) ? candidate.gameya : active.gameya,
+      luggage: Array.isArray(candidate.luggage) ? candidate.luggage : active.luggage,
+      medical: Array.isArray(candidate.medical) ? candidate.medical : active.medical,
+      sosAlerts: Array.isArray(candidate.sosAlerts) ? candidate.sosAlerts : active.sosAlerts,
+    };
+    rootState.groups = rootState.groups.map((g) => (g.id === active.id ? mergedGroup : g));
+    saveState();
+    renderAll();
+    cleanup();
+    showToast(`✅ تم تحديث بيانات "${mergedGroup.settings.tripTitle}" من السحابة`);
+  });
+}
+
 async function syncActiveGroupToCloud(notifyUser: boolean): Promise<void> {
   const active = getActiveGroup();
   const res = await pushGroupWorkspaceToCloud(active.id, active);
@@ -1807,6 +1877,12 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-cloud-sync-popover')?.addEventListener('click', () => {
     void syncActiveGroupToCloud(true);
+  });
+  document.getElementById('btn-pull-cloud-group')?.addEventListener('click', () => {
+    void pullActiveGroupFromCloud();
+  });
+  document.getElementById('btn-pull-cloud-popover')?.addEventListener('click', () => {
+    void pullActiveGroupFromCloud();
   });
   document.getElementById('btn-pull-cloud-sos')?.addEventListener('click', () => {
     void pullCloudSosAlerts(true);

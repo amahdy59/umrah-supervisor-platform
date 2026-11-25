@@ -1,4 +1,4 @@
-const CACHE_NAME = 'umrah-companion-v9';
+const CACHE_NAME = 'umrah-companion-v10';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -11,9 +11,11 @@ const PRECACHE_URLS = [
   '/fonts/cairo/cairo-arabic.woff2',
   '/fonts/cairo/cairo-latin-ext.woff2',
   '/fonts/cairo/cairo-latin.woff2',
-  // Offline audio feedback
+  // Offline audio feedback & dhikr clips
   '/audio/lap-chime.wav',
   '/audio/talbiyah.mp3',
+  '/audio/rukn-yamani.mp3',
+  '/audio/safa-marwah.mp3',
   // Makkah images
   '/images/makkah/kaaba-door.webp',
   '/images/makkah/kaaba-courtyard.webp',
@@ -84,10 +86,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip Vite dev / HMR module endpoints
+  // Never intercept API calls (/api/sync, /api/sos, /api/badge) or Vite dev modules
   if (
     url.origin === self.location.origin &&
-    (url.pathname.startsWith('/@') ||
+    (url.pathname.startsWith('/api/') ||
+      url.pathname.startsWith('/@') ||
       url.pathname.startsWith('/src/') ||
       url.pathname.startsWith('/node_modules/'))
   ) {
@@ -128,23 +131,5 @@ self.addEventListener('fetch', (event) => {
         .catch(() => caches.match(event.request))
     );
     return;
-  }
-
-  // Fonts & external static assets: stale-while-revalidate
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        const networkPromise = fetch(event.request)
-          .then((response) => {
-            if (response.ok) {
-              const copy = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-            }
-            return response;
-          })
-          .catch(() => cached);
-        return cached || networkPromise;
-      })
-    );
   }
 });

@@ -27,7 +27,13 @@ import {
 } from './shared.js';
 import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
 import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
-import { OFFICIAL_RESOURCES_EN } from './guidance-en.js';
+import {
+  FIQH_RULINGS_EN,
+  OFFICIAL_RESOURCES_EN,
+  PACKING_ITEMS_EN,
+  TAXI_ROUTES_EN,
+  WOMEN_FIQH_EN,
+} from './guidance-en.js';
 import {
   renderZiyaratAndFieldGuides,
   renderHaramAtlasSection,
@@ -1045,38 +1051,64 @@ function resetSai(): void {
   showToast('تمت إعادة ضبط عداد السعي');
 }
 
+const clipAudioCache: Partial<Record<string, HTMLAudioElement>> = {};
+
+function playOfflineClipOrSpeak(clipUrl: string, fallbackText: string): void {
+  try {
+    let audio = clipAudioCache[clipUrl];
+    if (!audio) {
+      audio = new Audio(clipUrl);
+      clipAudioCache[clipUrl] = audio;
+    }
+    audio.currentTime = 0;
+    void audio.play().catch(() => speakText(fallbackText));
+  } catch {
+    speakText(fallbackText);
+  }
+}
+
 function showRuknYamani(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const dua = tawafCounter.getRuknYamaniDua();
   const title = document.getElementById('dhikr-modal-title');
   const body = document.getElementById('dhikr-modal-body');
-  if (title) title.textContent = '📍 الذكر المسنون بين الركن اليماني والحجر الأسود';
+  if (title) {
+    title.textContent = isEn
+      ? '📍 Authentic Dua: Yamani Corner to Black Stone'
+      : '📍 الذكر المسنون بين الركن اليماني والحجر الأسود';
+  }
   if (body) {
     body.innerHTML = `
       <div class="dua-arabic" style="font-size:1.35rem;font-weight:800;line-height:2;margin-bottom:0.75rem;">«${escapeHtml(dua.arabic)}»</div>
       <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">${escapeHtml(dua.transliteration)}</div>
-      <div style="font-size:0.85rem;color:var(--primary-ink);font-weight:700;">المصدر: ${escapeHtml(dua.sourceAr)}</div>
+      <div style="font-size:0.85rem;color:var(--primary-ink);font-weight:700;">${isEn ? 'Source:' : 'المصدر:'} ${escapeHtml(dua.sourceAr)}</div>
     `;
   }
   openDialogById('dhikr-modal');
-  speakText(dua.arabic);
+  playOfflineClipOrSpeak('/audio/rukn-yamani.mp3', dua.arabic);
 }
 
 function showSafaMarwaDhikr(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const d = saiCounter.getSafaMarwaDhikr();
   const title = document.getElementById('dhikr-modal-title');
   const body = document.getElementById('dhikr-modal-body');
-  if (title) title.textContent = '⛰️ ذكر الوقوف على الصفا والمروة';
+  if (title) title.textContent = isEn ? '⛰️ Dhikr on Mount Safa & Marwah' : '⛰️ ذكر الوقوف على الصفا والمروة';
   if (body) {
     body.innerHTML = `
       <div class="info-box-warn" style="margin-bottom:0.75rem;font-weight:700;">
-        عند أول صعود للصفا: ${escapeHtml(d.verseOnFirstSafa)}
+        ${isEn ? 'Upon ascending Safa the first time:' : 'عند أول صعود للصفا:'} ${escapeHtml(d.verseOnFirstSafa)}
       </div>
       <div class="dua-arabic" style="font-size:1.2rem;font-weight:800;line-height:2;margin-bottom:0.75rem;">«${escapeHtml(d.hillDhikr)}»</div>
-      <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.7;">${escapeHtml(d.instructionAr)}</p>
+      <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.7;">${escapeHtml(
+        isEn
+          ? 'Face the Qiblah on Safa & Marwah, recite Allahu Akbar 3×, pronounce this Sunnah dhikr, and make personal dua (repeating 3×). (Sahih Muslim 1218)'
+          : d.instructionAr
+      )}</p>
     `;
   }
   openDialogById('dhikr-modal');
-  speakText(d.hillDhikr);
+  playOfflineClipOrSpeak('/audio/safa-marwah.mp3', d.hillDhikr);
 }
 
 async function triggerSOSAlert(): Promise<void> {
@@ -1189,52 +1221,62 @@ async function triggerSOSAlert(): Promise<void> {
 }
 
 function renderFiqhSection(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const list = document.getElementById('fiqh-rulings-list');
   if (!list) return;
   list.innerHTML = fiqhAssistant
     .getAllRulings()
-    .map(
-      (r) => `
+    .map((r) => {
+      const en = FIQH_RULINGS_EN[r.id];
+      return `
     <details class="accordion-item">
-      <summary class="accordion-header">${escapeHtml(r.titleAr)}</summary>
+      <summary class="accordion-header">${escapeHtml(isEn && en ? en.titleEn : r.titleAr)}</summary>
       <div class="accordion-body">
-        <p><strong>السؤال:</strong> ${escapeHtml(r.questionAr)}</p>
-        <p style="margin:0.4rem 0;"><strong>الحكم الشرعي:</strong> ${escapeHtml(r.rulingArabic)}</p>
-        <p style="margin:0.4rem 0;"><strong>الإجراء المطلوب:</strong> ${escapeHtml(r.actionRequired)}</p>
+        <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(isEn && en ? en.questionEn : r.questionAr)}</p>
+        <p style="margin:0.4rem 0;"><strong>${isEn ? 'Scholarly Ruling:' : 'الحكم الشرعي:'}</strong> ${escapeHtml(isEn && en ? en.rulingEn : r.rulingArabic)}</p>
+        <p style="margin:0.4rem 0;"><strong>${isEn ? 'Required Action:' : 'الإجراء المطلوب:'}</strong> ${escapeHtml(isEn && en ? en.actionEn : r.actionRequired)}</p>
         <div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
-          <em>الدليل والمرجع:</em> ${escapeHtml(r.evidenceSummary)}
+          <em>${isEn ? 'Evidence & Source:' : 'الدليل والمرجع:'}</em> ${escapeHtml(isEn && en ? en.evidenceEn : r.evidenceSummary)}
         </div>
       </div>
     </details>
-  `
-    )
+  `;
+    })
     .join('');
 }
 
 function renderWomenFiqhSection(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const list = document.getElementById('women-fiqh-list');
   if (!list) return;
   list.innerHTML = womenFiqhCatalog
     .getAllItems()
-    .map(
-      (item, idx) => `
-    <details class="accordion-item women-topic" data-search="${escapeHtml(`${item.titleAr} ${item.questionAr} ${item.rulingAr} ${item.practicalGuidance}`)}">
-      <summary class="accordion-header" style="color:var(--women-accent);">${idx + 1}. ${escapeHtml(item.titleAr)}</summary>
+    .map((item, idx) => {
+      const en = WOMEN_FIQH_EN[item.id];
+      const title = isEn && en ? en.titleEn : item.titleAr;
+      const question = isEn && en ? en.questionEn : item.questionAr;
+      const ruling = isEn && en ? en.rulingEn : item.rulingAr;
+      const guidance = isEn && en ? en.guidanceEn : item.practicalGuidance;
+      const source = item.sourceText ? (isEn && en?.sourceEn ? en.sourceEn : item.sourceText) : '';
+      return `
+    <details class="accordion-item women-topic" data-search="${escapeHtml(`${title} ${question} ${ruling} ${guidance}`)}">
+      <summary class="accordion-header" style="color:var(--women-accent);">${idx + 1}. ${escapeHtml(title)}</summary>
       <div class="accordion-body">
-        <p><strong>السؤال:</strong> ${escapeHtml(item.questionAr)}</p>
+        <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(question)}</p>
         <div class="women-fatwa-box">
-          <strong>الفتوى والبيان:</strong> ${escapeHtml(item.rulingAr)}
+          <strong>${isEn ? 'Ruling:' : 'الفتوى والبيان:'}</strong> ${escapeHtml(ruling)}
         </div>
-        <p><strong>الإرشاد العملي:</strong> ${escapeHtml(item.practicalGuidance)}</p>
-        ${item.sourceText ? `<div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;"><em>الدليل والمرجع:</em> ${escapeHtml(item.sourceText)}</div>` : ''}
+        <p><strong>${isEn ? 'Practical Guidance:' : 'الإرشاد العملي:'}</strong> ${escapeHtml(guidance)}</p>
+        ${source ? `<div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;"><em>${isEn ? 'Evidence:' : 'الدليل والمرجع:'}</em> ${escapeHtml(source)}</div>` : ''}
       </div>
     </details>
-  `
-    )
+  `;
+    })
     .join('');
 }
 
 function renderPackingChecklist(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const categories: Array<{ key: ChecklistCategory; containerId: string }> = [
     { key: ChecklistCategory.TRAVEL_DOCUMENTS, containerId: 'pack-docs-list' },
     { key: ChecklistCategory.MENS_IHRAM, containerId: 'pack-men-list' },
@@ -1255,17 +1297,18 @@ function renderPackingChecklist(): void {
     if (!el) continue;
     const items = packingCatalog.getItemsByCategory(cat.key);
     el.innerHTML = items
-      .map(
-        (item) => `
+      .map((item) => {
+        const en = PACKING_ITEMS_EN[item.id];
+        return `
       <label class="pack-row" for="cb-${escapeHtml(item.id)}">
         <input type="checkbox" class="packing-cb" id="cb-${escapeHtml(item.id)}" value="${escapeHtml(item.id)}" ${saved.includes(item.id) ? 'checked' : ''}>
         <div>
-          <strong>${escapeHtml(item.nameAr)}</strong>
-          <div style="font-size:0.84rem;color:var(--text-muted);">${escapeHtml(item.descriptionAr)}</div>
+          <strong>${escapeHtml(isEn && en ? en.nameEn : item.nameAr)}</strong>
+          <div style="font-size:0.84rem;color:var(--text-muted);">${escapeHtml(isEn && en ? en.descEn : item.descriptionAr)}</div>
         </div>
       </label>
-    `
-      )
+    `;
+      })
       .join('');
   }
 
@@ -1276,6 +1319,7 @@ function renderPackingChecklist(): void {
 }
 
 function updatePackingProgress(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const checkedIds = Array.from(document.querySelectorAll<HTMLInputElement>('.packing-cb:checked')).map(
     (cb) => cb.value
   );
@@ -1285,7 +1329,11 @@ function updatePackingProgress(): void {
   const sumEl = document.getElementById('packing-status-summary');
   if (pctEl) pctEl.textContent = `${readiness.percentage}%`;
   if (barEl) barEl.style.width = `${readiness.percentage}%`;
-  if (sumEl) sumEl.textContent = `تم تجهيز ${readiness.checked} من ${readiness.total} عنصراً ضرورياً`;
+  if (sumEl) {
+    sumEl.textContent = isEn
+      ? `Prepared ${readiness.checked} of ${readiness.total} essential items`
+      : `تم تجهيز ${readiness.checked} من ${readiness.total} عنصراً ضرورياً`;
+  }
 
   try {
     localStorage.setItem(STORAGE_KEYS.PACKING, JSON.stringify(checkedIds));
@@ -1395,21 +1443,23 @@ function renderCurrencyAndTaxi(): void {
   if (rateInput) rateInput.value = String(currencyService.getRates().SAR_TO_EGP);
   updateCurrencyCalculation();
 
+  const isEn = getCurrentLanguage() === 'en';
   const taxiContainer = document.getElementById('taxi-routes-list');
   if (taxiContainer) {
     taxiContainer.innerHTML = currencyService
       .getAllTaxiRoutes()
-      .map(
-        (r) => `
+      .map((r) => {
+        const en = TAXI_ROUTES_EN[r.id];
+        return `
       <div class="info-box-neutral">
         <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--primary-ink);gap:0.5rem;">
-          <span>${r.city === 'MAKKAH' ? '🕋' : '🕌'} ${escapeHtml(r.fromAr)} ← ${escapeHtml(r.toAr)}</span>
-          <span style="color:var(--gold-dark);white-space:nowrap;">${r.fairPriceMinSAR} - ${r.fairPriceMaxSAR} ريال</span>
+          <span>${r.city === 'MAKKAH' ? '🕋' : '🕌'} ${escapeHtml(isEn && en ? `${en.fromEn} → ${en.toEn}` : `${r.fromAr} ← ${r.toAr}`)}</span>
+          <span style="color:var(--gold-dark);white-space:nowrap;">${r.fairPriceMinSAR}–${r.fairPriceMaxSAR} ${isEn ? 'SAR' : 'ريال'}</span>
         </div>
-        <div style="font-size:0.84rem;color:var(--text-muted);margin-top:0.25rem;">المسافة ~${r.distanceKm} كم • ${escapeHtml(r.adviceAr)}</div>
+        <div style="font-size:0.84rem;color:var(--text-muted);margin-top:0.25rem;">${isEn ? `~${r.distanceKm} km` : `المسافة ~${r.distanceKm} كم`} • ${escapeHtml(isEn && en ? en.adviceEn : r.adviceAr)}</div>
       </div>
-    `
-      )
+    `;
+      })
       .join('');
   }
 
@@ -1594,6 +1644,9 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTawafUI();
       renderSaiUI();
       renderZiyaratAndFieldGuides();
+      renderFiqhSection();
+      renderWomenFiqhSection();
+      renderPackingChecklist();
       renderHaramAtlasSection(currentAtlasFilter);
       renderGateWayfinder();
       renderCurrencyAndTaxi();
@@ -1659,15 +1712,22 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-calc-doubt')?.addEventListener('click', () => {
+    const isEn = getCurrentLanguage() === 'en';
     const l1 = Number((document.getElementById('lap-doubt-1') as HTMLSelectElement).value);
     const l2 = Number((document.getElementById('lap-doubt-2') as HTMLSelectElement).value);
     const res = fiqhAssistant.resolveLapDoubt(l1, l2);
     const resDiv = document.getElementById('lap-doubt-result');
     if (resDiv) {
       resDiv.style.display = 'block';
-      resDiv.innerHTML = `<strong>الفتوى الشرعية:</strong> ${escapeHtml(res.rulingArabic)}`;
+      resDiv.innerHTML = isEn
+        ? `<strong>Scholarly Ruling:</strong> Build on certainty (the lesser count): consider yourself in lap <strong>${res.recommendedLap}</strong> and continue to 7.`
+        : `<strong>الفتوى الشرعية:</strong> ${escapeHtml(res.rulingArabic)}`;
     }
-    showToast(`القاعدة: تعتبر نفسك في الشوط ${res.recommendedLap}`);
+    showToast(
+      isEn
+        ? `Rule: Count yourself at Lap ${res.recommendedLap}`
+        : `القاعدة: تعتبر نفسك في الشوط ${res.recommendedLap}`
+    );
   });
 
   document.getElementById('women-search-input')?.addEventListener('input', (e) => {

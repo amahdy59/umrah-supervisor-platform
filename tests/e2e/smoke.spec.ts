@@ -27,8 +27,12 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     expect(talbiyahStatus).toBe(200);
     const chimeStatus = (await page.request.get('/audio/lap-chime.wav')).status();
     expect(chimeStatus).toBe(200);
+    const ruknAudioStatus = (await page.request.get('/audio/rukn-yamani.mp3')).status();
+    expect(ruknAudioStatus).toBe(200);
+    const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
+    expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v9');
+    expect(swText).toContain('umrah-companion-v10');
 
     // Tawaf Focus Ritual mode opens, advances lap, and syncs counter
     await page.click('#btn-focus-tawaf');
@@ -59,12 +63,18 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#my-installments-modal')).toBeVisible();
     await page.click('[data-close-dialog="my-installments-modal"]');
 
-    // Complete AR -> EN -> AR switching including Atlas cards
+    // Complete AR -> EN -> AR switching including Atlas, Fiqh, Packing & Taxi cards
     await page.click('.header-tools [data-lang-toggle]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await page.click('[data-tab-target="haram-atlas"]');
     await expect(page.locator('#haram-atlas-cards')).toContainText('Door of the Kaaba');
+    await page.click('[data-tab-target="packing"]');
+    await expect(page.locator('#pack-docs-list')).toContainText('Valid Passport');
+    await page.click('[data-tab-target="fiqh"]');
+    await expect(page.locator('#fiqh-rulings-list')).toContainText('Losing Wudu Mid-Tawaf');
+    await page.click('[data-tab-target="gates-taxi"]');
+    await expect(page.locator('#taxi-routes-list')).toContainText('Haramain Train Station');
     await page.click('.header-tools [data-lang-toggle]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
@@ -126,6 +136,28 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#gam-count-wrap')).toBeHidden();
     await page.selectOption('#new-gam-plan', 'ROTATING_ROSCA');
     await expect(page.locator('#gam-turn-wrap')).toBeVisible();
+
+    // Two-way Cloud Pull confirmation dialog against mocked /api/sync
+    await page.route(/\/api\/sync(\?|$)/, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          mode: 'd1',
+          found: true,
+          updatedAt: '2026-11-25T20:00:00.000Z',
+          workspace: { settings: { tripTitle: 'Cloud Synced Group X', tripCode: '#CLD-X' } },
+        }),
+      });
+    });
+    await page.click('.top-primary-nav [data-tab-target="manifest"]');
+    await page.click('#btn-pull-cloud-group');
+    const pullModal = page.locator('#confirm-cloud-pull-modal');
+    await expect(pullModal).toBeVisible();
+    await expect(pullModal).toContainText('Cloud Synced Group X');
+    await page.click('#btn-pull-confirm-yes');
+    await expect(pullModal).toBeHidden();
+    await expect(page.locator('#metric-trip-title')).toHaveText('Cloud Synced Group X');
 
     // Reset confirmation modal guard from popover (open via evaluate or trigger)
     await page.evaluate(() => {

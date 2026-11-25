@@ -165,6 +165,93 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
     ar: '🎁 منافع وخدمات الحرمين الشريفين للمعتمرين',
     en: '🎁 Free Al-Haramain Services & Pilgrim Support',
   },
+
+  // Fiqh, Women Fiqh, Packing, Currency & Taxi (Deep i18n)
+  'fiqh.doubtTitle': {
+    ar: '⚖️ حاسبة الشك في عدد أشواط الطواف والسعي',
+    en: "⚖️ Tawaf / Sa'i Lap Uncertainty Calculator",
+  },
+  'fiqh.doubtBadge': { ar: 'قاعدة: البناء على اليقين', en: 'Rule: Build on Certainty' },
+  'fiqh.doubtLabel1': { ar: 'شككت هل طفت:', en: 'Unsure if I completed:' },
+  'fiqh.doubtLabel2': { ar: 'أم:', en: 'or:' },
+  'fiqh.doubtBtn': { ar: 'احسب الحكم الشرعي', en: 'Calculate Fiqh Ruling' },
+  'fiqh.rulingsTitle': {
+    ar: '📖 مسائل فقهية شائعة وجبر النواقص (مع الأدلة)',
+    en: '📖 Common Umrah Fiqh Issues & Remedies (With Evidence)',
+  },
+  'fiqh.roommateTitle': {
+    ar: '🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة',
+    en: '🤝 Shared Room Charter & Pilgrim Etiquette',
+  },
+  'fiqh.roommateBadge': { ar: 'آداب الصحبة في العمرة', en: 'Travel Companionship Ethics' },
+  'women.title': {
+    ar: '🧕 دليل فقه وأحكام المرأة في العمرة والزيارة',
+    en: "🧕 Women's Fiqh in Umrah & Madinah Visits",
+  },
+  'women.badge': { ar: 'مستخلص من «دليل المعتمر»', en: 'Verified Scholarly Rulings' },
+  'women.intro': {
+    ar: 'أحكام موثقة للمرأة المعتمرة (الحيض عند الميقات، الاستحاضة، النقاب والسدل، وتخصيص الألوان)، وفق فتاوى كبار العلماء مع الإشارة للمعتبر من الخلاف في مسائل الزيارة.',
+    en: 'Verified rulings for female pilgrims (menstruation at Miqat, istihadah spotting, niqab/gloves alternatives, hair trimming, and visiting Al-Rawdah).',
+  },
+  'women.searchLabel': { ar: 'ابحثي في أحكام المرأة:', en: "Search women's fiqh topics:" },
+  'packing.title': {
+    ar: '🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)',
+    en: '🧳 Pilgrim Packing Readiness Tracker (Auto-Saved)',
+  },
+  'packing.resetBtn': { ar: '🔄 إعادة تعيين', en: '🔄 Reset Checklist' },
+  'packing.pctLabel': { ar: 'نسبة اكتمال تجهيز أغراض الرحلة:', en: 'Trip packing readiness progress:' },
+  'packing.docsTitle': { ar: '📄 وثائق السفر والتصاريح', en: '📄 Travel Documents & Permits' },
+  'packing.requiredBadge': { ar: 'إلزامي', en: 'Mandatory' },
+  'packing.menTitle': { ar: '👔 حقيبة إحرام الرجال', en: "👔 Men's Ihram Essentials" },
+  'packing.womenTitle': { ar: '🧕 حقيبة المعتمرة', en: "🧕 Women's Ihram Essentials" },
+  'packing.healthTitle': { ar: '🧼 الصحة والعناية (بدون عطر)', en: '🧼 Health & Fragrance-Free Hygiene' },
+  'packing.dailyTitle': { ar: '🕌 مستلزمات الحرم اليومية', en: '🕌 Daily Al-Haramain Essentials' },
+  'packing.nusukTitle': {
+    ar: '📲 محفظة لقطات تصاريح نُسك (تعمل أوفلاين)',
+    en: '📲 Offline Nusuk Permit Screenshot Wallet',
+  },
+  'packing.nusukBadge': { ar: 'حفظ محلي', en: 'Saved Locally' },
+  'packing.nusukIntro': {
+    ar: 'ارفع لقطات شاشة واضحة لباركود تصريح العمرة أو الروضة من تطبيق «نُسك» لتصل إليها فوراً عند ضعف الشبكة داخل الحرم (مع إبقاء التطبيق الأصلي جاهزاً ورفع سطوع الشاشة).',
+    en: 'Upload clear QR screenshots of your Umrah or Rawdah Nusuk permits for instant offline access inside Al-Haramain.',
+  },
+  'packing.umrahPermit': { ar: '🕋 تصريح العمرة', en: '🕋 Umrah Permit' },
+  'packing.rawdahPermit': { ar: '🕌 تصريح الروضة الشريفة', en: '🕌 Rawdah Permit' },
+  'packing.uploadUmrah': { ar: '📤 رفع لقطة تصريح العمرة', en: '📤 Upload Umrah Screenshot' },
+  'packing.uploadRawdah': { ar: '📤 رفع لقطة تصريح الروضة', en: '📤 Upload Rawdah Screenshot' },
+  'gates.currencyTitle': { ar: '💱 محول العملات (بسعر قابل للتعديل)', en: '💱 Currency Converter (Editable Rate)' },
+  'gates.sarLabel': { ar: 'المبلغ بالريال السعودي (SAR):', en: 'Amount in Saudi Riyal (SAR):' },
+  'gates.rateLabel': { ar: 'سعر الصرف (1 ريال = ج.م):', en: 'Exchange Rate (1 SAR = EGP):' },
+  'gates.egpBox': { ar: 'بالجنيه المصري (EGP)', en: 'In Egyptian Pounds (EGP)' },
+  'gates.usdBox': { ar: 'بالدولار الأمريكي (USD)', en: 'In US Dollars (USD)' },
+  'gates.taxiTitle': { ar: '🚕 الأسعار الاسترشادية لسيارات الأجرة والنقل', en: '🚕 Official Reference Taxi & Transit Fares' },
+  'gates.taxiBadge': { ar: 'حماية من الاستغلال', en: 'Fair-Fare Protection' },
+  'gates.officialTitle': { ar: '🏛️ دليل الجهات الرسمية وأرقام الطوارئ بالمملكة', en: '🏛️ Official Saudi Authorities & 24/7 Hotlines' },
+  'gates.officialBadge': { ar: 'مصادر موثوقة 24/7', en: 'Verified 24/7 Hotlines' },
+  'focus.audioBtn': { ar: '🔊 استمع', en: '🔊 Listen' },
+  'focus.undoBtn': { ar: '↩️ تراجع شوط', en: '↩️ Undo Lap' },
+  'focus.sosBtn': { ar: '🆘 أنا تائه', en: '🆘 SOS' },
+
+  // Supervisor Mission Control Dashboard
+  'sup.metric.activeGroup': { ar: 'الفوج النشط حالياً', en: 'Active Group' },
+  'sup.metric.pilgrims': { ar: 'المعتمرون وكشف الحافلة', en: 'Pilgrims & Bus Boarding' },
+  'sup.metric.collected': { ar: 'المحصل من باقات السداد', en: 'Installments Collected' },
+  'sup.metric.sos': { ar: 'بلاغات التائهين النشطة', en: 'Active SOS Alerts' },
+  'sup.board.title': { ar: '🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة', en: '🗂️ Multi-Group Operations Board' },
+  'sup.board.pullBtn': { ar: '☁️ سحب من السحابة (D1)', en: '☁️ Pull from Cloud (D1)' },
+  'sup.manifest.title': { ar: '🚌 كشف حضور باص الفوج النشط + روابط QR', en: '🚌 Bus Manifest & Pilgrim QR Links' },
+  'sup.manifest.boardAll': { ar: '✅ تأكيد ركوب الجميع', en: '✅ Board All' },
+  'sup.manifest.exportCsv': { ar: '📥 تصدير CSV', en: '📥 Export CSV' },
+  'sup.rooming.title': { ar: '🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)', en: '🏨 Rooming Engine (Gender & Capacity Guard)' },
+  'sup.people.title': { ar: '👥 سجل الأشخاص الدائم عبر الرحلات (CRM)', en: '👥 Persistent Pilgrim Directory (CRM)' },
+  'sup.gameya.title': { ar: '💰 خطط الأقساط المرنة والجمعية', en: '💰 Flexible Installments & Gam’eya Plans' },
+  'sup.whatsapp.title': { ar: '💬 منشورات الواتساب المحدثة (7 مراحل)', en: '💬 WhatsApp Broadcast Hub (7 Phases)' },
+  'sup.print.title': { ar: '🖨️ مركز الطباعة النظيفة وأكواد QR الحقيقية', en: '🖨️ Clean Print Center & Scannable QR' },
+  'sup.sos.title': { ar: '🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)', en: '🚨 SOS Tracking Room (GPS & Maps)' },
+  'sup.sos.pullBtn': { ar: '☁️ تحديث من D1', en: '☁️ Pull D1 Alerts' },
+  'sup.women.title': { ar: '🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة', en: '🧕 Women Affairs & Al-Rawdah Coordination' },
+  'sup.luggage.title': { ar: '🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)', en: '🧳 Group Luggage Sorting & QR Tags' },
+  'sup.medical.title': { ar: '♿ السجل الطبي ورعاية كبار السن', en: '♿ Medical Care & Senior Mobility Registry' },
 };
 
 let currentLang: UiLanguage = 'ar';
@@ -196,6 +283,13 @@ export function applyLanguage(lang: UiLanguage): void {
     const key = el.dataset.i18n;
     if (key && DICTIONARY[key]) {
       el.textContent = DICTIONARY[key][lang];
+    }
+  });
+
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach((el) => {
+    const key = el.dataset.i18nPlaceholder;
+    if (key && DICTIONARY[key]) {
+      el.placeholder = DICTIONARY[key][lang];
     }
   });
 

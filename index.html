@@ -440,42 +440,42 @@
     <section id="tab-fiqh" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title" style="color:var(--gold-dark);">⚖️ حاسبة الشك في عدد أشواط الطواف والسعي</h2>
-          <span class="badge badge-warning">قاعدة: البناء على اليقين</span>
+          <h2 class="card-title" style="color:var(--gold-dark);" data-i18n="fiqh.doubtTitle">⚖️ حاسبة الشك في عدد أشواط الطواف والسعي</h2>
+          <span class="badge badge-warning" data-i18n="fiqh.doubtBadge">قاعدة: البناء على اليقين</span>
         </div>
         <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-          <label for="lap-doubt-1" style="font-weight:700;">شككت هل طفت:</label>
+          <label for="lap-doubt-1" style="font-weight:700;" data-i18n="fiqh.doubtLabel1">شككت هل طفت:</label>
           <select id="lap-doubt-1" class="field-input" style="width:auto;">
-            <option value="2">2 أشواط</option>
-            <option value="3" selected>3 أشواط</option>
-            <option value="4">4 أشواط</option>
-            <option value="5">5 أشواط</option>
-            <option value="6">6 أشواط</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
           </select>
-          <label for="lap-doubt-2">أم:</label>
+          <label for="lap-doubt-2" data-i18n="fiqh.doubtLabel2">أم:</label>
           <select id="lap-doubt-2" class="field-input" style="width:auto;">
-            <option value="3">3 أشواط</option>
-            <option value="4" selected>4 أشواط</option>
-            <option value="5">5 أشواط</option>
-            <option value="6">6 أشواط</option>
-            <option value="7">7 أشواط</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
           </select>
-          <button type="button" class="btn btn-gold" id="btn-calc-doubt">احسب الحكم الشرعي</button>
+          <button type="button" class="btn btn-gold" id="btn-calc-doubt" data-i18n="fiqh.doubtBtn">احسب الحكم الشرعي</button>
         </div>
         <div id="lap-doubt-result" class="info-box-warn" role="status" style="display:none;margin-top:0.85rem;"></div>
       </div>
 
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title">📖 مسائل فقهية شائعة وجبر النواقص (مع الأدلة)</h2>
+          <h2 class="card-title" data-i18n="fiqh.rulingsTitle">📖 مسائل فقهية شائعة وجبر النواقص (مع الأدلة)</h2>
         </div>
         <div id="fiqh-rulings-list"></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة</h2>
-          <span class="badge badge-primary">آداب الصحبة في العمرة</span>
+          <h2 class="card-title" data-i18n="fiqh.roommateTitle">🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة</h2>
+          <span class="badge badge-primary" data-i18n="fiqh.roommateBadge">آداب الصحبة في العمرة</span>
         </div>
         <div class="grid-2" style="margin-bottom:0;">
           <div class="info-box-neutral"><strong>🛌 النوم والراحة:</strong> خفض الصوت واستخدام السماعات، وعدم إشعال الإضاءة الساطعة فجأة على النائمين.</div>
@@ -490,14 +490,14 @@
     <section id="tab-women-fiqh" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
         <div class="card-header" style="border-bottom-color:var(--women-border);">
-          <h2 class="card-title" style="color:var(--women-accent);">🧕 دليل فقه وأحكام المرأة في العمرة والزيارة</h2>
-          <span class="badge" style="background:var(--women-border);color:var(--women-accent);">مستخلص من «دليل المعتمر»</span>
+          <h2 class="card-title" style="color:var(--women-accent);" data-i18n="women.title">🧕 دليل فقه وأحكام المرأة في العمرة والزيارة</h2>
+          <span class="badge" style="background:var(--women-border);color:var(--women-accent);" data-i18n="women.badge">مستخلص من «دليل المعتمر»</span>
         </div>
-        <p style="font-size:0.92rem;line-height:1.75;margin-bottom:0.85rem;">
+        <p style="font-size:0.92rem;line-height:1.75;margin-bottom:0.85rem;" data-i18n="women.intro">
           أحكام موثقة للمرأة المعتمرة (الحيض عند الميقات، الاستحاضة، النقاب والسدل، وتخصيص الألوان)، وفق فتاوى كبار العلماء مع الإشارة للمعتبر من الخلاف في مسائل الزيارة.
         </p>
         <search style="display:block;">
-          <label for="women-search-input" class="field-label">ابحثي في أحكام المرأة:</label>
+          <label for="women-search-input" class="field-label" data-i18n="women.searchLabel">ابحثي في أحكام المرأة:</label>
           <input type="search" id="women-search-input" name="womenSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="مثال: حيض، استحاضة، نقاب، سدل، تقصير، روضة...">
         </search>
       </div>
@@ -508,11 +508,11 @@
     <section id="tab-packing" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#064e3b 0%,#022c22 100%);color:white;">
         <div class="card-header" style="border-bottom-color:rgba(255,255,255,0.18);">
-          <h2 class="card-title" style="color:#fef08a;">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</h2>
-          <button type="button" class="btn btn-secondary" id="btn-reset-packing" style="min-height:40px;padding:0.25rem 0.75rem;font-size:0.84rem;">🔄 إعادة تعيين</button>
+          <h2 class="card-title" style="color:#fef08a;" data-i18n="packing.title">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</h2>
+          <button type="button" class="btn btn-secondary" id="btn-reset-packing" style="min-height:40px;padding:0.25rem 0.75rem;font-size:0.84rem;" data-i18n="packing.resetBtn">🔄 إعادة تعيين</button>
         </div>
         <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:0.4rem;">
-          <span>نسبة اكتمال تجهيز أغراض الرحلة:</span>
+          <span data-i18n="packing.pctLabel">نسبة اكتمال تجهيز أغراض الرحلة:</span>
           <span id="packing-percentage-label">0%</span>
         </div>
         <div style="background:rgba(255,255,255,0.2);height:14px;border-radius:10px;overflow:hidden;">
@@ -523,46 +523,46 @@
 
       <div class="grid-2">
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
-          <div class="card"><div class="card-header"><h3 class="card-title">📄 وثائق السفر والتصاريح</h3><span class="badge badge-danger">إلزامي</span></div><div id="pack-docs-list"></div></div>
-          <div class="card"><div class="card-header"><h3 class="card-title">👔 حقيبة إحرام الرجال</h3></div><div id="pack-men-list"></div></div>
-          <div class="card"><div class="card-header"><h3 class="card-title">🧕 حقيبة المعتمرة</h3></div><div id="pack-women-list"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title" data-i18n="packing.docsTitle">📄 وثائق السفر والتصاريح</h3><span class="badge badge-danger" data-i18n="packing.requiredBadge">إلزامي</span></div><div id="pack-docs-list"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title" data-i18n="packing.menTitle">👔 حقيبة إحرام الرجال</h3></div><div id="pack-men-list"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title" data-i18n="packing.womenTitle">🧕 حقيبة المعتمرة</h3></div><div id="pack-women-list"></div></div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
-          <div class="card"><div class="card-header"><h3 class="card-title">🧼 الصحة والعناية (بدون عطر)</h3></div><div id="pack-health-list"></div></div>
-          <div class="card"><div class="card-header"><h3 class="card-title">🕌 مستلزمات الحرم اليومية</h3></div><div id="pack-daily-list"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title" data-i18n="packing.healthTitle">🧼 الصحة والعناية (بدون عطر)</h3></div><div id="pack-health-list"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title" data-i18n="packing.dailyTitle">🕌 مستلزمات الحرم اليومية</h3></div><div id="pack-daily-list"></div></div>
 
           <div class="card" style="border:2px dashed var(--gold);">
             <div class="card-header">
-              <h3 class="card-title" style="color:var(--gold-dark);">📲 محفظة لقطات تصاريح نُسك (تعمل أوفلاين)</h3>
-              <span class="badge badge-warning">حفظ محلي</span>
+              <h3 class="card-title" style="color:var(--gold-dark);" data-i18n="packing.nusukTitle">📲 محفظة لقطات تصاريح نُسك (تعمل أوفلاين)</h3>
+              <span class="badge badge-warning" data-i18n="packing.nusukBadge">حفظ محلي</span>
             </div>
-            <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.65;margin-bottom:0.85rem;">
+            <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.65;margin-bottom:0.85rem;" data-i18n="packing.nusukIntro">
               ارفع لقطات شاشة واضحة لباركود تصريح العمرة أو الروضة من تطبيق «نُسك» لتصل إليها فوراً عند ضعف الشبكة داخل الحرم (مع إبقاء التطبيق الأصلي جاهزاً ورفع سطوع الشاشة).
             </p>
             <div style="font-size:0.84rem;color:var(--primary-ink);font-weight:700;margin-bottom:0.75rem;" id="nusuk-owner-meta"></div>
 
             <div class="grid-2" style="margin-bottom:0;">
               <div class="info-box-neutral" style="text-align:center;">
-                <strong>🕋 تصريح العمرة</strong>
+                <strong data-i18n="packing.umrahPermit">🕋 تصريح العمرة</strong>
                 <div id="nusuk-empty-umrah" style="font-size:0.84rem;color:var(--text-muted);margin:0.75rem 0;">لم تُرفع صورة بعد</div>
                 <img id="nusuk-preview-umrah" alt="صورة تصريح العمرة" style="display:none;max-width:100%;border-radius:10px;margin:0.6rem auto;border:1px solid var(--border);">
                 <label class="btn btn-gold" for="input-nusuk-umrah" style="width:100%;font-size:0.84rem;cursor:pointer;">
-                  📤 رفع لقطة تصريح العمرة
+                  <span data-i18n="packing.uploadUmrah">📤 رفع لقطة تصريح العمرة</span>
                   <input type="file" id="input-nusuk-umrah" accept="image/*" class="sr-only">
                 </label>
-                <button type="button" id="nusuk-clear-umrah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.82rem;">🗑️ حذف</button>
+                <button type="button" id="nusuk-clear-umrah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.82rem;">🗑️</button>
               </div>
 
               <div class="info-box-neutral" style="text-align:center;">
-                <strong>🕌 تصريح الروضة الشريفة</strong>
+                <strong data-i18n="packing.rawdahPermit">🕌 تصريح الروضة الشريفة</strong>
                 <div id="nusuk-empty-rawdah" style="font-size:0.84rem;color:var(--text-muted);margin:0.75rem 0;">لم تُرفع صورة بعد</div>
                 <img id="nusuk-preview-rawdah" alt="صورة تصريح الروضة" style="display:none;max-width:100%;border-radius:10px;margin:0.6rem auto;border:1px solid var(--border);">
                 <label class="btn btn-primary" for="input-nusuk-rawdah" style="width:100%;font-size:0.84rem;cursor:pointer;">
-                  📤 رفع لقطة تصريح الروضة
+                  <span data-i18n="packing.uploadRawdah">📤 رفع لقطة تصريح الروضة</span>
                   <input type="file" id="input-nusuk-rawdah" accept="image/*" class="sr-only">
                 </label>
-                <button type="button" id="nusuk-clear-rawdah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.82rem;">🗑️ حذف</button>
+                <button type="button" id="nusuk-clear-rawdah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.82rem;">🗑️</button>
               </div>
             </div>
           </div>
@@ -594,25 +594,25 @@
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <h2 class="card-title">💱 محول العملات (بسعر قابل للتعديل)</h2>
+            <h2 class="card-title" data-i18n="gates.currencyTitle">💱 محول العملات (بسعر قابل للتعديل)</h2>
           </div>
           <div class="form-grid" style="margin-bottom:0.75rem;">
             <div>
-              <label for="calc-sar" class="field-label">المبلغ بالريال السعودي (SAR):</label>
+              <label for="calc-sar" class="field-label" data-i18n="gates.sarLabel">المبلغ بالريال السعودي (SAR):</label>
               <input type="number" id="calc-sar" value="100" min="0" class="field-input" style="font-weight:800;">
             </div>
             <div>
-              <label for="rate-sar-egp" class="field-label">سعر الصرف (1 ريال = ج.م):</label>
+              <label for="rate-sar-egp" class="field-label" data-i18n="gates.rateLabel">سعر الصرف (1 ريال = ج.م):</label>
               <input type="number" id="rate-sar-egp" step="0.05" min="1" value="13.15" class="field-input">
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;">
             <div class="info-box-neutral" style="text-align:center;">
-              <div style="font-size:0.78rem;color:var(--text-muted);">بالجنيه المصري (EGP)</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);" data-i18n="gates.egpBox">بالجنيه المصري (EGP)</div>
               <div style="font-size:1.25rem;font-weight:800;color:var(--primary-ink);" id="calc-egp">1,315 ج.م</div>
             </div>
             <div class="info-box-neutral" style="text-align:center;">
-              <div style="font-size:0.78rem;color:var(--text-muted);">بالدولار الأمريكي (USD)</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);" data-i18n="gates.usdBox">بالدولار الأمريكي (USD)</div>
               <div style="font-size:1.25rem;font-weight:800;color:var(--gold-dark);" id="calc-usd">$26.7</div>
             </div>
           </div>
@@ -620,8 +620,8 @@
 
         <div class="card">
           <div class="card-header">
-            <h2 class="card-title">🚕 الأسعار الاسترشادية لسيارات الأجرة والنقل</h2>
-            <span class="badge badge-success">حماية من الاستغلال</span>
+            <h2 class="card-title" data-i18n="gates.taxiTitle">🚕 الأسعار الاسترشادية لسيارات الأجرة والنقل</h2>
+            <span class="badge badge-success" data-i18n="gates.taxiBadge">حماية من الاستغلال</span>
           </div>
           <div id="taxi-routes-list" style="display:flex;flex-direction:column;gap:0.65rem;"></div>
         </div>
@@ -629,8 +629,8 @@
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">🏛️ دليل الجهات الرسمية وأرقام الطوارئ بالمملكة</h2>
-          <span class="badge badge-danger">مصادر موثوقة 24/7</span>
+          <h2 class="card-title" data-i18n="gates.officialTitle">🏛️ دليل الجهات الرسمية وأرقام الطوارئ بالمملكة</h2>
+          <span class="badge badge-danger" data-i18n="gates.officialBadge">مصادر موثوقة 24/7</span>
         </div>
         <div id="official-resources-grid" class="grid-2" style="margin-bottom:0;"></div>
       </div>
@@ -833,9 +833,9 @@
       </div>
       <button type="button" id="btn-focus-advance" class="btn btn-primary focus-tap-btn" style="margin-bottom:0.7rem;">✅ أتممت الشوط — التالي</button>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-        <button type="button" id="btn-focus-undo" class="btn btn-secondary" style="flex:1;">↩️ تراجع شوط</button>
-        <button type="button" id="btn-focus-audio" class="btn btn-secondary" style="flex:1;">🔊 استمع</button>
-        <button type="button" id="btn-focus-sos" class="btn btn-danger" style="flex:1;">🆘 أنا تائه</button>
+        <button type="button" id="btn-focus-undo" class="btn btn-secondary" style="flex:1;" data-i18n="focus.undoBtn">↩️ تراجع شوط</button>
+        <button type="button" id="btn-focus-audio" class="btn btn-secondary" style="flex:1;" data-i18n="focus.audioBtn">🔊 استمع</button>
+        <button type="button" id="btn-focus-sos" class="btn btn-danger" style="flex:1;" data-i18n="focus.sosBtn">🆘 أنا تائه</button>
       </div>
     </div>
   </dialog>

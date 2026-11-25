@@ -165,22 +165,22 @@
     <!-- Live Metrics Bar -->
     <section class="metrics-grid" aria-label="ملخص حالة الفوج والأفواج">
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">الفوج النشط حالياً</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);" data-i18n="sup.metric.activeGroup">الفوج النشط حالياً</div>
         <div style="font-size:1.15rem;font-weight:800;color:var(--primary-ink);" id="metric-trip-title"></div>
         <span class="badge badge-success" style="margin-top:0.3rem;" id="metric-trip-stage"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">المعتمرون وكشف الحافلة</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);" data-i18n="sup.metric.pilgrims">المعتمرون وكشف الحافلة</div>
         <div style="font-size:1.25rem;font-weight:800;" id="metric-pilgrim-count"></div>
         <span style="font-size:0.8rem;color:var(--text-muted);" id="metric-bus-summary"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">المحصل من باقات السداد</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);" data-i18n="sup.metric.collected">المحصل من باقات السداد</div>
         <div style="font-size:1.3rem;font-weight:800;color:var(--gold-dark);" id="metric-gameya-total"></div>
         <span class="badge badge-warning" style="margin-top:0.3rem;" id="metric-gameya-pct"></span>
       </div>
       <div class="card" style="padding:1rem 1.2rem;">
-        <div style="font-size:0.8rem;color:var(--text-muted);">بلاغات التائهين النشطة</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);" data-i18n="sup.metric.sos">بلاغات التائهين النشطة</div>
         <div style="font-size:1.25rem;font-weight:800;color:var(--success);" id="sup-sos-count"></div>
         <span style="font-size:0.8rem;" id="sup-sos-sub"></span>
       </div>
@@ -190,19 +190,22 @@
     <section id="tab-manifest" class="tab-view active">
       <div class="card" style="margin-bottom:1.35rem;">
         <div class="card-header">
-          <h2 class="card-title">🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة</h2>
-          <span class="badge badge-primary">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
+          <h2 class="card-title" data-i18n="sup.board.title">🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة</h2>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-primary">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
+            <button type="button" id="btn-pull-cloud-group" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
+          </div>
         </div>
         <div id="multi-groups-board" class="grid-2" style="margin-bottom:0;"></div>
       </div>
 
       <div class="card" style="margin-bottom:1.35rem;">
         <div class="card-header">
-          <h2 class="card-title">🚌 كشف حضور باص الفوج النشط + روابط QR</h2>
+          <h2 class="card-title" data-i18n="sup.manifest.title">🚌 كشف حضور باص الفوج النشط + روابط QR</h2>
           <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary" id="manifest-count-badge"></span>
-            <button type="button" id="btn-board-all" class="btn btn-secondary" style="font-size:0.84rem;">✅ تأكيد ركوب الجميع</button>
-            <button type="button" id="btn-export-csv" class="btn btn-secondary" style="font-size:0.84rem;">📥 تصدير CSV</button>
+            <button type="button" id="btn-board-all" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.boardAll">✅ تأكيد ركوب الجميع</button>
+            <button type="button" id="btn-export-csv" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.exportCsv">📥 تصدير CSV</button>
           </div>
         </div>
 
@@ -289,7 +292,7 @@
     <section id="tab-people" class="tab-view" hidden>
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">👥 سجل الأشخاص الدائم عبر الرحلات (CRM)</h2>
+          <h2 class="card-title" data-i18n="sup.people.title">👥 سجل الأشخاص الدائم عبر الرحلات (CRM)</h2>
           <span class="badge badge-warning" id="people-count-badge"></span>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">
@@ -345,7 +348,7 @@
     <section id="tab-gameya" class="tab-view" hidden>
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">💰 خطط الأقساط المرنة والجمعية</h2>
+          <h2 class="card-title" data-i18n="sup.gameya.title">💰 خطط الأقساط المرنة والجمعية</h2>
           <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
         </div>
 
@@ -433,10 +436,10 @@
     <section id="tab-sos" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
+          <h2 class="card-title" data-i18n="sup.sos.title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-danger">حساب المسافة للفندق</span>
-            <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;">☁️ تحديث من D1</button>
+            <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;" data-i18n="sup.sos.pullBtn">☁️ تحديث من D1</button>
           </div>
         </div>
 
@@ -521,7 +524,7 @@
     <section id="tab-logistics-health" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.5rem;">
         <div class="card-header">
-          <h2 class="card-title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
+          <h2 class="card-title" data-i18n="sup.luggage.title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
           <button type="button" id="btn-open-luggage-print" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
         </div>
 
@@ -639,6 +642,7 @@
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
       <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" style="justify-content:flex-start;" data-i18n="tools.sync">☁️ مزامنة السحابة (D1)</button>
+      <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" style="justify-content:flex-start;" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn>🔒 تفعيل قفل الخصوصية (PIN)</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now hidden>🔐 قفل الشاشة الآن</button>
       <button type="button" id="btn-export-backup-json" class="btn btn-secondary" style="justify-content:flex-start;">💾 حفظ نسخة احتياطية (JSON)</button>

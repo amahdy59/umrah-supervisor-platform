@@ -411,3 +411,236 @@ export function bearingDirectionLabel(deg: number, isEn: boolean): string {
   const idx = Math.round(((deg % 360) / 45)) % 8;
   return (isEn ? dirsEn : dirsAr)[idx] || (isEn ? 'North ⬆️' : 'شمال ⬆️');
 }
+
+export const PACKING_ITEMS_EN: Record<string, { nameEn: string; descEn: string }> = {
+  'doc-passport': {
+    nameEn: 'Valid Passport (> 6 months remaining validity)',
+    descEn: 'Along with e-Visa printouts and an offline phone copy (entry denied below 6 months validity).',
+  },
+  'doc-nusuk': {
+    nameEn: 'Active Nusuk App & Confirmed Umrah / Rawdah Permits',
+    descEn: 'Keep clear QR screenshots saved offline and pick up a local Saudi SIM (STC/Mobily/Zain) at arrivals.',
+  },
+  'doc-tickets': {
+    nameEn: 'Flight Tickets, Boarding Pass & Hotel Confirmation',
+    descEn: 'Share backup digital/printed copies with your companion; mind Haramain train baggage limits (1 large + 1 carry-on).',
+  },
+  'men-ihram-cloth': {
+    nameEn: 'Breathable Cotton Ihram Set (Izar & Rida)',
+    descEn: 'Bring a spare second set; wear the first set before boarding if flying over a Miqat.',
+  },
+  'men-ihram-belt': {
+    nameEn: 'Zippered Ihram Waist Belt for Cash & Phone',
+    descEn: 'Secures the lower wrap comfortably and holds essentials safely.',
+  },
+  'men-slippers': {
+    nameEn: 'Supportive Open Sandals Showing Ankles & Toes',
+    descEn: 'Cushioned non-slip sandals suitable for long marble-floor walks across the Haram courtyards.',
+  },
+  'women-modest-dress': {
+    nameEn: 'Loose Plain Modest Abayas (Avoid Ritual White/Green)',
+    descEn: 'Dark or plain opaque wide garments with no excessive embroidery; designating green or white is an innovation.',
+  },
+  'women-khimar-sadl': {
+    nameEn: 'Drapeable Headscarf (Sadl) Instead of Fitted Niqab',
+    descEn: 'Draped gently over the face when passing non-mahram men; no rigid headband prop is needed.',
+  },
+  'women-socks': {
+    nameEn: 'Opaque Cotton Socks & Supportive Walking Shoes',
+    descEn: 'Permitted by consensus for women in Ihram to conceal feet cleanly during Tawaf and Sa’i.',
+  },
+  'hlth-unscented-soap': {
+    nameEn: 'Fragrance-Free Medical Soap & Shampoo',
+    descEn: 'Essential for washing cleanly during Ihram without violating fragrance restrictions.',
+  },
+  'hlth-vaseline': {
+    nameEn: 'Unscented Petroleum Jelly & Blister Plasters',
+    descEn: 'Prevents chafing during long walking circuits between hotel, Mataf, and Marwah.',
+  },
+  'hlth-personal-meds': {
+    nameEn: 'Prescription Medications, Electrolytes (ORS) & Face Masks',
+    descEn: 'Keep chronic meds and medical summary in carry-on luggage.',
+  },
+  'daily-shoe-bag': {
+    nameEn: 'Lightweight Cloth Drawstring Shoe Bag',
+    descEn: 'Keep shoes inside your backpack during Tawaf so cleaning crews do not clear unattended footwear.',
+  },
+  'daily-powerbank': {
+    nameEn: 'Carry-On Power Bank & Multi-Plug Adapter',
+    descEn: 'Power banks must stay in airline cabin carry-on luggage; wall adapters simplify shared hotel room charging.',
+  },
+  'daily-umbrella': {
+    nameEn: 'Light-Colored UV Umbrella & Refillable Water Bottle',
+    descEn: 'Protects against midday heat in Madinah plazas and courtyard walks.',
+  },
+};
+
+export const FIQH_RULINGS_EN: Record<
+  string,
+  { titleEn: string; questionEn: string; rulingEn: string; actionEn: string; evidenceEn: string }
+> = {
+  ACCIDENTAL_SCENT: {
+    titleEn: 'Using Perfumed Soap or Fragrance Forgetfully in Ihram',
+    questionEn: 'What if I accidentally washed with scented soap or applied fragrance while in Ihram?',
+    rulingEn: 'Whoever applies fragrance forgetfully or unknowingly incurs no sin and owes no ransom (fidyah).',
+    actionEn: 'Wash the scent off with water immediately upon remembering; continue your Umrah normally (Quran 2:286).',
+    evidenceEn: 'Fatawa of Shaykh Ibn Baz & Ibn Uthaymeen: forgotten prohibitions are forgiven and carry no penalty once removed.',
+  },
+  FORGETFUL_HAIR_NAIL_CLIP: {
+    titleEn: 'Unintentional Hair Falling or Cutting Nails Forgetfully',
+    questionEn: 'Does my Ihram break if hair fell unintentionally or I clipped a nail forgetfully?',
+    rulingEn: 'Your Ihram remains completely valid; accidental hair loss or forgetful trimming invalidates nothing.',
+    actionEn: 'Stop cutting immediately upon remembering and owe no fidyah according to major scholarly rulings.',
+    evidenceEn: 'Hadith: “Allah has pardoned my Ummah for mistakes, forgetfulness, and what they are coerced into.” (Ibn Majah).',
+  },
+  PASSING_MIQAT_WITHOUT_IHRAM: {
+    titleEn: 'Crossing the Miqat Border on Flight Without Assuming Ihram',
+    questionEn: 'I slept past the Miqat announcement and landed in Jeddah un-ihramed — what now?',
+    rulingEn: 'A pilgrim intending Umrah must not intentionally cross the Miqat without entering Ihram.',
+    actionEn:
+      'If possible, travel back out to the nearest land Miqat (Al-Juhfah/Rabigh or Al-Sayl al-Kabir) to assume Ihram with no sacrifice owed; otherwise, entering Ihram from Jeddah obligates a sacrificial dam (sheep) distributed to Makkah’s poor.',
+    evidenceEn: 'Statement of Ibn Abbas (RA) & Permanent Committee (Lajnah Da’imah).',
+  },
+  WUDU_BREAK_DURING_TAWAF: {
+    titleEn: 'Losing Wudu Mid-Tawaf',
+    questionEn: 'If my ablution breaks in Lap 4, do I restart all seven circuits?',
+    rulingEn: 'Exit calmly to the nearest washroom plaza, perform wudu, and resume.',
+    actionEn:
+      'Upon timely return without long interruption, major contemporary scholars permit resuming from the exact lap where you left off (or restarting calmly if unsure).',
+    evidenceEn: 'Fiqh maxim: “Hardship brings ease,” easing excessive crowd disruption.',
+  },
+  BLACK_STONE_CROWD_PUSHING: {
+    titleEn: 'Crowd Pushing to Touch or Kiss the Black Stone',
+    questionEn: 'Is kissing or touching the Black Stone required for Tawaf validity?',
+    rulingEn: 'Tawaf is 100% complete and valid without touching or kissing the Black Stone.',
+    actionEn:
+      'Harming fellow pilgrims by pushing is forbidden; simply point toward the Black Stone from afar with your right hand saying “Allahu Akbar” without halting crowd flow.',
+    evidenceEn: 'Sahih al-Bukhari (1613): The Prophet ﷺ pointed toward the Corner with a staff and declared Takbir.',
+  },
+  ISTIHADAH_NON_MENSTRUAL_BLEEDING: {
+    titleEn: 'Non-Menstrual Irregular Bleeding (Istihadah) During Umrah',
+    questionEn: 'Does light irregular spotting outside a normal cycle bar a woman from Tawaf?',
+    rulingEn: 'Istihadah does not prohibit prayer, entering Masjid al-Haram, or performing Tawaf.',
+    actionEn:
+      'Use clean protection, wash the area, and make fresh wudu right before each prayer or before starting Tawaf.',
+    evidenceEn: 'Sahih Hadith (Agreed Upon): “Perform wudu for every prayer.”',
+  },
+};
+
+export const WOMEN_FIQH_EN: Record<
+  string,
+  { titleEn: string; questionEn: string; rulingEn: string; guidanceEn: string; sourceEn?: string }
+> = {
+  MIQAT_MENSTRUATION: {
+    titleEn: 'Reaching the Miqat While Menstruating or Postnatal',
+    questionEn: 'Should a menstruating woman still enter Ihram at the Miqat or wait until pure in Makkah?',
+    rulingEn:
+      'She must bathe and assume Ihram at the Miqat just like everyone else, reciting Talbiyah and dhikr, but delays Tawaf until pure.',
+    guidanceEn:
+      'Never cross the Miqat without Ihram. Stay comfortably at the Makkah hotel until bleeding ends, perform ghusl, and then complete Tawaf and Sa’i.',
+    sourceEn: 'Agreed Upon (Hadith of Aisha RA): “Do everything a pilgrim does except do not circumambulate the House until you become pure.”',
+  },
+  IHRAM_CLOTHING: {
+    titleEn: 'Women’s Ihram Attire & Prohibited Items',
+    questionEn: 'Is there a prescribed uniform for women’s Ihram, and what is forbidden?',
+    rulingEn:
+      'Women enter Ihram in their everyday modest opaque loose clothing. Only two fitted garments are prohibited: stitched face niqab (burqa) and gloves.',
+    guidanceEn:
+      'Cover the face if desired by simply draping a headscarf down smoothly without a rigid visor or headband.',
+    sourceEn: 'Sahih al-Bukhari: “The woman in Ihram must not wear niqab nor gloves.”',
+  },
+  WHITE_GREEN_BIDAH: {
+    titleEn: 'Designating Special White or Green Dresses (Innovation)',
+    questionEn: 'Is a woman required or encouraged to wear all-white or all-green clothes in Ihram?',
+    rulingEn: 'No basis exists in the Sunnah for designating white or green dresses specifically for women’s Ihram.',
+    guidanceEn: 'Any dark or subdued non-transparent modest attire is appropriate.',
+    sourceEn: 'Dalil al-Mu’tamir pp. 17 & 54.',
+  },
+  FACE_VEIL_SADL: {
+    titleEn: 'Draping the Khimar (Sadl) Past Non-Mahram Men',
+    questionEn: 'How does a woman in Ihram shield her face near men if fitted niqab is disallowed?',
+    rulingEn:
+      'Drape the headscarf smoothly over the face; contact between cloth and skin carries no penalty, and headgear visors have no basis.',
+    guidanceEn:
+      'The Mother of the Believers Aisha (RA) narrated draping outer garments when riders passed by and lifting once past.',
+    sourceEn: 'Sunan Abi Dawud (Hadith of Aisha RA).',
+  },
+  TAWAF_NO_RAMAL: {
+    titleEn: 'No Brisk Walking (Ramal) or Uncovering Shoulder for Women',
+    questionEn: 'Do women jog in the first three Tawaf laps or hurry between the Sa’i green lights?',
+    rulingEn: 'Scholarly consensus agrees there is NO ramal, idtiba’, or brisk jogging for women in Tawaf or Sa’i.',
+    guidanceEn: 'Walk calmly with composure and stay toward outer Tawaf rings away from male crowd pressure.',
+    sourceEn: 'Consensus recorded by Ibn al-Mundhir & Imam al-Nawawi.',
+  },
+  MENSTRUATION_AFTER_TAWAF: {
+    titleEn: 'Menstruation Beginning After Tawaf Before Sa’i',
+    questionEn: 'If menstruation begins after finishing valid Tawaf, must she delay Sa’i?',
+    rulingEn:
+      'She may perform Sa’i between Safa and Marwah immediately, trim her hair tip, and exit Ihram validly.',
+    guidanceEn: 'Ritual purity is a condition for Tawaf around the Kaaba, whereas Safa–Marwah Sa’i remains valid even without it.',
+    sourceEn: 'Dalil al-Mu’tamir p. 44.',
+  },
+  TAQSEER_HAIR_CUT: {
+    titleEn: 'How Women Cut Hair (Taqsir) to Complete Umrah',
+    questionEn: 'How much hair does a woman cut at the end of Sa’i?',
+    rulingEn: 'Shaving is forbidden for women; they trim only a fingertip’s length (~1.5–2 cm) from the ends.',
+    guidanceEn: 'Gather hair ends privately inside your hotel room — never uncover hair in public at Marwah.',
+    sourceEn: 'Abu Dawud (Sahih): “There is no shaving for women; upon women is only trimming.”',
+  },
+  SHOE_SOCKS_PERMITTED: {
+    titleEn: 'Wearing Regular Socks & Stitched Shoes for Women',
+    questionEn: 'Can a woman wear ordinary stitched socks and closed walking shoes in Ihram?',
+    rulingEn: 'Yes — stitched clothing rules apply only to men; women may wear ordinary socks and comfortable shoes.',
+    guidanceEn: 'Wearing opaque cotton socks helps conceal the feet during prayer and Tawaf.',
+  },
+  SHARIA_HIJAB_CONDITIONS: {
+    titleEn: 'Criteria for Modest Abaya & Hijab Inside Al-Haramain',
+    questionEn: 'What qualifies as proper modest dress within the sacred precincts?',
+    rulingEn: 'Clothing intended for concealment: full coverage, loose fit, opaque fabric, unadorned, unscented.',
+    guidanceEn: 'Avoid overly sparkly, tight-waisted, perfume-scented, or sheer garments.',
+    sourceEn: 'Dalil al-Mu’tamir p. 128.',
+  },
+  VISITING_PROPHET_MOSQUE: {
+    titleEn: 'Praying at Al-Masjid an-Nabawi & Rawdah vs Graveyards',
+    questionEn: 'Should female pilgrims enter Al-Rawdah vs visiting cemeteries in Madinah?',
+    rulingEn:
+      'Praying at the Prophet’s Mosque and entering Al-Rawdah (with Nusuk permit) is prescribed; major scholars advise women against visiting cemeteries.',
+    guidanceEn: 'Send salutations (salawat) upon the Prophet ﷺ calmly from the mosque prayer halls.',
+    sourceEn: 'Fatawa of Ibn Baz & Ibn Uthaymeen (recognizing differences across schools for passing visits).',
+  },
+  ISTIHADAH_DIFFERENCE: {
+    titleEn: 'Distinguishing Regular Menstruation from Istihadah Spotting',
+    questionEn: 'If stress/travel spotting occurs outside normal menstrual days, should Tawaf wait?',
+    rulingEn: 'Irregular Istihadah blood does not suspend worship, prayer, or Tawaf.',
+    guidanceEn: 'Wash, place clean protection, perform wudu right before each prayer/Tawaf, and complete Umrah cleanly.',
+    sourceEn: 'Hadith of Fatimah bint Abi Hubaysh (Agreed Upon).',
+  },
+};
+
+export const TAXI_ROUTES_EN: Record<string, { fromEn: string; toEn: string; adviceEn: string }> = {
+  'mkk-haram-train': {
+    fromEn: 'Masjid al-Haram / Hotel',
+    toEn: 'Haramain Train Station (Al-Rusayfah)',
+    adviceEn: 'Pay no more than 35 SAR, or book via Uber/Careem/Bolt or Makkah Bus (~4 SAR).',
+  },
+  'mkk-haram-taneem': {
+    fromEn: 'Hotel / Haram',
+    toEn: 'Masjid Aisha (Al-Tan’eem)',
+    adviceEn: 'Public Makkah Bus costs 4 SAR per trip; shared rides run ~5–10 SAR per person.',
+  },
+  'mkk-haram-hira': {
+    fromEn: 'Masjid al-Haram',
+    toEn: 'Cave Hira (Hira Cultural District)',
+    adviceEn: 'Agree on waiting/return fare beforehand if returning with the same driver.',
+  },
+  'mad-haram-quba': {
+    fromEn: 'Al-Masjid an-Nabawi',
+    toEn: 'Quba Mosque',
+    adviceEn: 'Walk via shaded Darb al-Sunnah pedestrian boulevard (~3 km) or take plaza golf carts (~10 SAR).',
+  },
+  'mad-haram-train': {
+    fromEn: 'Al-Masjid an-Nabawi',
+    toEn: 'Madinah Haramain Train Station',
+    adviceEn: 'Use metered taxis or ride-hailing apps at official pickup zones.',
+  },
+};

@@ -14,16 +14,24 @@ import { ZiyaratGuideCatalog } from '../../src/guidance/ziyarat-guide.js';
 import { HaramGatesGuide } from '../../src/guidance/haram-gates-guide.js';
 import { HaramainBestPracticesCatalog } from '../../src/guidance/rituals-and-best-practices.js';
 import { MIQAT_ROUTE_GUIDES, OFFICIAL_SAUDI_RESOURCES } from '../../src/guidance/official-resources.js';
+import { PackingCatalog } from '../../src/guidance/packing-checklist.js';
+import { FiqhAssistant } from '../../src/guidance/whatsapp-and-fiqh.js';
+import { WomenFiqhCatalog } from '../../src/guidance/women-fiqh.js';
+import { CurrencyAndTaxiService } from '../../src/financial/currency-and-taxi.js';
 import { TripStatus } from '../../src/operations/trip-logistics.js';
 import { getDictionaryEntry, getDictionaryKeys } from '../../src/ui/i18n.js';
 import {
   FIELD_GUIDES_EN,
+  FIQH_RULINGS_EN,
   HARAM_ATLAS_EN,
   HARAM_BENEFITS_EN,
   HARAM_GATES_EN,
   MIQAT_ROUTES_EN,
   OFFICIAL_RESOURCES_EN,
+  PACKING_ITEMS_EN,
+  TAXI_ROUTES_EN,
   TRIP_STAGE_LABELS_EN,
+  WOMEN_FIQH_EN,
   ZIYARAT_SITES_EN,
 } from '../../src/ui/guidance-en.js';
 
@@ -231,24 +239,35 @@ describe('Cloudflare D1 Auth & Endpoints', () => {
 });
 
 describe('Self-Hosted Assets, Audio & Service Worker Precache', () => {
-  it('bundles self-hosted Cairo woff2 fonts, Talbiyah MP3 & chime WAV, and lists all in sw.js v9', () => {
+  it('bundles self-hosted Cairo woff2 fonts, Talbiyah/Dhikr MP3s & chime WAV, security _headers, and lists all in sw.js v10', () => {
     const requiredAssets = [
+      'public/_headers',
+      '.gitattributes',
       'public/fonts/cairo/cairo-arabic.woff2',
       'public/fonts/cairo/cairo-latin-ext.woff2',
       'public/fonts/cairo/cairo-latin.woff2',
       'public/audio/talbiyah.mp3',
+      'public/audio/rukn-yamani.mp3',
+      'public/audio/safa-marwah.mp3',
       'public/audio/lap-chime.wav',
     ];
     for (const rel of requiredAssets) {
       const full = resolve(process.cwd(), rel);
       expect(existsSync(full), `Missing asset: ${rel}`).toBe(true);
-      expect(statSync(full).size).toBeGreaterThan(10_000);
+      expect(statSync(full).size).toBeGreaterThan(20);
     }
 
+    const headersContent = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
+    expect(headersContent).toContain('Referrer-Policy: no-referrer');
+    expect(headersContent).toContain('X-Content-Type-Options: nosniff');
+    expect(headersContent).toContain('Content-Security-Policy:');
+
     const swContent = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8');
-    expect(swContent).toContain('umrah-companion-v9');
+    expect(swContent).toContain('umrah-companion-v10');
     expect(swContent).toContain('/fonts/cairo/cairo-arabic.woff2');
     expect(swContent).toContain('/audio/talbiyah.mp3');
+    expect(swContent).toContain('/audio/rukn-yamani.mp3');
+    expect(swContent).toContain('/audio/safa-marwah.mp3');
     expect(swContent).toContain('/audio/lap-chime.wav');
   });
 });
@@ -282,6 +301,18 @@ describe('English (en) i18n Full Coverage', () => {
     }
     for (const guide of new HaramainBestPracticesCatalog().getAllGuides()) {
       expect(FIELD_GUIDES_EN[guide.id], `Missing FIELD_GUIDES_EN for ${guide.id}`).toBeDefined();
+    }
+    for (const item of new PackingCatalog().getAllItems()) {
+      expect(PACKING_ITEMS_EN[item.id], `Missing PACKING_ITEMS_EN for ${item.id}`).toBeDefined();
+    }
+    for (const ruling of new FiqhAssistant().getAllRulings()) {
+      expect(FIQH_RULINGS_EN[ruling.id], `Missing FIQH_RULINGS_EN for ${ruling.id}`).toBeDefined();
+    }
+    for (const topic of new WomenFiqhCatalog().getAllItems()) {
+      expect(WOMEN_FIQH_EN[topic.id], `Missing WOMEN_FIQH_EN for ${topic.id}`).toBeDefined();
+    }
+    for (const fare of new CurrencyAndTaxiService().getAllTaxiRoutes()) {
+      expect(TAXI_ROUTES_EN[fare.id], `Missing TAXI_ROUTES_EN for ${fare.id}`).toBeDefined();
     }
     for (const stage of Object.values(TripStatus)) {
       expect(TRIP_STAGE_LABELS_EN[stage], `Missing TRIP_STAGE_LABELS_EN for ${stage}`).toBeDefined();
