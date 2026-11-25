@@ -1,6 +1,7 @@
 import qrcode from 'qrcode-generator';
 import { TripStatus } from '../operations/trip-logistics.js';
-import { t } from './i18n.js';
+import { getCurrentLanguage, t } from './i18n.js';
+import { TRIP_STAGE_LABELS_EN } from './guidance-en.js';
 
 export const TRIP_STAGE_LABELS: Record<TripStatus, string> = {
   [TripStatus.DRAFT]: 'مسودة الإعداد',
@@ -12,6 +13,10 @@ export const TRIP_STAGE_LABELS: Record<TripStatus, string> = {
   [TripStatus.RETURN_TRANSIT]: 'الاستعداد للعودة',
   [TripStatus.COMPLETED]: 'رحلة مكتملة (أرشيف)',
 };
+
+export function getTripStageLabel(stage: TripStatus): string {
+  return getCurrentLanguage() === 'en' ? TRIP_STAGE_LABELS_EN[stage] : TRIP_STAGE_LABELS[stage];
+}
 
 export function escapeHtml(str: string): string {
   return String(str)
@@ -240,6 +245,18 @@ export function initThemeSync(): void {
   });
 }
 
+export function updateNetworkStatusBadge(): void {
+  const el = document.getElementById('network-status-pill');
+  if (!el) return;
+  if (navigator.onLine) {
+    el.textContent = t('tools.netOnline');
+    el.className = 'badge badge-success';
+  } else {
+    el.textContent = t('tools.netOffline');
+    el.className = 'badge badge-warning';
+  }
+}
+
 export function registerServiceWorkerAndNetworkStatus(): void {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -249,21 +266,9 @@ export function registerServiceWorkerAndNetworkStatus(): void {
     });
   }
 
-  const updateBadge = () => {
-    const el = document.getElementById('network-status-pill');
-    if (!el) return;
-    if (navigator.onLine) {
-      el.textContent = 'جاهز أوفلاين ✅';
-      el.className = 'badge badge-success';
-    } else {
-      el.textContent = 'وضع بدون إنترنت 📴';
-      el.className = 'badge badge-warning';
-    }
-  };
-
-  window.addEventListener('online', updateBadge);
-  window.addEventListener('offline', updateBadge);
-  updateBadge();
+  window.addEventListener('online', updateNetworkStatusBadge);
+  window.addEventListener('offline', updateNetworkStatusBadge);
+  updateNetworkStatusBadge();
 }
 
 let lightboxWired = false;

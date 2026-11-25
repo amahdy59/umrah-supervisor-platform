@@ -17,9 +17,10 @@
   <link rel="icon" type="image/png" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="theme-color" content="#064e3b">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Self-hosted Cairo font (precached by sw.js, works fully offline) -->
+  <link rel="preload" href="/fonts/cairo/cairo-arabic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/cairo/cairo-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/src/ui/styles/cairo-font.css">
   <link rel="stylesheet" href="/src/ui/styles/design-system.css">
   <style>
     :root { --header-height: 5.5rem; }
@@ -114,7 +115,7 @@
   </style>
 </head>
 <body>
-  <a href="#main-content" class="skip-link">تخطي إلى المحتوى الرئيسي</a>
+  <a href="#main-content" class="skip-link" data-i18n="nav.skip">تخطي إلى المحتوى الرئيسي</a>
   <div id="sticky-header-sentinel" aria-hidden="true" style="height:1px;"></div>
 
   <header class="sticky-bar-container">
@@ -122,7 +123,7 @@
       <div class="logo-area">
         <div class="logo-icon" aria-hidden="true">📋</div>
         <div class="app-title">
-          <h1>غرفة عمليات مشرف العمرة <span dir="ltr" style="display:inline-block;font-size:0.88rem;font-weight:700;">(Mission Control)</span></h1>
+          <h1 data-i18n="app.supervisor.title">غرفة عمليات مشرف العمرة (Mission Control)</h1>
           <p id="header-active-stage">إدارة الأفواج المتزامنة والمتتابعة، سجل الأشخاص، والأقساط</p>
         </div>
       </div>
@@ -131,29 +132,29 @@
         <span id="network-status-pill" class="badge badge-success">جاهز ✅</span>
         <label for="active-group-switcher" class="sr-only">اختر الفوج النشط</label>
         <select id="active-group-switcher" class="group-select"></select>
-        <button type="button" id="btn-new-group" class="header-chip-btn" style="background:#92400e;border-color:#fde68a;">➕ فوج جديد</button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings>⚙️ إعدادات الفوج</button>
+        <button type="button" id="btn-new-group" class="header-chip-btn" style="background:#92400e;border-color:#fde68a;" data-i18n="tools.newGroup">➕ فوج جديد</button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
-        <button type="button" id="btn-cloud-sync-now" class="header-chip-btn desktop-only-tools">☁️ مزامنة</button>
+        <button type="button" id="btn-cloud-sync-now" class="header-chip-btn desktop-only-tools" data-i18n="tools.sync">☁️ مزامنة</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-lang-toggle>🌐 English</button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-pin-lock-now hidden>🔒 قفل</button>
-        <a href="/" class="header-chip-btn desktop-only-tools">🤲 تطبيق المعتمر</a>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-pin-lock-now data-i18n="tools.pinLock" hidden>🔒 قفل</button>
+        <a href="/" class="header-chip-btn desktop-only-tools" data-i18n="tools.pilgrimApp">🤲 تطبيق المعتمر</a>
       </div>
     </div>
 
     <nav class="top-primary-nav" aria-label="أقسام لوحة المشرف">
       <div class="nav-list-inline">
-        <button type="button" class="mode-btn active" data-tab-target="manifest" aria-current="page">🚌 الأفواج والتسكين</button>
-        <button type="button" class="mode-btn" data-tab-target="people">👥 سجل الأشخاص</button>
-        <button type="button" class="mode-btn" data-tab-target="gameya">💰 الأقساط والجمعية</button>
-        <button type="button" class="mode-btn" data-tab-target="whatsapp">💬 منشورات الواتساب</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="print">🖨️ الطباعة و QR</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos">🚨 الطوارئ</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-guide">🧕 فقه النساء</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas">⛩️ أطلس الحرمين</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health">🧳 الأمتعة والطب</button>
+        <button type="button" class="mode-btn active" data-tab-target="manifest" data-i18n="sup.nav.manifest" aria-current="page">🚌 الأفواج والتسكين</button>
+        <button type="button" class="mode-btn" data-tab-target="people" data-i18n="sup.nav.people">👥 سجل الأشخاص</button>
+        <button type="button" class="mode-btn" data-tab-target="gameya" data-i18n="sup.nav.gameya">💰 الأقساط والجمعية</button>
+        <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 منشورات الواتساب</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="print" data-i18n="sup.nav.print">🖨️ الطباعة و QR</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-guide" data-i18n="sup.nav.women">🧕 فقه النساء</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas" data-i18n="sup.nav.atlas">⛩️ أطلس الحرمين</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب</button>
       </div>
-      <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="sup-more-popover">
+      <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="sup-more-popover" data-i18n="nav.more">
         ☰ المزيد والأدوات
       </button>
     </nav>
@@ -433,7 +434,10 @@
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
           <h2 class="card-title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
-          <span class="badge badge-danger">حساب المسافة للفندق</span>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-danger">حساب المسافة للفندق</span>
+            <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;">☁️ تحديث من D1</button>
+          </div>
         </div>
 
         <form id="add-sos-form" class="form-inline-grid">
@@ -587,17 +591,17 @@
     <section id="tab-haram-atlas" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title">⛩️ الدليل المصوّر لأبواب الحرمين ومنافعهما والمعالم (مرجع المشرف)</h2>
-          <span class="badge badge-success">صور حقيقية لمكة والمدينة</span>
+          <h2 class="card-title" data-i18n="sup.atlas.title">⛩️ الدليل المصوّر لأبواب الحرمين ومنافعهما والمعالم (مرجع المشرف)</h2>
+          <span class="badge badge-success" data-i18n="sup.atlas.badge">صور حقيقية لمكة والمدينة</span>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;">
           مرجع ميداني للمشرف لتوجيه المعتمرين عند البوابات، شرح منافع الحرمين الشريفين (زمزم، العربات، أمانات الحقائب، الإفتاء، العيادات)، وتحضير جولات المزارات بالصور (قباء، أحد، القبلتين، البقيع، حراء، وعرفات).
         </p>
         <div class="atlas-filter-bar" role="group" aria-label="تصفية مرجع المعالم والأبواب">
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ALL" aria-pressed="true">🕌 الكل</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MAKKAH" aria-pressed="false">🕋 مكة وأبوابها</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MADINAH" aria-pressed="false">🌴 المدينة والروضة</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ZIYARAT" aria-pressed="false">⛰️ المزارات والمشاعر</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ALL" aria-pressed="true" data-i18n="sup.atlas.filter.all">🕌 الكل</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MAKKAH" aria-pressed="false" data-i18n="sup.atlas.filter.makkah">🕋 مكة وأبوابها</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MADINAH" aria-pressed="false" data-i18n="sup.atlas.filter.madinah">🌴 المدينة والروضة</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ZIYARAT" aria-pressed="false" data-i18n="sup.atlas.filter.ziyarat">⛰️ المزارات والمشاعر</button>
         </div>
       </div>
 
@@ -605,7 +609,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">🎁 منافع وخدمات الحرمين الشريفين للمعتمرين</h2>
+          <h2 class="card-title" data-i18n="sup.atlas.benefitsTitle">🎁 منافع وخدمات الحرمين الشريفين للمعتمرين</h2>
           <span class="badge badge-primary">توجيه ميداني للفوج</span>
         </div>
         <div id="sup-haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
@@ -615,26 +619,26 @@
 
   <!-- Mobile Bottom Bar (5 spacious slots) -->
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع للمشرف">
-    <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span>الأفواج</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span>الأشخاص</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span>الأقساط</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span>الواتساب</span></button>
-    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">☰</span><span>المزيد</span></button>
+    <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span data-i18n="sup.nav.mobile.manifest">الأفواج</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span data-i18n="sup.nav.mobile.people">الأشخاص</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span data-i18n="sup.nav.mobile.gameya">الأقساط</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">الواتساب</span></button>
+    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">☰</span><span data-i18n="nav.mobile.more">المزيد</span></button>
   </nav>
 
   <!-- Shared Mobile & Tablet "More" Popover -->
   <div id="sup-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);">أقسام وأدوات المشرف</div>
+    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">أقسام وأدوات المشرف</div>
     <nav class="more-popover-grid" aria-label="أقسام إضافية للمشرف">
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="print">🖨️ مركز الطباعة و QR</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos">🚨 الطوارئ والموارد الرسمية</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-guide">🧕 فقه النساء والروضة</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="haram-atlas">⛩️ أطلس الحرمين والمزارات</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health">🧳 الأمتعة والسجل الطبي</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings>⚙️ إعدادات الفوج النشط</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="print" data-i18n="sup.nav.print">🖨️ مركز الطباعة و QR</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ والموارد الرسمية</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-guide" data-i18n="sup.nav.women">🧕 فقه النساء والروضة</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="haram-atlas" data-i18n="sup.nav.atlas">⛩️ أطلس الحرمين والمزارات</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والسجل الطبي</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج النشط</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
-      <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" style="justify-content:flex-start;">☁️ مزامنة السحابة (D1)</button>
+      <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" style="justify-content:flex-start;" data-i18n="tools.sync">☁️ مزامنة السحابة (D1)</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn>🔒 تفعيل قفل الخصوصية (PIN)</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now hidden>🔐 قفل الشاشة الآن</button>
       <button type="button" id="btn-export-backup-json" class="btn btn-secondary" style="justify-content:flex-start;">💾 حفظ نسخة احتياطية (JSON)</button>
@@ -643,7 +647,7 @@
         <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
       </label>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo>🔄 استعادة البيانات الافتراضية</button>
-      <a href="/" class="btn btn-gold" style="text-decoration:none;">🤲 معاينة تطبيق المعتمر</a>
+      <a href="/" class="btn btn-gold" style="text-decoration:none;" data-i18n="tools.pilgrimApp">🤲 معاينة تطبيق المعتمر</a>
     </nav>
   </div>
 
@@ -713,6 +717,10 @@
       <div style="margin-bottom:1rem;">
         <label for="set-meeting" class="field-label">نقطة التجمع المعتمدة بالحرم:</label>
         <input id="set-meeting" class="field-input">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label for="set-sync-token" class="field-label">رمز مصادقة المزامنة السحابية D1 (SYNC_SECRET - اختياري):</label>
+        <input id="set-sync-token" type="password" dir="ltr" autocomplete="off" class="field-input" placeholder="Bearer token إذا كان مفعّلاً على Cloudflare Pages">
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق</button>
     </form>

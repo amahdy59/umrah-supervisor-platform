@@ -1,4 +1,4 @@
-const CACHE_NAME = 'umrah-companion-v8';
+const CACHE_NAME = 'umrah-companion-v9';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -7,6 +7,14 @@ const PRECACHE_URLS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
+  // Self-hosted Cairo font subsets (no CDN dependency)
+  '/fonts/cairo/cairo-arabic.woff2',
+  '/fonts/cairo/cairo-latin-ext.woff2',
+  '/fonts/cairo/cairo-latin.woff2',
+  // Offline audio feedback
+  '/audio/lap-chime.wav',
+  '/audio/talbiyah.mp3',
+  // Makkah images
   '/images/makkah/kaaba-door.webp',
   '/images/makkah/kaaba-courtyard.webp',
   '/images/makkah/gate-abdulaziz.webp',
@@ -19,6 +27,7 @@ const PRECACHE_URLS = [
   '/images/makkah/jabal-al-nour.webp',
   '/images/makkah/jabal-thawr.webp',
   '/images/makkah/jabal-arafat.webp',
+  // Madinah images
   '/images/madinah/nabawi-bab-salam.webp',
   '/images/madinah/nabawi-bab-uthman-25.webp',
   '/images/madinah/nabawi-rawdah.webp',

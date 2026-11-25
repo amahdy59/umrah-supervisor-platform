@@ -7,7 +7,7 @@ import { CurrencyAndTaxiService } from '../financial/currency-and-taxi.js';
 import { EmergencySOSDispatcher, Hotel, TripStatus } from '../operations/trip-logistics.js';
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
 import {
-  TRIP_STAGE_LABELS,
+  getTripStageLabel,
   escapeHtml,
   buildWhatsAppUrl,
   renderQrSvg,
@@ -22,17 +22,23 @@ import {
   toggleColorScheme,
   updateThemeButtonLabel,
   initImageLightbox,
+  updateNetworkStatusBadge,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
-import { initLanguage, toggleLanguage } from './i18n.js';
+import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
+import { OFFICIAL_RESOURCES_EN } from './guidance-en.js';
 import {
   renderZiyaratAndFieldGuides,
   renderHaramAtlasSection,
   renderGateWayfinder,
   detectNearestHaramGate,
 } from './pilgrim/atlas-view.js';
-import { loadPersonalInstallmentsFromStorageAndParams, openMyInstallmentsModal } from './pilgrim/installments-view.js';
+import {
+  inspectPersonalInstallmentsFromStorageAndParams,
+  setPersonalInstallmentData,
+  openMyInstallmentsModal,
+} from './pilgrim/installments-view.js';
 import { postLiveSosToCloud, fetchBadgeFromCloud } from './cloud-sync.js';
 
 interface PilgrimProfile {
@@ -115,15 +121,66 @@ const HOTEL_PRESETS: Record<
   },
 };
 
-const STAGE_RELEVANCE: Record<TripStatus, { hintAr: string; targetTab: string; ctaAr: string }> = {
-  [TripStatus.DRAFT]: { hintAr: 'تحقق من جاهزية جواز السفر (صلاحية > 6 أشهر) وقائمة الحقيبة.', targetTab: 'packing', ctaAr: '🧳 افتح قائمة الحقيبة' },
-  [TripStatus.REGISTRATION_OPEN]: { hintAr: 'تأكد من تفعيل تطبيق نُسك وحفظ تصاريح العمرة والروضة.', targetTab: 'packing', ctaAr: '📲 محفظة نُسك' },
-  [TripStatus.PRE_DEPARTURE]: { hintAr: 'موعد التجهيز للسفر: راجع الحقيبة وتأكد من ارتداء الإحرام قبل صعود الطائرة.', targetTab: 'packing', ctaAr: '✅ راجع جاهزية الحقيبة' },
-  [TripStatus.IN_TRANSIT]: { hintAr: 'أنت في طريقك للميقات: راجع مواضع الإحرام والتلبية ومحظورات الإحرام.', targetTab: 'ziyarat', ctaAr: '🧭 دليل الميقات' },
-  [TripStatus.IN_MAKKAH]: { hintAr: 'أهلاً بك في مكة: استخدم عداد الطواف والسعي ودليل بوابات الحرم للعودة للفندق.', targetTab: 'rituals', ctaAr: '🕋 عداد الطواف والسعي' },
-  [TripStatus.IN_MADINAH]: { hintAr: 'أهلاً بك في المدينة المنورة: راجع مزارات قباء وأحد وتصاريح الروضة الشريفة.', targetTab: 'ziyarat', ctaAr: '🌴 مزارات المدينة' },
-  [TripStatus.RETURN_TRANSIT]: { hintAr: 'تذكير المغادرة: طواف الوداع، وضوابط عبوة زمزم (5 لتر) المغلفة بمطار جدة أو المدينة.', targetTab: 'ziyarat', ctaAr: '🛫 ضوابط زمزم والمطار' },
-  [TripStatus.COMPLETED]: { hintAr: 'تقبل الله عمرتكم! يمكنك طباعة شهادة إتمام العمرة التذكارية من بطاقتك.', targetTab: 'rituals', ctaAr: '📜 عرض الشهادة' },
+const STAGE_RELEVANCE: Record<
+  TripStatus,
+  { hintAr: string; hintEn: string; targetTab: string; ctaAr: string; ctaEn: string }
+> = {
+  [TripStatus.DRAFT]: {
+    hintAr: 'تحقق من جاهزية جواز السفر (صلاحية > 6 أشهر) وقائمة الحقيبة.',
+    hintEn: 'Verify passport validity (> 6 months) and complete your packing checklist.',
+    targetTab: 'packing',
+    ctaAr: '🧳 افتح قائمة الحقيبة',
+    ctaEn: '🧳 Open Packing List',
+  },
+  [TripStatus.REGISTRATION_OPEN]: {
+    hintAr: 'تأكد من تفعيل تطبيق نُسك وحفظ تصاريح العمرة والروضة.',
+    hintEn: 'Ensure your Nusuk account is active and save screenshots of your Umrah & Rawdah permits.',
+    targetTab: 'packing',
+    ctaAr: '📲 محفظة نُسك',
+    ctaEn: '📲 Nusuk Wallet',
+  },
+  [TripStatus.PRE_DEPARTURE]: {
+    hintAr: 'موعد التجهيز للسفر: راجع الحقيبة وتأكد من ارتداء الإحرام قبل صعود الطائرة.',
+    hintEn: 'Pre-departure checklist: review essentials and wear Ihram garments before boarding if flying via Miqat.',
+    targetTab: 'packing',
+    ctaAr: '✅ راجع جاهزية الحقيبة',
+    ctaEn: '✅ Review Checklist',
+  },
+  [TripStatus.IN_TRANSIT]: {
+    hintAr: 'أنت في طريقك للميقات: راجع مواضع الإحرام والتلبية ومحظورات الإحرام.',
+    hintEn: 'En route to Miqat: review Ihram prohibitions, route guides, and Talbiyah.',
+    targetTab: 'ziyarat',
+    ctaAr: '🧭 دليل الميقات',
+    ctaEn: '🧭 Miqat Guide',
+  },
+  [TripStatus.IN_MAKKAH]: {
+    hintAr: 'أهلاً بك في مكة: استخدم عداد الطواف والسعي ودليل بوابات الحرم للعودة للفندق.',
+    hintEn: 'Welcome to Makkah: use the Tawaf & Sa’i counters and Haram gate wayfinder to return safely.',
+    targetTab: 'rituals',
+    ctaAr: '🕋 عداد الطواف والسعي',
+    ctaEn: '🕋 Tawaf & Sa’i Counter',
+  },
+  [TripStatus.IN_MADINAH]: {
+    hintAr: 'أهلاً بك في المدينة المنورة: راجع مزارات قباء وأحد وتصاريح الروضة الشريفة.',
+    hintEn: 'Welcome to Madinah: explore Quba & Uhud ziyarat guides and Rawdah Nusuk permit timing.',
+    targetTab: 'ziyarat',
+    ctaAr: '🌴 مزارات المدينة',
+    ctaEn: '🌴 Madinah Ziyarat',
+  },
+  [TripStatus.RETURN_TRANSIT]: {
+    hintAr: 'تذكير المغادرة: طواف الوداع، وضوابط عبوة زمزم (5 لتر) المغلفة بمطار جدة أو المدينة.',
+    hintEn: 'Departure reminder: review airport 5L Zamzam wrapping rules at Jeddah & Madinah terminals.',
+    targetTab: 'ziyarat',
+    ctaAr: '🛫 ضوابط زمزم والمطار',
+    ctaEn: '🛫 Zamzam Airport Rules',
+  },
+  [TripStatus.COMPLETED]: {
+    hintAr: 'تقبل الله عمرتكم! يمكنك طباعة شهادة إتمام العمرة التذكارية من بطاقتك.',
+    hintEn: 'May Allah accept your Umrah! View or print your commemorative completion certificate.',
+    targetTab: 'rituals',
+    ctaAr: '📜 عرض الشهادة',
+    ctaEn: '📜 View Certificate',
+  },
 };
 
 const STORAGE_KEYS = {
@@ -150,21 +207,39 @@ let activePrayerCity: CityLocation = CityLocation.MAKKAH;
 let isSeniorMode = false;
 let isTalbiyahPlaying = false;
 let talbiyahTimer: number | null = null;
+let talbiyahAudio: HTMLAudioElement | null = null;
+let lapChimeAudio: HTMLAudioElement | null = null;
 let wakeLockSentinel: WakeLockSentinel | null = null;
 let activeFocusMode: 'tawaf' | 'sai' = 'tawaf';
+let currentAtlasFilter = 'ALL';
 const nusukObjectUrls: Partial<Record<'umrah' | 'rawdah', string>> = {};
 
+function hasCustomProfileData(p: PilgrimProfile | null): boolean {
+  if (!p) return false;
+  return (
+    p.fullName !== DEFAULT_PROFILE.fullName ||
+    p.passportNumber !== DEFAULT_PROFILE.passportNumber ||
+    p.tripCode !== DEFAULT_PROFILE.tripCode ||
+    p.roomNumber !== DEFAULT_PROFILE.roomNumber ||
+    p.supervisorPhone !== DEFAULT_PROFILE.supervisorPhone
+  );
+}
+
 function loadProfile(): void {
+  let existingSaved: PilgrimProfile | null = null;
   try {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
     if (saved) {
-      profile = { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved) as Partial<PilgrimProfile>;
+      existingSaved = { ...DEFAULT_PROFILE, ...parsed };
+      profile = { ...existingSaved };
     }
   } catch {
     profile = { ...DEFAULT_PROFILE };
   }
 
   const params = new URLSearchParams(window.location.search);
+  const candidate: PilgrimProfile = { ...profile };
   const keysMap: Array<[string, keyof PilgrimProfile]> = [
     ['name', 'fullName'],
     ['passport', 'passportNumber'],
@@ -185,36 +260,70 @@ function loadProfile(): void {
   for (const [paramKey, field] of keysMap) {
     const val = params.get(paramKey);
     if (val && val.trim()) {
-      (profile[field] as string) = val.trim();
+      (candidate[field] as string) = val.trim();
       updatedFromUrl = true;
     }
   }
   const stageParam = params.get('stage') as TripStatus | null;
   if (stageParam && Object.values(TripStatus).includes(stageParam)) {
-    profile.tripStage = stageParam;
+    candidate.tripStage = stageParam;
     updatedFromUrl = true;
   }
   const hotelKeyParam = params.get('hotelKey');
   if (hotelKeyParam && HOTEL_PRESETS[hotelKeyParam]) {
-    profile.hotelKey = hotelKeyParam;
+    candidate.hotelKey = hotelKeyParam;
     const preset = HOTEL_PRESETS[hotelKeyParam];
-    if (!params.get('hotel')) profile.hotelNameAr = preset.nameAr;
-    profile.hotelNameEn = preset.nameEn;
-    if (!params.get('address')) profile.hotelAddressAr = preset.addressAr;
-    if (!params.get('hotelPhone')) profile.hotelPhone = preset.phone;
-    profile.hotelLat = preset.lat;
-    profile.hotelLng = preset.lng;
+    if (!params.get('hotel')) candidate.hotelNameAr = preset.nameAr;
+    candidate.hotelNameEn = preset.nameEn;
+    if (!params.get('address')) candidate.hotelAddressAr = preset.addressAr;
+    if (!params.get('hotelPhone')) candidate.hotelPhone = preset.phone;
+    candidate.hotelLat = preset.lat;
+    candidate.hotelLng = preset.lng;
+    updatedFromUrl = true;
   }
 
-  if (profile.tripStage === TripStatus.IN_MADINAH) {
-    activePrayerCity = CityLocation.MADINAH;
+  const installmentInspection = inspectPersonalInstallmentsFromStorageAndParams(params);
+  const profileDiffersFromSaved =
+    updatedFromUrl &&
+    existingSaved !== null &&
+    JSON.stringify(candidate) !== JSON.stringify(existingSaved);
+
+  const needsOverwriteGuard =
+    (hasCustomProfileData(existingSaved) && profileDiffersFromSaved) ||
+    installmentInspection.wouldOverwriteSavedPlan;
+
+  const isEn = getCurrentLanguage() === 'en';
+  if (needsOverwriteGuard) {
+    // Keep existing saved data untouched in state & storage until confirmed by user
+    const displayName = updatedFromUrl ? candidate.fullName : installmentInspection.candidate?.memberName || profile.fullName;
+    showSharedLinkOverwriteConfirm(displayName, () => {
+      if (updatedFromUrl) {
+        profile = candidate;
+        if (profile.tripStage === TripStatus.IN_MADINAH) {
+          activePrayerCity = CityLocation.MADINAH;
+        }
+        saveProfile();
+      }
+      if (installmentInspection.candidate) {
+        setPersonalInstallmentData(installmentInspection.candidate);
+      }
+      renderProfileUI();
+      updatePrayerUI();
+      showToast(
+        isEn ? `✅ Updated card data: ${profile.fullName}` : `✅ تم تحديث بيانات بطاقتك: ${profile.fullName}`
+      );
+    });
+    return;
   }
 
   if (updatedFromUrl) {
+    profile = candidate;
     saveProfile();
-    showToast(`✅ تم تحميل بيانات بطاقتك: ${profile.fullName}`);
+    showToast(isEn ? `✅ Loaded card data: ${profile.fullName}` : `✅ تم تحميل بيانات بطاقتك: ${profile.fullName}`);
   }
-  loadPersonalInstallmentsFromStorageAndParams(params);
+  if (profile.tripStage === TripStatus.IN_MADINAH) {
+    activePrayerCity = CityLocation.MADINAH;
+  }
 }
 
 function saveProfile(): void {
@@ -225,31 +334,90 @@ function saveProfile(): void {
   }
 }
 
+/**
+ * Show a confirmation dialog before overwriting an existing saved pilgrim profile
+ * or installment schedule from a shared URL link.
+ */
+function showSharedLinkOverwriteConfirm(newName: string, onConfirm: () => void): void {
+  const existingModal = document.getElementById('shared-link-overwrite-modal');
+  if (existingModal) existingModal.remove();
+
+  const isEn = getCurrentLanguage() === 'en';
+  const modal = document.createElement('dialog');
+  modal.id = 'shared-link-overwrite-modal';
+  modal.setAttribute('aria-labelledby', 'overwrite-modal-title');
+  modal.setAttribute('aria-modal', 'true');
+  modal.style.maxWidth = 'min(92vw, 440px)';
+
+  modal.innerHTML = `
+    <div class="dialog-header">
+      <h2 id="overwrite-modal-title" style="font-size:1.1rem;color:var(--primary-ink);">
+        ${isEn ? '⚠️ Update Saved Card Data?' : '⚠️ تحديث بيانات البطاقة المحفوظة'}
+      </h2>
+      <button type="button" id="overwrite-close-x" class="dialog-close-btn" aria-label="${isEn ? 'Close' : 'إغلاق'}">&times;</button>
+    </div>
+    <p style="margin:0 0 1.25rem;font-size:0.94rem;line-height:1.75;color:var(--text);">
+      ${
+        isEn
+          ? `This shared link contains data for (<strong>${escapeHtml(newName)}</strong>). Replace your existing saved profile/installments on this device?`
+          : `يحتوي الرابط المشترك على بيانات جديدة تخص (<strong>${escapeHtml(newName)}</strong>). هل تريد استبدال بياناتك المحفوظة حالياً بهذه البيانات؟`
+      }
+    </p>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+      <button type="button" id="overwrite-cancel-btn" class="btn btn-secondary" style="flex:1;min-width:8rem;" autofocus>
+        ${isEn ? 'Keep Existing Data' : '❌ لا، احتفظ ببياناتي'}
+      </button>
+      <button type="button" id="overwrite-confirm-btn" class="btn btn-primary" style="flex:1;min-width:8rem;">
+        ${isEn ? '✅ Update Data' : '✅ نعم، حدّث البيانات'}
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.showModal();
+
+  const cleanup = () => {
+    if (modal.isConnected) modal.remove();
+  };
+
+  modal.querySelector('#overwrite-close-x')?.addEventListener('click', cleanup);
+  modal.querySelector('#overwrite-cancel-btn')?.addEventListener('click', () => {
+    cleanup();
+    showToast(isEn ? 'ℹ️ Kept your existing saved profile.' : 'ℹ️ تم الاحتفاظ ببياناتك المحفوظة دون تغيير');
+  });
+  modal.querySelector('#overwrite-confirm-btn')?.addEventListener('click', () => {
+    cleanup();
+    onConfirm();
+  });
+  modal.addEventListener('cancel', cleanup);
+}
+
 function renderProfileUI(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const setText = (id: string, val: string) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
 
-  setText('badge-trip-code', `كود الفوج: ${profile.tripCode}`);
+  setText('badge-trip-code', isEn ? `Group Code: ${profile.tripCode}` : `كود الفوج: ${profile.tripCode}`);
   setText('badge-pilgrim-name', profile.fullName);
-  setText('badge-passport', `رقم الجواز: ${profile.passportNumber}`);
-  setText('badge-hotel', profile.hotelNameAr);
+  setText('badge-passport', isEn ? `Passport: ${profile.passportNumber}` : `رقم الجواز: ${profile.passportNumber}`);
+  setText('badge-hotel', isEn ? profile.hotelNameEn : profile.hotelNameAr);
   setText('badge-room', profile.roomNumber);
   setText('badge-bus', profile.busNumber);
   setText('badge-sup-phone', profile.supervisorPhone);
   setText('sos-meeting-point', profile.meetingPoint);
-  setText('header-trip-subtitle', `${profile.tripTitle} • ${TRIP_STAGE_LABELS[profile.tripStage]}`);
+  setText('header-trip-subtitle', `${profile.tripTitle} • ${getTripStageLabel(profile.tripStage)}`);
 
   // Stage relevance strip
   const rel = STAGE_RELEVANCE[profile.tripStage] || STAGE_RELEVANCE[TripStatus.IN_MAKKAH];
   const stageBadge = document.getElementById('stage-banner-label');
   const stageHint = document.getElementById('stage-banner-hint');
   const stageCta = document.getElementById('stage-banner-cta') as HTMLButtonElement | null;
-  if (stageBadge) stageBadge.textContent = TRIP_STAGE_LABELS[profile.tripStage];
-  if (stageHint) stageHint.textContent = rel.hintAr;
+  if (stageBadge) stageBadge.textContent = getTripStageLabel(profile.tripStage);
+  if (stageHint) stageHint.textContent = isEn ? rel.hintEn : rel.hintAr;
   if (stageCta) {
-    stageCta.textContent = rel.ctaAr;
+    stageCta.textContent = isEn ? rel.ctaEn : rel.ctaAr;
     stageCta.dataset.jumpTab = rel.targetTab;
   }
 
@@ -266,21 +434,29 @@ function renderProfileUI(): void {
   setText('taxi-hotel-phone', profile.hotelPhone);
   setText('taxi-sup-phone', profile.supervisorPhone);
   setText('sec-pilgrim-name', profile.fullName);
-  setText('sec-hotel-info', `${profile.hotelNameAr} — ${profile.hotelAddressAr}`);
+  setText('sec-hotel-info', `${isEn ? profile.hotelNameEn : profile.hotelNameAr} — ${profile.hotelAddressAr}`);
   setText('sec-sup-info', `${profile.supervisorName} (${profile.supervisorPhone})`);
   setText('sec-med-note', profile.medicalNote);
 
   const qrContainer = document.getElementById('pilgrim-badge-qr');
   if (qrContainer) {
     const qrPayload = `MECCA HOTEL: ${profile.hotelNameEn} | TEL: ${profile.hotelPhone} | SUP: ${profile.supervisorPhone} | PILGRIM: ${profile.fullName}`;
-    qrContainer.innerHTML = renderQrSvg(qrPayload, 'رمز QR لبيانات المعتمر والفندق');
+    qrContainer.innerHTML = renderQrSvg(qrPayload, isEn ? 'Pilgrim & Hotel QR Code' : 'رمز QR لبيانات المعتمر والفندق');
   }
 
   setText('cert-pilgrim-name', profile.fullName);
   setText('cert-trip-title', profile.tripTitle);
   setText('cert-hijri-date', getMakkahHijriDate());
-  setText('cert-supervisor-name', `مشرف الفوج: ${profile.supervisorName} ✍️`);
-  setText('nusuk-owner-meta', `المعتمر: ${profile.fullName} | الجواز: ${profile.passportNumber}`);
+  setText(
+    'cert-supervisor-name',
+    isEn ? `Group Supervisor: ${profile.supervisorName} ✍️` : `مشرف الفوج: ${profile.supervisorName} ✍️`
+  );
+  setText(
+    'nusuk-owner-meta',
+    isEn
+      ? `Pilgrim: ${profile.fullName} | Passport: ${profile.passportNumber}`
+      : `المعتمر: ${profile.fullName} | الجواز: ${profile.passportNumber}`
+  );
 
   const gateSelect = document.getElementById('hotel-gate-selector') as HTMLSelectElement | null;
   if (gateSelect && HOTEL_PRESETS[profile.hotelKey]) {
@@ -352,21 +528,45 @@ function setPrayerCity(city: CityLocation, notify: boolean = true): void {
 }
 
 function updatePrayerUI(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const now = new Date();
   const times = prayerEngine.getPrayerTimes(activePrayerCity, now);
   const next = prayerEngine.getNextPrayer(activePrayerCity, now);
 
   const cityTitle = document.getElementById('prayer-city-title');
   if (cityTitle) {
-    cityTitle.textContent =
-      activePrayerCity === CityLocation.MAKKAH
-        ? 'مواقيت الصلاة في المسجد الحرام (مكة المكرمة)'
-        : 'مواقيت الصلاة في المسجد النبوي (المدينة المنورة)';
+    if (isEn) {
+      cityTitle.textContent =
+        activePrayerCity === CityLocation.MAKKAH
+          ? 'Prayer Times at Masjid al-Haram (Makkah)'
+          : 'Prayer Times at Al-Masjid an-Nabawi (Madinah)';
+    } else {
+      cityTitle.textContent =
+        activePrayerCity === CityLocation.MAKKAH
+          ? 'مواقيت الصلاة في المسجد الحرام (مكة المكرمة)'
+          : 'مواقيت الصلاة في المسجد النبوي (المدينة المنورة)';
+    }
   }
 
   const hijriEl = document.getElementById('prayer-hijri-date');
   if (hijriEl) {
-    hijriEl.textContent = `${getMakkahHijriDate(now)} — ${times.source}`;
+    if (isEn) {
+      let hijriEn = '';
+      try {
+        hijriEn = new Intl.DateTimeFormat('en-SA-u-ca-islamic-umalqura', {
+          timeZone: 'Asia/Riyadh',
+          weekday: 'short',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(now);
+      } catch {
+        hijriEn = getMakkahHijriDate(now);
+      }
+      hijriEl.textContent = `${hijriEn} — Umm Al-Qura Time (UTC+3)`;
+    } else {
+      hijriEl.textContent = `${getMakkahHijriDate(now)} — ${times.source}`;
+    }
   }
 
   const map: Record<string, string> = {
@@ -377,6 +577,14 @@ function updatePrayerUI(): void {
     maghrib: times.maghrib,
     isha: times.isha,
   };
+  const namesEn: Record<string, string> = {
+    fajr: 'Fajr',
+    sunrise: 'Sunrise',
+    dhuhr: 'Dhuhr',
+    asr: 'Asr',
+    maghrib: 'Maghrib',
+    isha: 'Isha',
+  };
 
   document.querySelectorAll<HTMLElement>('.prayer-pill').forEach((pill) => {
     pill.classList.remove('active');
@@ -385,13 +593,14 @@ function updatePrayerUI(): void {
       const timeNode = pill.querySelector('.prayer-pill-time');
       if (timeNode) timeNode.textContent = map[key];
       const nameNode = pill.querySelector('.prayer-pill-name');
-      const baseName = pill.dataset.nameAr || '';
+      const baseNameAr = pill.dataset.nameAr || '';
+      const displayBase = isEn ? namesEn[key] || baseNameAr : baseNameAr;
       if (nameNode) {
-        if (baseName === next.nameAr) {
+        if (baseNameAr === next.nameAr) {
           pill.classList.add('active');
-          nameNode.textContent = `${baseName} ⏳`;
+          nameNode.textContent = `${displayBase} ⏳`;
         } else {
-          nameNode.textContent = baseName;
+          nameNode.textContent = displayBase;
         }
       }
     }
@@ -399,8 +608,11 @@ function updatePrayerUI(): void {
 
   const hrs = Math.floor(next.minutesRemaining / 60);
   const mins = next.minutesRemaining % 60;
-  const countdownText =
-    hrs > 0
+  const countdownText = isEn
+    ? hrs > 0
+      ? `Next: ${next.nameEn} Adhan (${next.prayerTime} Makkah time) in ${hrs}h ${mins}m`
+      : `Next: ${next.nameEn} Adhan (${next.prayerTime} Makkah time) in ${mins}m`
+    : hrs > 0
       ? `متبقي على أذان ${next.nameAr} (${next.prayerTime} بتوقيت مكة): ${hrs} ساعة و ${mins} دقيقة`
       : `متبقي على أذان ${next.nameAr} (${next.prayerTime} بتوقيت مكة): ${mins} دقيقة`;
 
@@ -410,7 +622,9 @@ function updatePrayerUI(): void {
   const warningBanner = document.getElementById('mataf-warning-banner');
   if (warningBanner) {
     if (next.matafWarning) {
-      warningBanner.textContent = `⚠️ ${next.matafWarning}`;
+      warningBanner.textContent = isEn
+        ? `⚠️ Crowd Alert: ${next.minutesRemaining} min until ${next.nameEn} Adhan (Makkah). Haram security begins clearing the Mataf courtyard for prayer.`
+        : `⚠️ ${next.matafWarning}`;
       warningBanner.style.display = 'block';
     } else {
       warningBanner.style.display = 'none';
@@ -419,8 +633,13 @@ function updatePrayerUI(): void {
 }
 
 function speakText(text: string): void {
+  const isEn = getCurrentLanguage() === 'en';
   if (!('speechSynthesis' in window)) {
-    showToast('⚠️ القراءة الصوتية غير مدعومة في هذا المتصفح — يمكنك القراءة من الشاشة');
+    showToast(
+      isEn
+        ? '⚠️ Speech synthesis not supported in this browser — read text on screen.'
+        : '⚠️ القراءة الصوتية غير مدعومة في هذا المتصفح — يمكنك القراءة من الشاشة'
+    );
     return;
   }
   const voices = window.speechSynthesis.getVoices();
@@ -431,17 +650,23 @@ function speakText(text: string): void {
   if (arabicVoice) utterance.voice = arabicVoice;
   utterance.rate = 0.85;
   utterance.onerror = () => {
-    showToast('⚠️ تعذر تشغيل الصوت في وضع الأوفلاين على هذا الجهاز');
+    showToast(
+      isEn
+        ? '⚠️ Offline voice pack unavailable on this device.'
+        : '⚠️ تعذر تشغيل الصوت في وضع الأوفلاين على هذا الجهاز'
+    );
   };
   window.speechSynthesis.speak(utterance);
-  showToast(arabicVoice ? '🔊 جاري قراءة الذكر بالصوت...' : '🔊 تشغيل القراءة الصوتية');
+  showToast(
+    isEn ? '🔊 Playing audio recitation...' : arabicVoice ? '🔊 جاري قراءة الذكر بالصوت...' : '🔊 تشغيل القراءة الصوتية'
+  );
 }
 
-function playTalbiyahOnce(): void {
+function speakTalbiyahSpeechFallback(): void {
   if (!isTalbiyahPlaying) return;
   if (!('speechSynthesis' in window)) {
     stopTalbiyah();
-    showToast('⚠️ القراءة الصوتية غير مدعومة على هذا المتصفح');
+    showToast('⚠️ تعذر تشغيل صوت التلبية على هذا المتصفح');
     return;
   }
   window.speechSynthesis.cancel();
@@ -461,16 +686,44 @@ function playTalbiyahOnce(): void {
   window.speechSynthesis.speak(u);
 }
 
+function playTalbiyahOnce(): void {
+  if (!isTalbiyahPlaying) return;
+  try {
+    if (!talbiyahAudio) {
+      talbiyahAudio = new Audio('/audio/talbiyah.mp3');
+      talbiyahAudio.addEventListener('ended', () => {
+        if (isTalbiyahPlaying) {
+          talbiyahTimer = window.setTimeout(playTalbiyahOnce, 1200);
+        }
+      });
+      talbiyahAudio.addEventListener('error', () => {
+        speakTalbiyahSpeechFallback();
+      });
+    }
+    talbiyahAudio.currentTime = 0;
+    void talbiyahAudio.play().catch(() => {
+      speakTalbiyahSpeechFallback();
+    });
+  } catch {
+    speakTalbiyahSpeechFallback();
+  }
+}
+
+function updateTalbiyahButtonUi(): void {
+  const icon = document.getElementById('talbiyah-icon');
+  const lbl = document.getElementById('talbiyah-btn-label');
+  if (icon) icon.textContent = isTalbiyahPlaying ? '⏸️' : '▶️';
+  if (lbl) lbl.textContent = isTalbiyahPlaying ? t('talbiyah.pauseBtn') : t('talbiyah.playBtn');
+}
+
 function toggleTalbiyahLoop(): void {
+  const isEn = getCurrentLanguage() === 'en';
   if (isTalbiyahPlaying) {
     stopTalbiyah();
   } else {
     isTalbiyahPlaying = true;
-    const icon = document.getElementById('talbiyah-icon');
-    const lbl = document.getElementById('talbiyah-btn-label');
-    if (icon) icon.textContent = '⏸️';
-    if (lbl) lbl.textContent = 'إيقاف التلبية النبوية';
-    showToast('🔊 تم تشغيل التلبية النبوية بالتكرار المستمر');
+    updateTalbiyahButtonUi();
+    showToast(isEn ? '🔊 Playing offline Talbiyah loop' : '🔊 تم تشغيل التلبية النبوية بالتكرار المستمر');
     playTalbiyahOnce();
   }
 }
@@ -481,62 +734,81 @@ function stopTalbiyah(): void {
     window.clearTimeout(talbiyahTimer);
     talbiyahTimer = null;
   }
+  if (talbiyahAudio) {
+    try {
+      talbiyahAudio.pause();
+      talbiyahAudio.currentTime = 0;
+    } catch {
+      // ignore
+    }
+  }
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  const icon = document.getElementById('talbiyah-icon');
-  const lbl = document.getElementById('talbiyah-btn-label');
-  if (icon) icon.textContent = '▶️';
-  if (lbl) lbl.textContent = 'تشغيل التلبية بالتكرار التلقائي';
+  updateTalbiyahButtonUi();
+}
+
+function updateWakeButtonLabel(): void {
+  const active = Boolean(wakeLockSentinel);
+  const label = active ? t('tools.wakeActive') : t('tools.wake');
+  document.querySelectorAll<HTMLElement>('[data-wake-toggle]').forEach((btn) => {
+    btn.setAttribute('aria-pressed', String(active));
+    btn.innerHTML = `<span aria-hidden="true">🔆</span> <span>${escapeHtml(label)}</span>`;
+  });
 }
 
 async function toggleWakeLock(): Promise<void> {
+  const isEn = getCurrentLanguage() === 'en';
   if (!('wakeLock' in navigator)) {
-    showToast('⚠️ المتصفح لا يدعم تثبيت إضاءة الشاشة تلقائياً');
+    showToast(isEn ? '⚠️ Screen wake lock is unsupported here.' : '⚠️ المتصفح لا يدعم تثبيت إضاءة الشاشة تلقائياً');
     return;
   }
-  const updateButtons = (active: boolean) => {
-    document.querySelectorAll<HTMLElement>('[data-wake-toggle]').forEach((btn) => {
-      btn.setAttribute('aria-pressed', String(active));
-      btn.innerHTML = active
-        ? '<span aria-hidden="true">🔆</span> <span>الشاشة مضاءة ✓</span>'
-        : '<span aria-hidden="true">🔆</span> <span>منع إغلاق الشاشة</span>';
-    });
-  };
   if (wakeLockSentinel) {
     await wakeLockSentinel.release();
     wakeLockSentinel = null;
-    updateButtons(false);
-    showToast('تم إلغاء منع إغلاق الشاشة');
+    updateWakeButtonLabel();
+    showToast(isEn ? 'Screen wake lock released' : 'تم إلغاء منع إغلاق الشاشة');
     return;
   }
   try {
     wakeLockSentinel = await navigator.wakeLock.request('screen');
     wakeLockSentinel.addEventListener('release', () => {
       wakeLockSentinel = null;
-      updateButtons(false);
+      updateWakeButtonLabel();
     });
-    updateButtons(true);
-    showToast('🔆 ستبقى الشاشة مضاءة أثناء الطواف والسعي');
+    updateWakeButtonLabel();
+    showToast(isEn ? '🔆 Screen will stay awake during Tawaf & Sa’i' : '🔆 ستبقى الشاشة مضاءة أثناء الطواف والسعي');
   } catch {
-    showToast('تعذر تفعيل منع إغلاق الشاشة');
+    showToast(isEn ? 'Could not activate wake lock' : 'تعذر تفعيل منع إغلاق الشاشة');
   }
 }
 
-function toggleSeniorMode(): void {
-  isSeniorMode = !isSeniorMode;
-  document.body.classList.toggle('senior-mode', isSeniorMode);
+function updateSeniorButtonLabel(): void {
+  const label = isSeniorMode ? t('tools.seniorActive') : t('tools.senior');
   document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {
     btn.classList.toggle('active', isSeniorMode);
     btn.setAttribute('aria-pressed', String(isSeniorMode));
-    btn.innerHTML = isSeniorMode
-      ? '<span aria-hidden="true">👵</span> <span>خط كبير: مُفعّل</span>'
-      : '<span aria-hidden="true">👵</span> <span>وضع كبار السن</span>';
+    btn.innerHTML = `<span aria-hidden="true">👵</span> <span>${escapeHtml(label)}</span>`;
   });
+}
+
+function toggleSeniorMode(): void {
+  const isEn = getCurrentLanguage() === 'en';
+  isSeniorMode = !isSeniorMode;
+  document.body.classList.toggle('senior-mode', isSeniorMode);
+  updateSeniorButtonLabel();
   try {
     localStorage.setItem(STORAGE_KEYS.SENIOR, isSeniorMode ? '1' : '0');
   } catch {
     // ignore
   }
-  showToast(isSeniorMode ? 'تم تفعيل وضع كبار السن (خط كبير)' : 'تم الرجوع للخط المعتاد');
+  showToast(
+    isSeniorMode
+      ? isEn
+        ? 'Senior Mode (Large Text) Enabled'
+        : 'تم تفعيل وضع كبار السن (خط كبير)'
+      : isEn
+        ? 'Returned to standard text size'
+        : 'تم الرجوع للخط المعتاد'
+  );
 }
 
 function restoreCounters(): void {
@@ -566,6 +838,7 @@ function saveCounterState(): void {
 }
 
 function renderTawafUI(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const info = tawafCounter.getCurrentLapInfo();
   const lapEl = document.getElementById('tawaf-lap-num');
   if (lapEl) lapEl.innerHTML = `${info.lapNumber} <span class="lap-total">/ 7</span>`;
@@ -574,21 +847,30 @@ function renderTawafUI(): void {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  set('tawaf-dua-title', info.titleAr);
+  set('tawaf-dua-title', isEn ? `Lap ${info.lapNumber} Suggested Supplication` : info.titleAr);
   set('tawaf-dua-ar', info.duaArabic);
-  set('tawaf-dua-tr', info.duaTransliteration);
-  set('tawaf-dua-src', `المصدر: ${info.sourceAr}`);
-  set('tawaf-sunnah-note', info.sunnahNote);
+  set('tawaf-dua-tr', isEn ? `${info.duaTransliteration} — "${info.meaningEn}"` : info.duaTransliteration);
+  set('tawaf-dua-src', isEn ? `Source: ${info.sourceAr}` : `المصدر: ${info.sourceAr}`);
+  set(
+    'tawaf-sunnah-note',
+    isEn
+      ? 'Fiqh Note: No specific dua per lap is mandated in Sunnah; make any sincere Quranic, Prophetic, or personal supplication.'
+      : info.sunnahNote
+  );
   renderFocusModal();
 }
 
 function renderSaiUI(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const lapEl = document.getElementById('sai-lap-num');
   const dirEl = document.getElementById('sai-direction-text');
   if (lapEl) lapEl.innerHTML = `${saiCounter.currentLap} <span class="lap-total">/ 7</span>`;
   if (dirEl) {
-    dirEl.textContent =
-      saiCounter.currentLap % 2 === 1
+    dirEl.textContent = isEn
+      ? saiCounter.currentLap % 2 === 1
+        ? 'Direction: Safa ➡️ Marwah'
+        : 'Direction: Marwah ➡️ Safa'
+      : saiCounter.currentLap % 2 === 1
         ? 'الاتجاه: من الصفا ⬅️ إلى المروة'
         : 'الاتجاه: من المروة ⬅️ إلى الصفا';
   }
@@ -596,6 +878,7 @@ function renderSaiUI(): void {
 }
 
 function renderFocusModal(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const modal = document.getElementById('focus-ritual-modal') as HTMLDialogElement | null;
   if (!modal || !modal.open) return;
   const titleEl = document.getElementById('focus-ritual-title');
@@ -607,26 +890,50 @@ function renderFocusModal(): void {
 
   if (activeFocusMode === 'tawaf') {
     const info = tawafCounter.getCurrentLapInfo();
-    if (titleEl) titleEl.textContent = '🕋 وضع الطواف المركّز';
-    if (subEl) subEl.textContent = 'الكعبة عن يسارك — من الحجر الأسود إلى الحجر الأسود';
+    if (titleEl) titleEl.textContent = isEn ? '🕋 Tawaf Focus Mode' : '🕋 وضع الطواف المركّز';
+    if (subEl)
+      subEl.textContent = isEn
+        ? 'Kaaba on your left — Black Stone to Black Stone'
+        : 'الكعبة عن يسارك — من الحجر الأسود إلى الحجر الأسود';
     if (lapEl) lapEl.innerHTML = `${info.lapNumber} <span class="lap-total">/ 7</span>`;
-    if (duaTitleEl) duaTitleEl.textContent = info.titleAr;
+    if (duaTitleEl) duaTitleEl.textContent = isEn ? info.meaningEn : info.titleAr;
     if (duaArEl) duaArEl.textContent = info.duaArabic;
     if (advBtn) {
       advBtn.className = 'btn btn-primary focus-tap-btn';
-      advBtn.textContent = info.lapNumber === 7 ? '🎉 إنهاء الشوط السابع' : '✅ أتممت الشوط — التالي';
+      advBtn.textContent =
+        info.lapNumber === 7
+          ? isEn
+            ? '🎉 Finish 7th Lap'
+            : '🎉 إنهاء الشوط السابع'
+          : isEn
+            ? '✅ Completed Lap — Next'
+            : '✅ أتممت الشوط — التالي';
     }
   } else {
     const lap = saiCounter.currentLap;
     const isOdd = lap % 2 === 1;
-    if (titleEl) titleEl.textContent = '🚶‍♂️ وضع السعي المركّز';
-    if (subEl) subEl.textContent = isOdd ? 'الاتجاه: من الصفا ⬅️ إلى المروة' : 'الاتجاه: من المروة ⬅️ إلى الصفا';
+    if (titleEl) titleEl.textContent = isEn ? "🚶‍♂️ Sa'i Focus Mode" : '🚶‍♂️ وضع السعي المركّز';
+    if (subEl)
+      subEl.textContent = isEn
+        ? isOdd
+          ? 'Direction: Safa ➡️ Marwah'
+          : 'Direction: Marwah ➡️ Safa'
+        : isOdd
+          ? 'الاتجاه: من الصفا ⬅️ إلى المروة'
+          : 'الاتجاه: من المروة ⬅️ إلى الصفا';
     if (lapEl) lapEl.innerHTML = `${lap} <span class="lap-total">/ 7</span>`;
-    if (duaTitleEl) duaTitleEl.textContent = 'الذكر المأثور في السعي';
+    if (duaTitleEl) duaTitleEl.textContent = isEn ? "Authentic Sa'i Supplication" : 'الذكر المأثور في السعي';
     if (duaArEl) duaArEl.textContent = 'رَبِّ اغْفِرْ وَارْحَمْ إِنَّكَ أَنْتَ الأَعَزُّ الأَكْرَمُ';
     if (advBtn) {
       advBtn.className = 'btn btn-gold focus-tap-btn';
-      advBtn.textContent = lap === 7 ? '🎉 إنهاء الشوط السابع' : '✅ وصلت — الشوط التالي';
+      advBtn.textContent =
+        lap === 7
+          ? isEn
+            ? '🎉 Finish 7th Lap'
+            : '🎉 إنهاء الشوط السابع'
+          : isEn
+            ? '✅ Reached Hill — Next Lap'
+            : '✅ وصلت — الشوط التالي';
     }
   }
 }
@@ -640,10 +947,25 @@ function openFocusRitual(mode: 'tawaf' | 'sai'): void {
   }
 }
 
+/** Play the persistent offline lap-chime audio as haptic-free auditory confirmation. */
+function playLapChime(): void {
+  try {
+    if (!lapChimeAudio) {
+      lapChimeAudio = new Audio('/audio/lap-chime.wav');
+      lapChimeAudio.volume = 0.6;
+    }
+    lapChimeAudio.currentTime = 0;
+    void lapChimeAudio.play().catch(() => {/* silently ignore autoplay policy blocks */});
+  } catch {
+    // ignore in environments without Audio support
+  }
+}
+
 function incrementTawaf(): void {
   const res = tawafCounter.completeCurrentLap();
   saveCounterState();
   renderTawafUI();
+  playLapChime();
   if (res.hapticFeedbackPattern === 'VIBRATE_COMPLETE') {
     if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
     const body = document.getElementById('completion-modal-body');
@@ -685,6 +1007,7 @@ function incrementSai(): void {
   const res = saiCounter.completeCurrentLap();
   saveCounterState();
   renderSaiUI();
+  playLapChime();
   if (res.isCompleted) {
     if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
     const body = document.getElementById('completion-modal-body');
@@ -1092,19 +1415,21 @@ function renderCurrencyAndTaxi(): void {
 
   const resContainer = document.getElementById('official-resources-grid');
   if (resContainer) {
-    resContainer.innerHTML = OFFICIAL_SAUDI_RESOURCES.map(
-      (res) => `
+    const isEn = getCurrentLanguage() === 'en';
+    resContainer.innerHTML = OFFICIAL_SAUDI_RESOURCES.map((res) => {
+      const en = OFFICIAL_RESOURCES_EN[res.id];
+      return `
       <div class="info-box-neutral" style="display:flex;flex-direction:column;justify-content:space-between;gap:0.6rem;">
         <div>
-          <div style="font-weight:800;color:var(--primary-ink);margin-bottom:0.25rem;">${escapeHtml(res.titleAr)}</div>
-          <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.6;">${escapeHtml(res.summaryAr)}</p>
+          <div style="font-weight:800;color:var(--primary-ink);margin-bottom:0.25rem;">${escapeHtml(isEn && en ? en.titleEn : res.titleAr)}</div>
+          <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.6;">${escapeHtml(isEn && en ? en.summaryEn : res.summaryAr)}</p>
         </div>
         <a href="${escapeHtml(res.urlOrTel)}" ${res.urlOrTel.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} class="btn btn-secondary" style="text-decoration:none;font-size:0.86rem;">
-          ${escapeHtml(res.actionLabelAr)}
+          ${escapeHtml(isEn && en ? en.actionEn : res.actionLabelAr)}
         </a>
       </div>
-    `
-    ).join('');
+    `;
+    }).join('');
   }
 }
 
@@ -1177,8 +1502,35 @@ window.addEventListener('DOMContentLoaded', () => {
   const badgeToken = new URLSearchParams(window.location.search).get('token');
   if (badgeToken) {
     void fetchBadgeFromCloud(badgeToken).then((cloudBadge) => {
-      if (cloudBadge && typeof cloudBadge.fullName === 'string') {
-        showToast(`☁️ تم تحديث بيانات البطاقة من السحابة: ${cloudBadge.fullName}`);
+      if (!cloudBadge || typeof cloudBadge.fullName !== 'string') return;
+      const merged: PilgrimProfile = {
+        ...profile,
+        fullName: cloudBadge.fullName,
+        passportNumber: typeof cloudBadge.passportNumber === 'string' ? cloudBadge.passportNumber : profile.passportNumber,
+        tripCode: typeof cloudBadge.tripCode === 'string' ? cloudBadge.tripCode : profile.tripCode,
+        tripTitle: typeof cloudBadge.tripTitle === 'string' ? cloudBadge.tripTitle : profile.tripTitle,
+        hotelNameAr: typeof cloudBadge.hotelNameAr === 'string' ? cloudBadge.hotelNameAr : profile.hotelNameAr,
+        hotelNameEn: typeof cloudBadge.hotelNameEn === 'string' ? cloudBadge.hotelNameEn : profile.hotelNameEn,
+        hotelAddressAr: typeof cloudBadge.hotelAddressAr === 'string' ? cloudBadge.hotelAddressAr : profile.hotelAddressAr,
+        hotelPhone: typeof cloudBadge.hotelPhone === 'string' ? cloudBadge.hotelPhone : profile.hotelPhone,
+        roomNumber: typeof cloudBadge.roomNumber === 'string' ? cloudBadge.roomNumber : profile.roomNumber,
+        busNumber: typeof cloudBadge.busNumber === 'string' ? cloudBadge.busNumber : profile.busNumber,
+        supervisorName: typeof cloudBadge.supervisorName === 'string' ? cloudBadge.supervisorName : profile.supervisorName,
+        supervisorPhone: typeof cloudBadge.supervisorPhone === 'string' ? cloudBadge.supervisorPhone : profile.supervisorPhone,
+        meetingPoint: typeof cloudBadge.meetingPoint === 'string' ? cloudBadge.meetingPoint : profile.meetingPoint,
+      };
+      if (hasCustomProfileData(profile) && profile.fullName !== merged.fullName) {
+        showSharedLinkOverwriteConfirm(merged.fullName, () => {
+          profile = merged;
+          saveProfile();
+          renderProfileUI();
+          showToast(`☁️ تم تحديث بيانات البطاقة من السحابة: ${profile.fullName}`);
+        });
+      } else {
+        profile = merged;
+        saveProfile();
+        renderProfileUI();
+        showToast(`☁️ تم تحديث بيانات البطاقة من السحابة: ${profile.fullName}`);
       }
     });
   }
@@ -1189,9 +1541,13 @@ window.addEventListener('DOMContentLoaded', () => {
   renderWomenFiqhSection();
   renderPackingChecklist();
   void loadNusukWalletImages();
-  renderHaramAtlasSection();
+  renderHaramAtlasSection(currentAtlasFilter);
   renderCurrencyAndTaxi();
   updatePrayerUI();
+  updateNetworkStatusBadge();
+  updateSeniorButtonLabel();
+  updateWakeButtonLabel();
+  updateTalbiyahButtonUi();
   window.setInterval(updatePrayerUI, 60000);
   if (initialTab) switchTab(initialTab);
 
@@ -1229,6 +1585,18 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const next = toggleLanguage();
       updateThemeButtonLabel();
+      updateSeniorButtonLabel();
+      updateWakeButtonLabel();
+      updateTalbiyahButtonUi();
+      updateNetworkStatusBadge();
+      renderProfileUI();
+      updatePrayerUI();
+      renderTawafUI();
+      renderSaiUI();
+      renderZiyaratAndFieldGuides();
+      renderHaramAtlasSection(currentAtlasFilter);
+      renderGateWayfinder();
+      renderCurrencyAndTaxi();
       showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
     });
   });
@@ -1345,6 +1713,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const f = btn.dataset.atlasFilter || 'ALL';
+      currentAtlasFilter = f;
       document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((b) => {
         b.setAttribute('aria-pressed', String(b === btn));
       });

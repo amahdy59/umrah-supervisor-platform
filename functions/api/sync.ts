@@ -1,30 +1,25 @@
-interface D1Prepared {
-  bind(...values: unknown[]): {
-    first<T = Record<string, unknown>>(): Promise<T | null>;
-    run(): Promise<{ success: boolean }>;
-  };
-}
-
-interface D1Like {
-  prepare(query: string): D1Prepared;
-}
-
-interface PagesEnv {
-  DB?: D1Like;
-}
-
-const MAX_BODY_BYTES = 512 * 1024;
+import {
+  isAuthorized,
+  MAX_SYNC_BODY_BYTES,
+  unauthorizedResponse,
+  type PagesEnv,
+} from '../_lib/auth.js';
 
 export async function onRequestGet(context: { request: Request; env: PagesEnv }): Promise<Response> {
   const { request, env } = context;
+
+  if (!isAuthorized(request, env)) {
+    return unauthorizedResponse();
+  }
+
   if (!env.DB) {
     return Response.json({ mode: 'local-only', synced: false });
   }
 
   const url = new URL(request.url);
   const groupId = url.searchParams.get('groupId')?.trim();
-  if (!groupId) {
-    return Response.json({ error: 'Missing groupId query parameter' }, { status: 400 });
+  if (!groupId || groupId.length > 120) {
+    return Response.json({ error: 'Missing or invalid groupId query parameter' }, { status: 400 });
   }
 
   const row = await env.DB.prepare(
@@ -47,12 +42,17 @@ export async function onRequestGet(context: { request: Request; env: PagesEnv })
 
 export async function onRequestPost(context: { request: Request; env: PagesEnv }): Promise<Response> {
   const { request, env } = context;
+
+  if (!isAuthorized(request, env)) {
+    return unauthorizedResponse();
+  }
+
   if (!env.DB) {
     return Response.json({ mode: 'local-only', synced: false });
   }
 
   const contentLength = Number(request.headers.get('content-length') || '0');
-  if (contentLength > MAX_BODY_BYTES) {
+  if (contentLength > MAX_SYNC_BODY_BYTES) {
     return Response.json({ error: 'Payload exceeds 512 KB limit' }, { status: 413 });
   }
 
@@ -68,12 +68,12 @@ export async function onRequestPost(context: { request: Request; env: PagesEnv }
   }
 
   const groupId = body.groupId?.trim();
-  if (!groupId || !body.workspace) {
-    return Response.json({ error: 'Missing groupId or workspace' }, { status: 400 });
+  if (!groupId || groupId.length > 120 || !body.workspace || typeof body.workspace !== 'object') {
+    return Response.json({ error: 'Missing or invalid groupId or workspace' }, { status: 400 });
   }
 
   const serialized = JSON.stringify(body.workspace);
-  if (serialized.length > MAX_BODY_BYTES) {
+  if (serialized.length > MAX_SYNC_BODY_BYTES) {
     return Response.json({ error: 'Serialized workspace too large' }, { status: 413 });
   }
 
@@ -92,9 +92,9 @@ export async function onRequestPost(context: { request: Request; env: PagesEnv }
   )
     .bind(
       groupId,
-      settings.tripCode || '#UMR',
-      settings.tripTitle || 'فوج عمرة',
-      settings.status || 'IN_MAKKAH',
+      String(settings.tripCode || '#UMR').slice(0, 32),
+      String(settings.tripTitle || 'فوج عمرة').slice(0, 140),
+      String(settings.status || 'IN_MAKKAH').slice(0, 40),
       serialized,
       nowIso
     )

@@ -17,6 +17,7 @@ import { WhatsAppBroadcastManager, BroadcastPhase } from '../guidance/whatsapp-a
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
 import {
   TRIP_STAGE_LABELS,
+  getTripStageLabel,
   escapeHtml,
   buildWhatsAppUrl,
   renderQrSvg,
@@ -30,11 +31,21 @@ import {
   toggleColorScheme,
   updateThemeButtonLabel,
   initImageLightbox,
+  updateNetworkStatusBadge,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
-import { initLanguage, toggleLanguage } from './i18n.js';
-import { pushGroupWorkspaceToCloud, flushSyncOutbox } from './cloud-sync.js';
+import { getCurrentLanguage, initLanguage, toggleLanguage } from './i18n.js';
+import {
+  pushGroupWorkspaceToCloud,
+  flushSyncOutbox,
+  getSyncAuthToken,
+  setSyncAuthToken,
+  writeBadgeToCloud,
+  fetchCloudSosEvents,
+  resolveCloudSosEvent,
+} from './cloud-sync.js';
+import { OFFICIAL_RESOURCES_EN } from './guidance-en.js';
 import { renderSupervisorHaramAtlas } from './supervisor/atlas-view.js';
 import { enforcePrivacyLockIfConfigured, wirePrivacyLockHandlers } from './supervisor/privacy-lock.js';
 import type {
@@ -486,14 +497,14 @@ function renderGroupSwitcher(): void {
     switcher.innerHTML = rootState.groups
       .map(
         (g) =>
-          `<option value="${escapeHtml(g.id)}" ${g.id === rootState.activeGroupId ? 'selected' : ''}>${escapeHtml(g.settings.tripTitle)} (${escapeHtml(TRIP_STAGE_LABELS[g.settings.status])})</option>`
+          `<option value="${escapeHtml(g.id)}" ${g.id === rootState.activeGroupId ? 'selected' : ''}>${escapeHtml(g.settings.tripTitle)} (${escapeHtml(getTripStageLabel(g.settings.status))})</option>`
       )
       .join('');
   }
   const active = getActiveGroup();
   const stageBadge = document.getElementById('header-active-stage');
   if (stageBadge) {
-    stageBadge.textContent = `${active.settings.tripCode} • ${TRIP_STAGE_LABELS[active.settings.status]}`;
+    stageBadge.textContent = `${active.settings.tripCode} • ${getTripStageLabel(active.settings.status)}`;
   }
 }
 
@@ -634,7 +645,11 @@ function renderGroupsOverviewBoard(): void {
 // =========================================================================
 // TAB 1: MANIFEST, ROOMING & QR SHARE LINK
 // =========================================================================
-function buildPilgrimShareUrl(p: PilgrimRecord): string {
+function buildBadgeToken(groupId: string, pilgrimId: string): string {
+  return `${groupId}-${pilgrimId}`.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+}
+
+function buildPilgrimShareUrl(p: PilgrimRecord, badgeToken?: string): string {
   const active = getActiveGroup();
   const s = active.settings;
   const base = `${window.location.origin}/`;
@@ -657,6 +672,9 @@ function buildPilgrimShareUrl(p: PilgrimRecord): string {
     stage: s.status,
     meeting: s.meetingPoint,
   });
+  if (badgeToken) {
+    qs.set('token', badgeToken);
+  }
   if (matchGameya) {
     qs.set('payPlan', matchGameya.planType);
     qs.set('payTarget', String(matchGameya.totalTarget));
@@ -729,7 +747,31 @@ function renderManifestTable(): void {
     btn.addEventListener('click', () => {
       const p = active.pilgrims.find((x) => x.id === btn.dataset.sharePilgrim);
       if (!p) return;
-      const url = buildPilgrimShareUrl(p);
+      const badgeToken = buildBadgeToken(active.id, p.id);
+      const url = buildPilgrimShareUrl(p, badgeToken);
+      const s = active.settings;
+      void writeBadgeToCloud({
+        groupId: active.id,
+        pilgrimId: p.id,
+        badgeToken,
+        badgeData: {
+          fullName: p.fullName,
+          passportNumber: p.passportNumber,
+          roomNumber: p.roomNumber || '---',
+          busNumber: s.busNumber,
+          hotelKey: s.hotelKey,
+          hotelNameAr: s.hotelNameAr,
+          hotelNameEn: s.hotelNameEn,
+          hotelAddressAr: s.hotelAddressAr,
+          hotelPhone: s.hotelPhone,
+          supervisorName: s.supervisorName,
+          supervisorPhone: s.supervisorPhone,
+          tripTitle: s.tripTitle,
+          tripCode: s.tripCode,
+          tripStage: s.status,
+          meetingPoint: s.meetingPoint,
+        },
+      });
       const qrBox = document.getElementById('share-pilgrim-qr');
       const linkBox = document.getElementById('share-pilgrim-url') as HTMLInputElement | null;
       const titleBox = document.getElementById('share-pilgrim-name');
@@ -1359,24 +1401,27 @@ function renderSOSTab(): void {
       alert.resolved = true;
       saveState();
       renderAll();
+      void resolveCloudSosEvent(alert.id);
       showToast(`✅ تم إغلاق بلاغ ${alert.pilgrimName}`);
     });
   });
 }
 
 function renderOfficialResourcesInSup(): void {
+  const isEn = getCurrentLanguage() === 'en';
   const container = document.getElementById('sup-official-resources');
   if (!container) return;
-  container.innerHTML = OFFICIAL_SAUDI_RESOURCES.map(
-    (r) => `
-    <a href="${escapeHtml(r.urlOrTel)}" ${r.urlOrTel.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} class="btn btn-secondary" style="justify-content:flex-start;text-decoration:none;text-align:right;">
+  container.innerHTML = OFFICIAL_SAUDI_RESOURCES.map((r) => {
+    const en = OFFICIAL_RESOURCES_EN[r.id];
+    return `
+    <a href="${escapeHtml(r.urlOrTel)}" ${r.urlOrTel.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} class="btn btn-secondary" style="justify-content:flex-start;text-decoration:none;text-align:${isEn ? 'left' : 'right'};">
       <div>
-        <div style="font-size:0.86rem;font-weight:800;">${escapeHtml(r.titleAr)}</div>
-        <div style="font-size:0.76rem;color:var(--text-muted);font-weight:500;">${escapeHtml(r.actionLabelAr)}</div>
+        <div style="font-size:0.86rem;font-weight:800;">${escapeHtml(isEn && en ? en.titleEn : r.titleAr)}</div>
+        <div style="font-size:0.76rem;color:var(--text-muted);font-weight:500;">${escapeHtml(isEn && en ? en.actionEn : r.actionLabelAr)}</div>
       </div>
     </a>
-  `
-  ).join('');
+  `;
+  }).join('');
 }
 
 // =========================================================================
@@ -1640,12 +1685,76 @@ function updateGameyaFormFields(): void {
   setFieldState('gam-turn-wrap', 'new-gam-turn', showTurn);
 }
 
+async function pullCloudSosAlerts(notifyUser: boolean): Promise<void> {
+  const active = getActiveGroup();
+  const res = await fetchCloudSosEvents(active.settings.tripCode);
+  if (res.mode === 'unauthorized') {
+    if (notifyUser) showToast('🔐 يرجى إدخال رمز مصادقة المزامنة (SYNC_SECRET) في إعدادات الفوج', true);
+    return;
+  }
+  if (res.mode === 'local-only') {
+    if (notifyUser) showToast('💾 وضع الحفظ المحلي نشط — اربط D1 لاستقبال بلاغات الطوارئ الحية');
+    return;
+  }
+
+  const dispatcher = new EmergencySOSDispatcher(
+    new Hotel({
+      id: active.settings.hotelKey,
+      nameAr: active.settings.hotelNameAr,
+      nameEn: active.settings.hotelNameEn,
+      city: 'MAKKAH',
+      addressAr: active.settings.hotelAddressAr,
+      addressEn: active.settings.hotelAddressAr,
+      phone: active.settings.hotelPhone,
+      latitude: active.settings.hotelLat,
+      longitude: active.settings.hotelLng,
+    })
+  );
+
+  let added = 0;
+  for (const ev of res.events) {
+    if (active.sosAlerts.some((x) => x.id === ev.id)) continue;
+    const calc = dispatcher.createSOSAlert({
+      pilgrimId: ev.id,
+      pilgrimName: ev.pilgrim_name,
+      latitude: ev.latitude,
+      longitude: ev.longitude,
+      batteryLevel: 100,
+      notes: ev.notes || 'بلاغ معتمر من السحابة',
+    });
+    active.sosAlerts.unshift({
+      id: ev.id,
+      pilgrimName: ev.pilgrim_name,
+      phone: '',
+      latitude: ev.latitude,
+      longitude: ev.longitude,
+      distanceMeters: calc.distanceToHotelMeters,
+      notes: ev.notes || 'بلاغ طوارئ D1',
+      resolved: ev.resolved === 1,
+      createdAt: ev.created_at,
+    });
+    added += 1;
+  }
+  if (added > 0) {
+    saveState();
+    renderAll();
+    showToast(`🚨 تم استلام (${added}) بلاغ طوارئ جديد من Cloudflare D1`, true);
+  } else if (notifyUser) {
+    showToast('🟢 لا توجد بلاغات طوارئ سحابية جديدة');
+  }
+}
+
 async function syncActiveGroupToCloud(notifyUser: boolean): Promise<void> {
   const active = getActiveGroup();
   const res = await pushGroupWorkspaceToCloud(active.id, active);
+  if (res.mode === 'd1') {
+    await pullCloudSosAlerts(false);
+  }
   if (!notifyUser) return;
   if (res.mode === 'd1') {
     showToast('☁️ تمت المزامنة السحابية مع قاعدة Cloudflare D1 بنجاح');
+  } else if (res.mode === 'unauthorized') {
+    showToast('🔐 رُفضت المزامنة (401) — أدخل رمز SYNC_SECRET في إعدادات الفوج', true);
   } else if (res.mode === 'offline-queued') {
     showToast(`📴 التغييرات محفوظة محلياً ومجدولة للمزامنة (${res.pendingCount})`);
   } else {
@@ -1687,6 +1796,8 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const next = toggleLanguage();
       updateThemeButtonLabel();
+      updateNetworkStatusBadge();
+      renderAll();
       showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
     });
   });
@@ -1696,6 +1807,9 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-cloud-sync-popover')?.addEventListener('click', () => {
     void syncActiveGroupToCloud(true);
+  });
+  document.getElementById('btn-pull-cloud-sos')?.addEventListener('click', () => {
+    void pullCloudSosAlerts(true);
   });
 
   document.getElementById('active-group-switcher')?.addEventListener('change', (e) => {
@@ -1767,12 +1881,16 @@ window.addEventListener('DOMContentLoaded', () => {
       (document.getElementById('set-sup-name') as HTMLInputElement).value = s.supervisorName;
       (document.getElementById('set-sup-phone') as HTMLInputElement).value = s.supervisorPhone;
       (document.getElementById('set-meeting') as HTMLInputElement).value = s.meetingPoint;
+      const syncInput = document.getElementById('set-sync-token') as HTMLInputElement | null;
+      if (syncInput) syncInput.value = getSyncAuthToken();
       openDialogById('settings-modal');
     });
   });
 
   document.getElementById('settings-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const syncInput = document.getElementById('set-sync-token') as HTMLInputElement | null;
+    if (syncInput) setSyncAuthToken(syncInput.value);
     const active = getActiveGroup();
     const key = (document.getElementById('set-hotel-key') as HTMLSelectElement).value;
     const preset = HOTEL_PRESETS[key] || HOTEL_PRESETS.kiswah;

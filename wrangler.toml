@@ -2,9 +2,24 @@ name = "umrah-supervisor"
 compatibility_date = "2026-11-01"
 pages_build_output_dir = "dist"
 
-# Optional Cloudflare D1 binding for live cross-device sync (functions/api/*)
-# Uncomment and fill in database_id after running: npx wrangler d1 create umrah-db
+# ---------------------------------------------------------------------------
+# Cloudflare D1 — live cross-device sync
+# ---------------------------------------------------------------------------
+# 1. Create the database:   npx wrangler d1 create umrah-db
+# 2. Copy the database_id output below, then uncomment the block.
+# 3. Apply schema:          npx wrangler d1 execute umrah-db --file=packages/database-schema/d1-schema.sql
+# 4. In Cloudflare Pages dashboard → Settings → Environment variables, add:
+#      SYNC_SECRET = <your strong secret token>
+#    DO NOT commit the real SYNC_SECRET value here.
+# ---------------------------------------------------------------------------
 # [[d1_databases]]
-# binding = "DB"
+# binding      = "DB"
 # database_name = "umrah-db"
-# database_id = ""
+# database_id  = ""         # <-- paste id from step 1
+
+# ---------------------------------------------------------------------------
+# Public environment variables (non-secret, committed)
+# Set SYNC_SECRET only in the Cloudflare Pages dashboard, never here.
+# ---------------------------------------------------------------------------
+# [vars]
+# SYNC_SECRET = ""   # placeholder — real value goes in dashboard only
