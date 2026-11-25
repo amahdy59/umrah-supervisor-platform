@@ -16,3 +16,4 @@ export * from './guidance/ziyarat-guide.js';
 export * from './guidance/women-fiqh.js';
 export * from './guidance/packing-checklist.js';
 export * from './guidance/haram-gates-guide.js';
+export * from './guidance/official-resources.js';

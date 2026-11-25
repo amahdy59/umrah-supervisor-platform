@@ -1,6 +1,6 @@
 /**
  * Medical & Special Needs Profiles
- * Keeps track of chronic illnesses, wheelchair needs, and insulin refrigeration.
+ * Keeps track of chronic illnesses, wheelchair needs, insulin refrigeration, and Saudi emergency numbers.
  */
 
 export enum ChronicCondition {
@@ -61,11 +61,13 @@ export class MedicalRegistry {
   getEmergencyNumbers(): Record<string, string> {
     return {
       RED_CRESCENT_AMBULANCE: '997', // الهلال الأحمر السعودي
+      MOH_HEALTH_HOTLINE: '937', // مركز صحة 937 (وزارة الصحة 24/7)
       CIVIL_DEFENSE: '998', // الدفاع المدني
       POLICE: '999', // الشرطة
       ROAD_SECURITY: '996', // أمن الطرق
       HARAM_EMERGENCY: '911', // الطوارئ الموحد
-      MINISTRY_OF_HAJJ: '1966', // مركز خدمة ضيوف الرحمن
+      MINISTRY_OF_HAJJ: '1966', // مركز خدمة ضيوف الرحمن (داخلي)
+      MINISTRY_OF_HAJJ_INTL: '+966920002814', // رقم وزارة الحج للشرائح الدولية والتجوال
     };
   }
 }

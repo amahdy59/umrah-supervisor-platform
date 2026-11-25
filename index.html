@@ -3,6 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const savedScheme = localStorage.getItem('umrah_color_scheme');
+      if (savedScheme === 'dark' || savedScheme === 'light') {
+        document.querySelector('meta[name="color-scheme"]').content = savedScheme;
+      }
+    } catch (e) {}
+  </script>
   <title>رفيق المعتمر | تطبيق الحاج والمعتمر التفاعلي</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#064e3b">
@@ -11,21 +20,35 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
+      color-scheme: light dark;
       --primary: #064e3b;
       --primary-light: #047857;
       --primary-dark: #022c22;
+      --primary-ink: light-dark(#022c22, #6ee7b7);
       --gold: #d97706;
-      --gold-light: #fef3c7;
-      --gold-dark: #b45309;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #16a34a;
-      --danger: #dc2626;
+      --gold-light: light-dark(#fef3c7, #451a03);
+      --gold-dark: light-dark(#b45309, #fbbf24);
+      --bg: light-dark(#f8fafc, #090d16);
+      --surface-muted: light-dark(#f1f5f9, #1e293b);
+      --card-bg: light-dark(#ffffff, #111827);
+      --text: light-dark(#0f172a, #f1f5f9);
+      --text-muted: light-dark(#475569, #94a3b8);
+      --border: light-dark(#e2e8f0, #334155);
+      --success: light-dark(#15803d, #4ade80);
+      --danger: light-dark(#dc2626, #f87171);
+      --women-accent: light-dark(#9d174d, #f472b6);
+      --women-bg: light-dark(#fdf2f8, #2a1220);
+      --women-border: light-dark(#fbcfe8, #831843);
       --radius: 16px;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    }
+
+    :root:has(> head > meta[name="color-scheme"][content="dark"]) {
+      color-scheme: dark;
+    }
+
+    :root:has(> head > meta[name="color-scheme"][content="light"]) {
+      color-scheme: light;
     }
 
     * {
@@ -44,32 +67,36 @@
       transition: font-size 0.2s ease;
     }
 
+    :focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 2px;
+    }
+
     /* Senior Citizen Easy Mode */
     body.senior-mode {
-      font-size: 1.25rem !important;
-      line-height: 1.8;
-      background: #f1f5f9;
+      font-size: 1.22rem !important;
+      line-height: 1.85;
     }
 
     body.senior-mode .btn {
-      padding: 1.25rem 2rem !important;
-      font-size: 1.35rem !important;
+      padding: 1rem 1.4rem !important;
+      font-size: 1.2rem !important;
     }
 
     body.senior-mode .lap-display {
-      font-size: 5.5rem !important;
+      font-size: 5rem !important;
     }
 
     body.senior-mode .dua-arabic {
-      font-size: 1.7rem !important;
-      line-height: 2.3 !important;
+      font-size: 1.55rem !important;
+      line-height: 2.2 !important;
     }
 
     header {
       background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
       color: white;
-      padding: 1.25rem 2rem;
-      box-shadow: 0 4px 20px rgba(6, 78, 59, 0.2);
+      padding: 1rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(6, 78, 59, 0.25);
     }
 
     .header-content {
@@ -79,7 +106,7 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.9rem;
     }
 
     .logo-area {
@@ -89,10 +116,10 @@
     }
 
     .logo-icon {
-      font-size: 2.2rem;
+      font-size: 2rem;
       background: rgba(255, 255, 255, 0.15);
-      width: 52px;
-      height: 52px;
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -101,97 +128,87 @@
     }
 
     .app-title h1 {
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 800;
     }
 
     .app-title p {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: #a7f3d0;
     }
 
-    .header-actions {
+    .header-tools {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
     }
 
-    .mode-nav {
+    .header-chip-btn {
+      background: rgba(255, 255, 255, 0.14);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      min-height: 40px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .header-chip-btn[aria-pressed="true"],
+    .senior-toggle-btn.active {
+      background: var(--gold);
+      color: white;
+      border-color: #fde68a;
+    }
+
+    .desktop-nav {
+      max-width: 1200px;
+      margin: 0.85rem auto 0;
       display: flex;
-      background: rgba(0, 0, 0, 0.25);
-      padding: 4px;
+      overflow-x: auto;
+      gap: 0.45rem;
+      padding: 0.35rem;
+      background: rgba(0, 0, 0, 0.24);
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      flex-wrap: wrap;
-      gap: 4px;
     }
 
     .mode-btn {
+      flex: none;
       background: transparent;
       border: none;
-      color: #cbd5e1;
-      padding: 0.55rem 1rem;
-      font-size: 0.9rem;
+      color: #e2e8f0;
+      padding: 0.5rem 0.9rem;
+      min-height: 44px;
+      font-size: 0.88rem;
       font-weight: 700;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 0.4rem;
+      position: relative;
     }
 
     .mode-btn.active {
       background: white;
-      color: var(--primary-dark);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      color: #022c22;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     }
 
-    .senior-toggle-btn {
-      background: var(--gold);
-      color: white;
-      border: 2px solid #fef3c7;
-      border-radius: 10px;
-      padding: 0.55rem 1rem;
-      font-size: 0.85rem;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s;
-    }
-
-    .senior-toggle-btn.active {
-      background: white;
-      color: var(--gold-dark);
-      border-color: var(--gold);
-    }
-
-    .supervisor-link-btn {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-      text-decoration: none;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 0.55rem 1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s;
-    }
-
-    .supervisor-link-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+    /* Sticky Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
     }
 
     main {
       max-width: 1200px;
-      margin: 1.5rem auto;
-      padding: 0 1.25rem;
+      margin: 1.25rem auto;
+      padding: 0 1rem 2rem;
       flex: 1;
       width: 100%;
     }
@@ -202,21 +219,20 @@
 
     .tab-view.active {
       display: block;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.25s ease;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Prayer Times Bar */
     .prayer-bar-card {
       background: linear-gradient(90deg, #022c22 0%, #064e3b 100%);
       color: white;
       border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.5rem;
+      padding: 1.15rem 1.25rem;
+      margin-bottom: 1.25rem;
       box-shadow: var(--shadow);
     }
 
@@ -225,158 +241,196 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1rem;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       padding-bottom: 0.75rem;
     }
 
     .prayer-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0.6rem;
       text-align: center;
     }
 
     .prayer-pill {
       background: rgba(255, 255, 255, 0.08);
-      padding: 0.6rem 0.5rem;
+      padding: 0.55rem 0.35rem;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .prayer-pill.active {
       background: var(--gold);
       color: white;
       border-color: #fde68a;
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.45);
     }
 
-    .prayer-pill-name { font-size: 0.8rem; color: #a7f3d0; margin-bottom: 0.2rem; }
-    .prayer-pill.active .prayer-pill-name { color: white; font-weight: 700; }
-    .prayer-pill-time { font-size: 1rem; font-weight: 800; }
+    .prayer-pill-name { font-size: 0.78rem; color: #a7f3d0; margin-bottom: 0.15rem; }
+    .prayer-pill.active .prayer-pill-name { color: white; font-weight: 800; }
+    .prayer-pill-time { font-size: 0.98rem; font-weight: 800; }
 
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 1.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     .card {
       background: var(--card-bg);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 1.35rem;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      position: relative;
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 0.75rem;
+      padding-bottom: 0.7rem;
     }
 
     .card-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--primary-dark);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-ink);
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
 
     .badge {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
+      padding: 0.25rem 0.7rem;
       font-size: 0.75rem;
       font-weight: 700;
       border-radius: 20px;
     }
 
-    .badge-success { background: #dcfce7; color: var(--success); }
+    .badge-success { background: light-dark(#dcfce7, #052e16); color: var(--success); }
     .badge-warning { background: var(--gold-light); color: var(--gold-dark); }
-    .badge-primary { background: #d1fae5; color: var(--primary); }
-    .badge-danger { background: #fee2e2; color: var(--danger); }
+    .badge-primary { background: light-dark(#d1fae5, #064e3b); color: light-dark(#064e3b, #a7f3d0); }
+    .badge-danger { background: light-dark(#fee2e2, #450a0a); color: var(--danger); }
 
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.4rem;
-      font-size: 0.95rem;
+      gap: 0.45rem;
+      padding: 0.65rem 1.15rem;
+      min-height: 44px;
+      font-size: 0.92rem;
       font-weight: 700;
       border-radius: 12px;
       border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform 0.15s ease, background-color 0.15s ease;
     }
+
+    .btn:active { transform: scale(0.98); }
 
     .btn-primary {
       background: var(--primary);
       color: white;
-      box-shadow: 0 4px 14px rgba(6, 78, 59, 0.25);
     }
-
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-1px);
-    }
+    .btn-primary:hover { background: var(--primary-light); }
 
     .btn-secondary {
-      background: white;
+      background: var(--card-bg);
       color: var(--text);
       border: 1px solid var(--border);
     }
+    .btn-secondary:hover { background: var(--surface-muted); }
 
-    .btn-secondary:hover {
-      background: #f1f5f9;
-    }
+    .btn-gold { background: var(--gold); color: white; }
+    .btn-gold:hover { background: #b45309; }
 
-    .btn-gold {
-      background: var(--gold);
-      color: white;
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
-    }
-
-    .btn-gold:hover {
-      background: var(--gold-dark);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
 
     .audio-btn {
-      background: #ecfdf5;
-      color: var(--primary);
-      border: 1px solid #a7f3d0;
+      background: light-dark(#ecfdf5, #052e16);
+      color: var(--primary-ink);
+      border: 1px solid light-dark(#a7f3d0, #065f46);
       border-radius: 8px;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.85rem;
+      padding: 0.4rem 0.85rem;
+      min-height: 40px;
+      font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s;
+      gap: 0.35rem;
     }
 
-    .audio-btn:hover {
-      background: #d1fae5;
+    .info-box-neutral {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.95rem 1rem;
+      font-size: 0.9rem;
+      line-height: 1.7;
     }
 
-    /* Accordion */
+    .info-box-warn {
+      background: var(--gold-light);
+      border: 1px solid var(--gold);
+      border-radius: 12px;
+      padding: 0.95rem 1rem;
+      font-size: 0.9rem;
+      line-height: 1.75;
+    }
+
+    .info-box-danger {
+      background: light-dark(#fef2f2, #450a0a);
+      border: 1px solid light-dark(#fecaca, #991b1b);
+      color: light-dark(#991b1b, #fecaca);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    .lap-display {
+      font-size: 3.6rem;
+      font-weight: 900;
+      color: var(--primary-ink);
+      margin: 0.5rem 0;
+    }
+
+    .lap-total {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .dua-box {
+      background: var(--surface-muted);
+      border-radius: 12px;
+      padding: 1.1rem;
+      margin: 1rem 0;
+      border-right: 4px solid var(--primary);
+      text-align: right;
+    }
+
+    .dua-arabic {
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 2;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Native Details Accordion */
     .accordion-item {
-      background: #f8fafc;
+      background: var(--surface-muted);
       border: 1px solid var(--border);
       border-radius: 12px;
       margin-bottom: 0.75rem;
@@ -384,47 +438,156 @@
     }
 
     .accordion-header {
-      padding: 1rem 1.25rem;
+      padding: 0.95rem 1.15rem;
       cursor: pointer;
       font-weight: 700;
+      list-style: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #f8fafc;
+      min-height: 48px;
     }
 
-    .accordion-header:hover {
-      background: #f1f5f9;
+    .accordion-header::after {
+      content: '➕';
+      font-size: 0.9rem;
+    }
+
+    .accordion-item[open] .accordion-header::after {
+      content: '➖';
     }
 
     .accordion-body {
-      padding: 1rem 1.25rem;
+      padding: 1rem 1.15rem;
       border-top: 1px solid var(--border);
-      background: white;
-      font-size: 0.9rem;
-      line-height: 1.8;
-      display: none;
+      background: var(--card-bg);
+      font-size: 0.92rem;
+      line-height: 1.85;
     }
 
-    .accordion-item.open .accordion-body {
+    .women-fatwa-box {
+      background: var(--women-bg);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin: 0.5rem 0;
+      border-right: 3px solid #db2777;
+    }
+
+    .pack-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      cursor: pointer;
+      padding: 0.4rem;
+      border-radius: 8px;
+    }
+
+    .pack-row input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin-top: 3px;
+      flex: none;
+      accent-color: var(--primary);
+    }
+
+    /* Native <dialog> Modals */
+    dialog {
+      margin: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card-bg);
+      color: var(--text);
+      max-width: 620px;
+      width: calc(100% - 2rem);
+      max-height: 90dvh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    }
+
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+
+    dialog::backdrop {
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dialog-close-btn {
+      background: var(--surface-muted);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      font-size: 1.35rem;
+      cursor: pointer;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-label {
       display: block;
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
     }
 
-    /* Toast */
+    .field-input {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .certificate-card {
+      border: 6px double var(--gold);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      background: light-dark(#fffdf7, #1c1917);
+      margin: 0.75rem 0 1.25rem;
+    }
+
     .toast {
       position: fixed;
-      bottom: 2rem;
+      bottom: 5.2rem;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
+      transform: translateX(-50%) translateY(90px);
       background: #0f172a;
       color: white;
-      padding: 0.85rem 1.75rem;
+      padding: 0.8rem 1.5rem;
       border-radius: 30px;
       font-weight: 700;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: transform 0.25s ease, opacity 0.25s ease;
       z-index: 9999;
       opacity: 0;
+      pointer-events: none;
+      max-width: 90vw;
+      text-align: center;
     }
 
     .toast.show {
@@ -432,1560 +595,652 @@
       opacity: 1;
     }
 
-    /* Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-box {
-      background: white;
-      border-radius: var(--radius);
-      max-width: 600px;
-      width: 100%;
-      padding: 2rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .certificate-card {
-      border: 8px double #d97706;
-      border-radius: 16px;
-      padding: 2.5rem 2rem;
+    footer {
       text-align: center;
-      background: #fffdf7;
-      margin: 1rem 0;
+      padding: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Mobile Responsive Ergonomics */
+    @media (max-width: 768px) {
+      header { padding: 0.85rem 1rem; }
+      .desktop-nav { display: none; }
+      .prayer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+      main { padding-bottom: 5.5rem; }
+      footer { padding-bottom: 5.5rem; }
+
+      .mobile-bottom-nav {
+        position: fixed;
+        inset-block-end: 0;
+        inset-inline: 0;
+        z-index: 900;
+        display: flex;
+        overflow-x: auto;
+        background: var(--card-bg);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.1);
+        padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+        gap: 0.2rem;
+      }
+
+      .mobile-nav-btn {
+        flex: 1 0 auto;
+        min-width: 64px;
+        min-height: 48px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        border-radius: 10px;
+        padding: 0.3rem 0.45rem;
+        font-size: 0.74rem;
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        cursor: pointer;
+      }
+
+      .mobile-nav-btn.active {
+        background: light-dark(#ecfdf5, #064e3b);
+        color: var(--primary-ink);
+        border-bottom: 3px solid var(--primary);
+      }
+    }
+
+    /* Clean Certificate Print */
+    @media print {
+      header, nav, main, footer, .toast, .no-print { display: none !important; }
+      dialog[open] {
+        position: static;
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+        width: 100%;
+        background: white !important;
+        color: black !important;
+      }
+      dialog:not([open]) { display: none !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <div class="header-content">
       <div class="logo-area">
-        <div class="logo-icon">🕋</div>
+        <div class="logo-icon" aria-hidden="true">🕋</div>
         <div class="app-title">
           <h1>رفيق المعتمر (Pilgrim Companion)</h1>
-          <p>رفيقك الإيماني في رحاب المسجد الحرام والمسجد النبوي الشريف</p>
+          <p>رفيقك الإيماني والعملي في المسجد الحرام والمسجد النبوي</p>
         </div>
       </div>
 
-      <div class="header-actions">
-        <button class="senior-toggle-btn" id="senior-btn" onclick="toggleSeniorMode()">
-          <span>👵</span> وضع كبار السن (خط كبير)
+      <div class="header-tools">
+        <span id="network-status-pill" class="badge badge-success">جاهز للعمل ✅</span>
+        <button type="button" class="header-chip-btn senior-toggle-btn" id="senior-btn" aria-pressed="false">
+          <span aria-hidden="true">👵</span> وضع كبار السن
         </button>
-
-        <nav class="mode-nav">
-          <button class="mode-btn active" onclick="switchTab('rituals')">
-            <span>🤲</span> مناسكي وبطاقتي
-          </button>
-          <button class="mode-btn" onclick="switchTab('ziyarat')">
-            <span>🕌</span> دليل المزارات
-          </button>
-          <button class="mode-btn" onclick="switchTab('fiqh')">
-            <span>📖</span> المرشد الفقهي وآداب السكن
-          </button>
-          <button class="mode-btn" onclick="switchTab('women-fiqh')">
-            <span>🧕</span> فقه المرأة المعتمرة
-          </button>
-          <button class="mode-btn" onclick="switchTab('packing')">
-            <span>🧳</span> حقيبة السفر ومحفظة نُسك
-          </button>
-          <button class="mode-btn" onclick="switchTab('gates-taxi')">
-            <span>🧭</span> بوابات الحرم والتاكسي
-          </button>
-        </nav>
-
-        <a href="/supervisor.html" class="supervisor-link-btn" title="دخول بوابة المشرف">
-          <span>📋</span> بوابة المشرف
-        </a>
+        <button type="button" class="header-chip-btn" id="theme-toggle-btn" aria-pressed="false">
+          <span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>
+        </button>
+        <button type="button" class="header-chip-btn" id="wake-lock-btn" aria-pressed="false">
+          <span aria-hidden="true">🔆</span> منع إغلاق الشاشة
+        </button>
       </div>
     </div>
+
+    <nav class="desktop-nav" aria-label="الأقسام الرئيسية">
+      <button type="button" class="mode-btn active" data-tab-target="rituals" aria-current="page">🤲 مناسكي وبطاقتي</button>
+      <button type="button" class="mode-btn" data-tab-target="ziyarat">🕌 المزارات والميقات</button>
+      <button type="button" class="mode-btn" data-tab-target="fiqh">📖 المرشد الفقهي</button>
+      <button type="button" class="mode-btn" data-tab-target="women-fiqh">🧕 فقه المرأة</button>
+      <button type="button" class="mode-btn" data-tab-target="packing">🧳 الحقيبة ومحفظة نُسك</button>
+      <button type="button" class="mode-btn" data-tab-target="gates-taxi">🧭 البوابات والطوارئ</button>
+    </nav>
   </header>
 
-  <!-- Main Container -->
   <main>
-
-    <!-- Real-time Prayer Times & Mataf Countdown Bar -->
-    <div class="prayer-bar-card">
+    <!-- Live Seasonal Prayer Bar -->
+    <section class="prayer-bar-card" aria-label="مواقيت الصلاة">
       <div class="prayer-bar-top">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.5rem;">🕌</span>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.5rem;" aria-hidden="true">🕌</span>
           <div>
-            <div style="font-size: 1rem; font-weight: 800;" id="prayer-city-title">مواقيت الصلاة في المسجد الحرام (مكة المكرمة)</div>
-            <div style="font-size: 0.8rem; color: #a7f3d0;" id="prayer-countdown-text">جاري حساب موعد الصلاة القادمة...</div>
+            <div style="font-size:1rem;font-weight:800;" id="prayer-city-title">مواقيت الصلاة في المسجد الحرام (مكة المكرمة)</div>
+            <div style="font-size:0.78rem;color:#fde68a;" id="prayer-hijri-date">جاري تحميل التاريخ الهجري...</div>
+            <div style="font-size:0.82rem;color:#a7f3d0;font-weight:700;" id="prayer-countdown-text">جاري حساب موعد الصلاة القادمة بتوقيت مكة...</div>
           </div>
         </div>
-
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;" onclick="setPrayerCity('MAKKAH')">🕋 مكة المكرمة</button>
-          <button class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;" onclick="setPrayerCity('MADINAH')">🕌 المدينة المنورة</button>
+        <div style="display:flex;gap:0.45rem;">
+          <button type="button" id="btn-city-makkah" class="btn btn-secondary" aria-pressed="true" style="padding:0.35rem 0.75rem;font-size:0.8rem;">🕋 مكة</button>
+          <button type="button" id="btn-city-madinah" class="btn btn-secondary" aria-pressed="false" style="padding:0.35rem 0.75rem;font-size:0.8rem;">🕌 المدينة</button>
         </div>
       </div>
 
-      <div class="prayer-grid" id="prayer-times-grid">
-        <div class="prayer-pill">
-          <div class="prayer-pill-name">الفجر</div>
-          <div class="prayer-pill-time" id="time-fajr">05:15</div>
-        </div>
-        <div class="prayer-pill">
-          <div class="prayer-pill-name">الشروق</div>
-          <div class="prayer-pill-time" id="time-sunrise">06:35</div>
-        </div>
-        <div class="prayer-pill">
-          <div class="prayer-pill-name">الظهر</div>
-          <div class="prayer-pill-time" id="time-dhuhr">12:30</div>
-        </div>
-        <div class="prayer-pill active">
-          <div class="prayer-pill-name">العصر ⏳</div>
-          <div class="prayer-pill-time" id="time-asr">15:45</div>
-        </div>
-        <div class="prayer-pill">
-          <div class="prayer-pill-name">المغرب</div>
-          <div class="prayer-pill-time" id="time-maghrib">18:25</div>
-        </div>
-        <div class="prayer-pill">
-          <div class="prayer-pill-name">العشاء</div>
-          <div class="prayer-pill-time" id="time-isha">19:55</div>
-        </div>
+      <div class="prayer-grid">
+        <div class="prayer-pill" data-prayer="fajr" data-name-ar="الفجر"><div class="prayer-pill-name">الفجر</div><div class="prayer-pill-time">--:--</div></div>
+        <div class="prayer-pill" data-prayer="sunrise" data-name-ar="الشروق"><div class="prayer-pill-name">الشروق</div><div class="prayer-pill-time">--:--</div></div>
+        <div class="prayer-pill" data-prayer="dhuhr" data-name-ar="الظهر"><div class="prayer-pill-name">الظهر</div><div class="prayer-pill-time">--:--</div></div>
+        <div class="prayer-pill" data-prayer="asr" data-name-ar="العصر"><div class="prayer-pill-name">العصر</div><div class="prayer-pill-time">--:--</div></div>
+        <div class="prayer-pill" data-prayer="maghrib" data-name-ar="المغرب"><div class="prayer-pill-name">المغرب</div><div class="prayer-pill-time">--:--</div></div>
+        <div class="prayer-pill" data-prayer="isha" data-name-ar="العشاء"><div class="prayer-pill-name">العشاء</div><div class="prayer-pill-time">--:--</div></div>
       </div>
 
-      <div id="mataf-warning-banner" style="display: none; background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.85rem; font-weight: 700;">
-        ⚠️ تنبيه صحن المطاف: تبدأ قوات أمن الحرمين في إخلاء صحن المطاف للمصلين فقط ومنع دخول الطائفين لحين انتهاء صلاة الفريضة.
-      </div>
-    </div>
+      <div id="mataf-warning-banner" role="alert" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:0.7rem 1rem;border-radius:10px;margin-top:0.85rem;font-size:0.86rem;font-weight:700;"></div>
+    </section>
 
-    <!-- ========================================================== -->
-    <!-- TAB 1: RITUALS, ID BADGE, TAWAF/SAI (مناسكي وبطاقتي)       -->
-    <!-- ========================================================== -->
-    <div id="tab-rituals" class="tab-view active">
-      
-      <!-- Top Grid: Digital Badge & Emergency SOS -->
+    <!-- TAB 1: RITUALS & BADGE -->
+    <section id="tab-rituals" class="tab-view active">
       <div class="grid-2">
-        
-        <!-- Digital ID Badge Card -->
-        <div class="card" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: white; padding: 1.75rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <span class="badge badge-warning">بطاقة معتمر معتمدة</span>
-            <span style="font-size: 0.85rem; color: #a7f3d0;">كود الفوج: #UMR-1447</span>
-          </div>
-          <div style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem;">أحمد محمود الشريف</div>
-          <div style="font-size: 0.85rem; color: #d1fae5;">رقم الجواز: A12345678</div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.25rem 0; background: rgba(255, 255, 255, 0.08); padding: 1rem; border-radius: 12px; font-size: 0.9rem;">
-            <div>
-              <div style="color: #a7f3d0; font-size: 0.75rem;">الفندق بمكة:</div>
-              <div style="font-weight: 700;">أبراج الكسوة - جرول</div>
-            </div>
-            <div>
-              <div style="color: #a7f3d0; font-size: 0.75rem;">رقم الغرفة:</div>
-              <div style="font-weight: 700;">502 (الدور الخامس)</div>
-            </div>
-            <div>
-              <div style="color: #a7f3d0; font-size: 0.75rem;">رقم الباص:</div>
-              <div style="font-weight: 700;">باص رقم (1)</div>
-            </div>
-            <div>
-              <div style="color: #a7f3d0; font-size: 0.75rem;">هاتف المشرف:</div>
-              <div style="font-weight: 700;" dir="ltr">+966 50 123 4567</div>
-            </div>
+        <!-- Digital ID Badge -->
+        <div class="card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:white;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;">
+            <span class="badge" style="background:#fef3c7;color:#92400e;">بطاقة معتمر رقمية</span>
+            <span style="font-size:0.85rem;color:#a7f3d0;" id="badge-trip-code">كود الفوج: #UMR-1447</span>
           </div>
 
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-gold" style="flex: 1; font-size: 0.85rem;" onclick="openTaxiModal()">
-              🚕 كارت التاكسي السريع
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:1.35rem;font-weight:800;" id="badge-pilgrim-name">أحمد محمود الشريف</div>
+              <div style="font-size:0.85rem;color:#d1fae5;" id="badge-passport">رقم الجواز: A12345678</div>
+            </div>
+            <button type="button" id="btn-edit-profile" class="header-chip-btn" style="min-height:36px;font-size:0.8rem;">
+              ✏️ تعديل بياناتي
             </button>
-            <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="openCertificateModal()">
-              📜 شهادة العمرة
-            </button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin:1rem 0;background:rgba(255,255,255,0.09);padding:0.9rem;border-radius:12px;font-size:0.88rem;">
+            <div>
+              <div style="color:#a7f3d0;font-size:0.74rem;">الفندق بمكة:</div>
+              <div style="font-weight:700;" id="badge-hotel">فندق أبراج الكسوة</div>
+            </div>
+            <div>
+              <div style="color:#a7f3d0;font-size:0.74rem;">رقم الغرفة:</div>
+              <div style="font-weight:700;" id="badge-room">502 (الدور الخامس)</div>
+            </div>
+            <div>
+              <div style="color:#a7f3d0;font-size:0.74rem;">رقم الباص:</div>
+              <div style="font-weight:700;" id="badge-bus">باص رقم (1)</div>
+            </div>
+            <div>
+              <div style="color:#a7f3d0;font-size:0.74rem;">هاتف المشرف:</div>
+              <div style="font-weight:700;" dir="ltr" id="badge-sup-phone">+966501234567</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button type="button" id="btn-open-taxi" class="btn btn-gold" style="flex:1;">🚕 كارت التاكسي والأمن</button>
+            <button type="button" id="btn-open-cert" class="btn btn-secondary">📜 شهادة العمرة</button>
           </div>
         </div>
 
-        <!-- Quick Help & Emergency Card -->
-        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <!-- Real SOS & Meeting Point -->
+        <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:1rem;">
           <div>
             <div class="card-header">
               <div class="card-title">🚨 نداء الطوارئ ونقطة التجمع</div>
-              <span class="badge badge-success">GPS نشط</span>
+              <span class="badge badge-success">GPS + واتساب</span>
             </div>
-            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
-              إذا ضللت طريقك في ساحات الحرم، اضغط الزر بالأسفل. سيتم إرسال إحداثيات موقعك للمشرف وإظهار كارت الفندق للتاكسي.
+            <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.65;margin-bottom:0.85rem;">
+              إذا ضللت الطريق في الحرم، توقف عند أقرب باب مرقم أو عمود مميز، واضغط الزر لإرسال موقعك الجغرافي (GPS) بالواتساب للمشرف وإظهار بطاقة الفندق لرجل الأمن.
             </p>
-            <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-              <h4 style="color: var(--danger); font-size: 0.9rem; margin-bottom: 0.3rem;">نقطة التجمع المعتمدة لفوجكم:</h4>
-              <p style="font-size: 0.85rem;">ساحة بوابة الملك عبد العزيز (بوابة 1) بجوار صيدلية برج الساعة.</p>
+            <div class="info-box-danger">
+              <strong>نقطة التجمع المعتمدة لفوجكم:</strong>
+              <div id="sos-meeting-point">ساحة بوابة الملك عبد العزيز (بوابة 1) بجوار صيدلية برج الساعة.</div>
             </div>
           </div>
 
-          <button class="btn btn-danger" style="width: 100%;" onclick="triggerSOSAlert()">
-            🆘 أنا تائه - أرسل إشعار طوارئ للمشرف
-          </button>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button type="button" id="btn-trigger-sos" class="btn btn-danger" style="flex:1;">
+              🆘 أنا تائه — إرسال موقعي للمشرف
+            </button>
+            <a id="call-supervisor-link" href="tel:+966501234567" class="btn btn-secondary" style="text-decoration:none;">
+              📞 اتصال مباشر
+            </a>
+          </div>
         </div>
-
       </div>
 
-      <!-- Continuous Loop Audio Talbiyah Player -->
-      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); color: white; border: 1px solid #10b981;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-          <div style="font-weight: 800; font-size: 1.15rem; color: #a7f3d0; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🔊</span> مشغل التلبية النبوية المتكرر (أثناء السفر والحافلة)
-          </div>
-          <span class="badge" style="background: rgba(255,255,255,0.15); color: #fef08a;">سُنّة الإحرام المؤكدة</span>
+      <!-- Talbiyah Audio Box -->
+      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#022c22 0%,#064e3b 100%);color:white;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+          <div style="font-weight:800;font-size:1.05rem;color:#a7f3d0;">🔊 التلبية النبوية (من الميقات حتى بدء الطواف)</div>
+          <span class="badge" style="background:rgba(255,255,255,0.16);color:#fef08a;">سُنّة الإحرام المؤكدة</span>
         </div>
-        <div style="font-size: 1.25rem; font-weight: 700; line-height: 2; margin-bottom: 1rem; color: #fef3c7; text-align: center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px;" id="talbiyah-text">
+        <div style="font-size:1.18rem;font-weight:700;line-height:2;margin-bottom:0.9rem;color:#fef3c7;text-align:center;background:rgba(0,0,0,0.22);padding:0.9rem;border-radius:12px;">
           «لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ»
         </div>
-        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-          <button class="btn btn-gold" id="talbiyah-toggle-btn" onclick="toggleTalbiyahLoop()">
+        <div style="display:flex;gap:0.65rem;justify-content:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-gold" id="talbiyah-toggle-btn">
             <span id="talbiyah-icon">▶️</span> <span id="talbiyah-btn-label">تشغيل التلبية بالتكرار التلقائي</span>
           </button>
-          <button class="btn btn-secondary" onclick="stopTalbiyah()">
-            ⏹️ إيقاف
-          </button>
+          <button type="button" class="btn btn-secondary" id="talbiyah-stop-btn">⏹️ إيقاف</button>
         </div>
       </div>
 
-      <!-- Second Row: Interactive Tawaf & Sa'i Counters with Audio -->
+      <!-- Tawaf & Sa'i Counters -->
       <div class="grid-2">
-
-        <!-- Tawaf Counter with Audio Reciter -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">🕋 عداد الطواف التفاعلي (7 أشواط)</div>
-            <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="resetTawaf()">إعادة البدء</button>
+            <button type="button" class="btn btn-secondary" id="btn-tawaf-reset" style="min-height:36px;padding:0.25rem 0.7rem;font-size:0.8rem;">إعادة</button>
           </div>
+          <div style="text-align:center;">
+            <div style="font-size:0.88rem;color:var(--text-muted);">الشوط الحالي (يبدأ وينتهي بمحاذاة الحجر الأسود — الكعبة عن يسارك)</div>
+            <div class="lap-display" id="tawaf-lap-num">1 <span class="lap-total">/ 7</span></div>
 
-          <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">الشوط الحالي (يبدأ بمحاذاة الحجر الأسود)</div>
-            <div class="lap-display" style="font-size: 3.8rem; font-weight: 900; color: var(--primary); margin: 0.75rem 0;" id="tawaf-lap-num">1 <span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">/ 7</span></div>
-
-            <div style="background: #f1f5f9; border-radius: 12px; padding: 1.25rem; margin: 1.25rem 0; border-right: 4px solid var(--primary); text-align: right;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">دعاء وذكر الشوط:</span>
-                <button class="audio-btn" id="play-tawaf-audio-btn" onclick="playCurrentTawafDua()">
-                  <span>🔊 استمع للذكر بالصوت</span>
-                </button>
+            <div class="dua-box">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.45rem;">
+                <span style="font-size:0.84rem;font-weight:800;color:var(--primary-ink);" id="tawaf-dua-title">ذكر قرآني ونبوي مقترح:</span>
+                <button type="button" class="audio-btn" id="play-tawaf-audio-btn">🔊 استمع</button>
               </div>
-
-              <div class="dua-arabic" id="tawaf-dua-ar" style="font-size: 1.15rem; font-weight: 700; line-height: 2; margin-bottom: 0.5rem;">بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ إِيمَانًا بِكَ وَتَصْدِيقًا بِكِتَابِكَ وَوَفَاءً بِعَهْدِكَ وَاتِّبَاعًا لِسُنَّةِ نَبِيِّكَ مُحَمَّدٍ ﷺ.</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;" id="tawaf-dua-tr">Bismillahi Allahu Akbar, Allahumma imanan bika wa tasdiqan bikitabik...</div>
+              <div class="dua-arabic" id="tawaf-dua-ar"></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;" id="tawaf-dua-tr"></div>
+              <div style="font-size:0.78rem;color:var(--primary-ink);font-weight:700;margin-top:0.35rem;" id="tawaf-dua-src"></div>
             </div>
 
-            <div style="display: flex; gap: 0.75rem;">
-              <button class="btn btn-primary" style="flex: 2;" onclick="incrementTawaf()">
-                ✅ تم إكمال الشوط والانتقال للتالي
-              </button>
-              <button class="btn btn-secondary" style="flex: 1; white-space: nowrap;" onclick="showRuknYamani()">
-                📍 دعاء الركن اليماني
-              </button>
+            <div class="info-box-warn" id="tawaf-sunnah-note" style="text-align:right;font-size:0.82rem;margin-bottom:0.9rem;"></div>
+
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" id="btn-tawaf-next" style="flex:2;">✅ إتمام الشوط للتالي</button>
+              <button type="button" class="btn btn-secondary" id="btn-tawaf-undo" title="تراجع عن نقرة خاطئة">↩️ -1</button>
+              <button type="button" class="btn btn-gold" id="btn-rukn-yamani" style="flex:1;">📍 دعاء الركن اليماني</button>
             </div>
-          </div>
-        </div>
-
-        <!-- Sa'i Counter with Audio -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🚶‍♂️ عداد السعي بين الصفا والمروة</div>
-            <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="resetSai()">إعادة البدء</button>
-          </div>
-
-          <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 0.9rem; color: var(--text-muted);" id="sai-direction-text">الاتجاه: من الصفا ⬅️ إلى المروة</div>
-            <div class="lap-display" style="font-size: 3.8rem; font-weight: 900; color: var(--gold-dark); margin: 0.75rem 0;" id="sai-lap-num">1 <span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">/ 7</span></div>
-
-            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 1rem; text-align: right; margin: 1.25rem 0;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                <h4 style="color: var(--primary); font-size: 0.9rem;">🟢 الهرولة بين العلمين الأخضرين:</h4>
-                <button class="audio-btn" onclick="speakText('يُسن للرجال فقط الإسراع والمشي السريع بين العمودين الأخضرين، أما النساء فيمشين كالمعتاد')">
-                  <span>🔊 استمع</span>
-                </button>
-              </div>
-              <p style="font-size: 0.85rem; line-height: 1.6;">يُسن للرجال فقط الإسراع الخفيف بين العمودين المضيئين بالأخضر. النساء يمشين كالمعتاد دون إسراع.</p>
-            </div>
-
-            <button class="btn btn-gold" style="width: 100%;" onclick="incrementSai()">
-              ✅ وصول الشوط والانتقال للتالي
+            <button type="button" id="btn-tawaf-doubt-jump" class="btn btn-secondary" style="width:100%;margin-top:0.6rem;font-size:0.84rem;">
+              ⚖️ نسيت أنا في أي شوط؟ احسب القاعدة الفقهية
             </button>
           </div>
         </div>
 
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🚶‍♂️ عداد السعي بين الصفا والمروة</div>
+            <button type="button" class="btn btn-secondary" id="btn-sai-reset" style="min-height:36px;padding:0.25rem 0.7rem;font-size:0.8rem;">إعادة</button>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:0.95rem;font-weight:700;color:var(--gold-dark);" id="sai-direction-text">الاتجاه: من الصفا ⬅️ إلى المروة</div>
+            <div class="lap-display" style="color:var(--gold-dark);" id="sai-lap-num">1 <span class="lap-total">/ 7</span></div>
+
+            <div class="info-box-neutral" style="text-align:right;margin:1rem 0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:0.35rem;">
+                <strong style="color:var(--primary-ink);">🟢 الهرولة بين العلمين الأخضرين:</strong>
+                <button type="button" class="audio-btn" id="play-herwala-audio-btn">🔊 استمع</button>
+              </div>
+              <p style="font-size:0.86rem;line-height:1.65;">يُسن للرجال فقط الإسراع الخفيف بين العمودين المضيئين بالأخضر، أما النساء فيمشين بسكينة كالمعتاد.</p>
+            </div>
+
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button type="button" class="btn btn-gold" id="btn-sai-next" style="flex:2;">✅ وصول الشوط والانتقال للتالي</button>
+              <button type="button" class="btn btn-secondary" id="btn-sai-undo" title="تراجع عن نقرة خاطئة">↩️ -1</button>
+            </div>
+            <button type="button" class="btn btn-secondary" id="btn-safa-dhikr" style="width:100%;margin-top:0.6rem;font-size:0.85rem;">
+              ⛰️ ذكر الوقوف على الصفا والمروة (صحيح مسلم)
+            </button>
+          </div>
+        </div>
       </div>
+    </section>
 
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 2: ZIYARAT & HISTORIC SITES GUIDE (دليل المزارات)      -->
-    <!-- ========================================================== -->
-    <div id="tab-ziyarat" class="tab-view">
-      
-      <div class="card" style="margin-bottom: 1.5rem;">
+    <!-- TAB 2: ZIYARAT, MIQAT BY ROUTE & HARAMAIN FIELD PROTOCOLS -->
+    <section id="tab-ziyarat" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <div class="card-title">🕌 دليل المزارات النبوية والمعالم التاريخية بمكة والمدينة</div>
-          <span class="badge badge-primary">السنة والآداب والتحذيرات</span>
+          <div class="card-title">🧭 دليل الميقات حسب مسار سفرك</div>
+          <span class="badge badge-warning">طيران / باص / قطار الحرمين</span>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-          دليل إرشادي شامل لزيارة معالم السيرة النبوية والمساجد التاريخية، يبين الفضائل المسنونة ويحذر من المخالفات، لضمان زيارة إيمانية صحيحة.
-        </p>
+        <div id="miqat-routes-grid" class="grid-2" style="margin-bottom:0;"></div>
       </div>
 
-      <!-- Madinah Sites -->
-      <h3 style="color: var(--primary-dark); font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem;">🌴 مزارات المدينة المنورة</h3>
-      
-      <div class="grid-2">
-        
-        <!-- Masjid Quba -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🕌 مسجد قباء (أول مسجد في الإسلام)</div>
-            <span class="badge badge-success">صلاة فيه = عمرة</span>
-          </div>
-          <p style="font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem;">
-            <strong>الفضيلة النبوية:</strong> قال رسول الله ﷺ: <em>«مَنْ تَطَهَّرَ فِي بَيْتِهِ ثُمَّ أَتَى مَسْجِدَ قُبَاءٍ فَصَلَّى فِيهِ صَلَاةً كَانَ لَهُ كَأَجْرِ عُمْرَةٍ»</em>.
-          </p>
-          <div style="background: #f1f5f9; padding: 0.85rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
-            <strong>الآداب المسنونة:</strong> التطهر والوضوء في الفندق قبل الخروج إليه، ثم صلاة ركعتين تحية المسجد أو نافلة، والإكثار من الدعاء.
-          </div>
-          <div style="font-size: 0.8rem; color: var(--gold-dark); font-weight: 700;">
-            ⏰ الوقت المستحب: كان النبي ﷺ يزوره كل سبت ضحى.
-          </div>
-        </div>
+      <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin-bottom:0.85rem;">🌴 مزارات المدينة المنورة</h2>
+      <div id="ziyarat-madinah-grid" class="grid-2"></div>
 
-        <!-- Mount Uhud -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">⛰️ جبل أحد ومقبرة الشهداء</div>
-            <span class="badge badge-warning">يحبنا ونحبه</span>
-          </div>
-          <p style="font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem;">
-            <strong>الفضيلة والمكانة:</strong> جبل عظيم قال فيه ﷺ: <em>«أُحُدٌ جَبَلٌ يُحِبُّنَا وَنُحِبُّهُ»</em>، وفيه مقبرة شهداء معركة أحد السبعين وعلى رأسهم سيد الشهداء حمزة ومصعب بن عمير رضي الله عنهما.
-          </p>
-          <div style="background: #fef2f2; padding: 0.85rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; color: #991b1b; margin-bottom: 0.5rem;">
-            <strong>تحذيرات هامة:</strong> عدم التمسح بالأحجار أو تراب المقبرة، وعدم دعاء الأموات أو رمي النقود، والحرص على السلام الشرعي فقط: <em>«السلام عليكم أهل الديار من المؤمنين...»</em>.
-          </div>
-        </div>
+      <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin:1.25rem 0 0.85rem;">🕋 معالم مكة المكرمة</h2>
+      <div id="ziyarat-makkah-grid" class="grid-2"></div>
 
-        <!-- Masjid Qiblatayn -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🧭 مسجد القبلتين</div>
-          </div>
-          <p style="font-size: 0.9rem; line-height: 1.7;">
-            المسجد التاريخي الذي نزل فيه الوحي على النبي ﷺ أثناء الصلاة بتحويل القبلة من بيت المقدس إلى الكعبة المشرفة بمكة المكرمة: ﴿قَدْ نَرَى تَقَلُّبَ وَجْهِكَ فِي السَّمَاءِ فَلَنُوَلِّيَنَّكَ قِبْلَةً تَرْضَاهَا﴾.
-          </p>
-        </div>
-
-      </div>
-
-      <!-- Makkah Sites -->
-      <h3 style="color: var(--primary-dark); font-size: 1.2rem; font-weight: 800; margin: 1.5rem 0 1rem;">🕋 معالم مكة المكرمة</h3>
-
-      <div class="grid-2">
-
-        <!-- Jabal Al Nur -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">⛰️ جبل النور وغار حراء</div>
-            <span class="badge badge-primary">مهبط الوحي الأول</span>
-          </div>
-          <p style="font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem;">
-            المكان الذي كان يتحنث فيه رسول الله ﷺ وفيه نزلت أول آيات الذكر الحكيم ﴿اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ﴾.
-          </p>
-          <div style="background: #f1f5f9; padding: 0.85rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6;">
-            <strong>توجيه للمعتمر:</strong> الصعود شاق جداً وغير مفروض في العمرة. يحذر كبار السن وأصحاب أمراض القلب من صعوده، وتجنب الكتابة على الصخور.
-          </div>
-        </div>
-
-        <!-- Jabal Thawr -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🌄 غار ثور (جبل ثور)</div>
-            <span class="badge badge-primary">غار الهجرة المباركة</span>
-          </div>
-          <p style="font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem;">
-            الغار الذي أوى إليه النبي ﷺ مع صاحبه الصديق أبي بكر رضي الله عنه أثناء الهجرة الشريفة: ﴿إِذْ يَقُولُ لِصَاحِبِهِ لَا تَحْزَنْ إِنَّ اللَّهَ مَعَنَا﴾.
-          </p>
-          <div style="background: #f1f5f9; padding: 0.85rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6;">
-            <strong>العبرة:</strong> تذكر معية الله ونصره لأوليائه والأخذ بالأسباب مع كامل التوكل على الله.
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 3: FIQH ASSISTANT & ROOMMATE CHARTER (المرشد الفقهي)   -->
-    <!-- ========================================================== -->
-    <div id="tab-fiqh" class="tab-view">
-      
-      <!-- Lap Doubt Calculator -->
-      <div class="card" style="margin-bottom: 1.5rem; background: #fffdf5; border-color: #fde68a;">
+      <div class="card">
         <div class="card-header">
-          <div class="card-title" style="color: var(--gold-dark);">⚖️ حاسبة الشك في عدد أشواط الطواف والسعي</div>
+          <div class="card-title">🏛️ إرشادات ميدانية رسمية بالحرمين والمطار (العربات، زمزم، والضياع)</div>
+          <span class="badge badge-success">مصادر رسمية موثقة</span>
+        </div>
+        <div id="haramain-field-guides" style="display:flex;flex-direction:column;gap:0.85rem;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: FIQH ASSISTANT & ROOMMATE CHARTER -->
+    <section id="tab-fiqh" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+          <div class="card-title" style="color:var(--gold-dark);">⚖️ حاسبة الشك في عدد أشواط الطواف والسعي</div>
           <span class="badge badge-warning">قاعدة: البناء على اليقين</span>
         </div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          إذا شككت أثناء الطواف أو السعي في عدد الأشواط التي قطعتها، اختر العددين المحتملين لمعرفة الحكم الشرعي فوراً:
-        </p>
-
-        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-          <div>
-            <label style="font-size: 0.85rem; font-weight: 700;">أنا في شك، هل طفت:</label>
-            <select id="lap-doubt-1" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); font-weight: 700; margin: 0 0.5rem;">
-              <option value="3">3 أشواط</option>
-              <option value="4">4 أشواط</option>
-              <option value="5">5 أشواط</option>
-              <option value="6">6 أشواط</option>
-            </select>
-            <span>أم</span>
-            <select id="lap-doubt-2" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); font-weight: 700; margin: 0 0.5rem;">
-              <option value="4" selected>4 أشواط</option>
-              <option value="5">5 أشواط</option>
-              <option value="6">6 أشواط</option>
-              <option value="7">7 أشواط</option>
-            </select>
-          </div>
-          <button class="btn btn-gold" onclick="calculateLapDoubt()">
-            احسب الحكم الشرعي
-          </button>
+        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+          <label for="lap-doubt-1" style="font-weight:700;">شككت هل طفت:</label>
+          <select id="lap-doubt-1" class="field-input" style="width:auto;">
+            <option value="2">2 أشواط</option>
+            <option value="3" selected>3 أشواط</option>
+            <option value="4">4 أشواط</option>
+            <option value="5">5 أشواط</option>
+            <option value="6">6 أشواط</option>
+          </select>
+          <span>أم</span>
+          <select id="lap-doubt-2" aria-label="العدد الثاني المحتمل" class="field-input" style="width:auto;">
+            <option value="3">3 أشواط</option>
+            <option value="4" selected>4 أشواط</option>
+            <option value="5">5 أشواط</option>
+            <option value="6">6 أشواط</option>
+            <option value="7">7 أشواط</option>
+          </select>
+          <button type="button" class="btn btn-gold" id="btn-calc-doubt">احسب الحكم الشرعي</button>
         </div>
-
-        <div id="lap-doubt-result" style="display: none; background: white; border: 1px solid #fef3c7; border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 0.95rem; line-height: 1.7; color: var(--primary-dark);">
-          <!-- dynamic result -->
-        </div>
+        <div id="lap-doubt-result" class="info-box-warn" style="display:none;margin-top:0.85rem;"></div>
       </div>
 
-      <!-- Quick Fiqh FAQs -->
-      <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <div class="card-title">📖 مسائل فقهية شائعة وجبر النواقص (ماذا تفعل لو...)</div>
+          <div class="card-title">📖 مسائل فقهية شائعة وجبر النواقص (مع الأدلة)</div>
         </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>🌸 توضأت بصابون معطر أو تعطرت ناسياً أثناء الإحرام؟</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <strong>الحكم الشرعي:</strong> من تعطر أو استعمل صابوناً معطراً ناسياً أو جاهلاً فلا إثم عليه ولا فدية. الواجب عليه فور تذكره أن يغسل موضع الطيب بالماء لإزالته، ويستمر في إحرامه بشكل طبيعي تماماً.<br>
-            <em>الدليل:</em> قوله تعالى: ﴿رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا﴾.
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>✂️ قصصت ظفراً أو سقط شعر من رأسي أو لحيتي بغير قصد؟</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <strong>الحكم الشرعي:</strong> الإحرام صحيح تماماً، وما سقط من الشعر بغير قصد كالمسح في الوضوء أو حك الرأس، أو قُص من الأظافر نسياناً لا فدية فيه عند جمهور أهل العلم، لرفع الحرج والنسيان عن هذه الأمة.
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>✈️ تجاوزت الميقات في الطائرة دون إحرام، فماذا يلزمني؟</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <strong>الحكم الشرعي:</strong> لا يجوز لمن أراد العمرة تجاوز الميقات دون إحرام. الواجب عليه إذا لم يحرم أن يخرج إلى أقرب ميقات بري (كميقات الجحفة برابغ أو السيل الكبير) ليحرم منه ولا شيء عليه. فإن تعذر ذلك وأحرم من جدة، لزمه عند جمهور الفقهاء فدية (ذبح شاة) تذبح وتوزع على فقراء الحرم المكي.
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>💧 انتقض وضوئي أثناء الطواف في الشوط الرابع؟</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <strong>الحكم الشرعي:</strong> يخرج المعتمر بهدوء ويتوضأ من دورات مياه الحرم. وعند العودة، الصحيح عند جمهور الفقهاء أنه يكمل من حيث توقف (يبدأ الشوط الرابع ولا يعيد من الأول)، تيسيراً على المسلمين ودفعاً للمشقة في الزحام.
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>👥 هل يصح الطواف دون تقبيل أو لمس الحجر الأسود؟</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <strong>الحكم الشرعي:</strong> الطواف صحيح وتام 100%. تقبيل الحجر الأسود سنة ومستحب، بينما التدافع العنيف وإيذاء المسلمين محرم قطعاً. تكفي الإشارة باليد اليمنى إلى محاذاة الحجر من بعيد مع التكبير (الله أكبر).
-          </div>
-        </div>
+        <div id="fiqh-rulings-list"></div>
       </div>
 
-      <!-- Roommate Charter Visual Guide -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة</div>
-          <span class="badge badge-primary">دستور السكن المريح</span>
+          <span class="badge badge-primary">آداب الصحبة في العمرة</span>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
-            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🛌 مواعيد النوم وقيام الليل</h4>
-            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
-              تختلف ساعات النوم بين المعتمرين للراحة أو القيام. لا تشعل الأنوار الساطعة فجأة، ولا تتحدث في الهاتف داخل الغرفة أثناء نوم رفقائك. استخدم سماعات الأذن دائماً.
-            </p>
-          </div>
-
-          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
-            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🚿 نظافة الحمام المشترك</h4>
-            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
-              الغرف تضم 2 إلى 4 أشخاص. تجنب الإطالة المبالغ فيها في الحمام قبل أوقات الأذان حتى لا تعطل الآخرين. جفف الأرضية واحرص على ترك الحمام نظيفاً تماماً لمن بعدك.
-            </p>
-          </div>
-
-          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
-            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🔌 مقابس الشحن والكهرباء</h4>
-            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
-              المقابس في الغرف محدودة. شارك المشتركات الكهربائية بمودة، ولا تحتكر المقابس لشحن أجهزة متعددة بينما يحتاج رفيقك لشحن هاتفه قبل النزول للحرم.
-            </p>
-          </div>
-
-          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;">
-            <h4 style="color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem;">🤐 الستر وكظم الغيظ</h4>
-            <p style="font-size: 0.85rem; color: var(--text); line-height: 1.7;">
-              ما تراه داخل الغرفة من خصوصيات وأسرار أمانة عندك استر عليها. وإذا بدر تصرف عفوي أزعجك فقابل ذلك بالصبر وابتسامة العفو، فالعمرة مدرسة الأخلاق.
-            </p>
-          </div>
+        <div class="grid-2" style="margin-bottom:0;">
+          <div class="info-box-neutral"><strong>🛌 النوم والراحة:</strong> خفض الصوت واستخدام السماعات، وعدم إشعال الإضاءة الساطعة فجأة على النائمين.</div>
+          <div class="info-box-neutral"><strong>🚿 الحمام المشترك:</strong> عدم الإطالة قبل مواعيد الصلاة وتجفيف الأرضية وتركه نظيفاً لمن بعدك.</div>
+          <div class="info-box-neutral"><strong>🔌 الكهرباء والمقابس:</strong> مشاركة المشتركات الكهربائية بود وعدم احتكار المقابس قبل النزول للحرم.</div>
+          <div class="info-box-neutral"><strong>🤐 الستر والعفو:</strong> حفظ خصوصيات الرفيق وكظم الغيظ والابتسامة؛ فالعمرة مدرسة الأخلاق.</div>
         </div>
       </div>
+    </section>
 
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 4: WOMEN'S FIQH IN UMRAH (فقه المرأة المعتمرة)         -->
-    <!-- مستخلص من كتاب «دليل المعتمر» للشيخ يوسف العطير            -->
-    <!-- ========================================================== -->
-    <div id="tab-women-fiqh" class="tab-view">
-      
-      <!-- Banner / Source Header -->
-      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #fdf2f8 0%, #fff 100%); border-color: #fbcfe8;">
-        <div class="card-header" style="border-bottom-color: #fbcfe8;">
-          <div class="card-title" style="color: #9d174d;">
-            <span>🧕</span> دليل فقه وأحكام المرأة في العمرة والزيارة
-          </div>
-          <span class="badge" style="background: #fce7f3; color: #9d174d; font-weight: 800;">
-            مستخلص ومحقق من «دليل المعتمر»
-          </span>
+    <!-- TAB 4: WOMEN'S FIQH -->
+    <section id="tab-women-fiqh" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
+        <div class="card-header" style="border-bottom-color:var(--women-border);">
+          <div class="card-title" style="color:var(--women-accent);">🧕 دليل فقه وأحكام المرأة في العمرة والزيارة</div>
+          <span class="badge" style="background:var(--women-border);color:var(--women-accent);">مستخلص من «دليل المعتمر»</span>
         </div>
-        <p style="font-size: 0.95rem; line-height: 1.8; color: #4a044e; margin-bottom: 1rem;">
-          أحكام وفتاوى شرعية موثقة تهم كل أخت معتمرة، مستفادة من فتاوى كبار العلماء (الشيخ عبد العزيز بن باز، والشيخ محمد بن صالح العثيمين، والشيخ عبد المحسن العباد البدر حفظه الله ورعاهم جميعاً).
+        <p style="font-size:0.92rem;line-height:1.75;margin-bottom:0.85rem;">
+          أحكام موثقة للمرأة المعتمرة (بما فيها الحيض عند الميقات، الاستحاضة، النقاب والسدل، وتخصيص الألوان)، وفق فتاوى كبار العلماء مع الإشارة للمعتبر من الخلاف في مسائل الزيارة.
         </p>
+        <label for="women-search-input" class="field-label">ابحثي في أحكام المرأة:</label>
+        <input type="search" id="women-search-input" class="field-input" placeholder="مثال: حيض، استحاضة، نقاب، سدل، تقصير، روضة...">
+      </div>
+      <div id="women-fiqh-list"></div>
+    </section>
 
-        <!-- Quick Search Bar -->
-        <div style="position: relative;">
-          <input type="text" id="women-search-input" onkeyup="filterWomenFiqh()" placeholder="🔍 ابحثي في أحكام المرأة (مثال: حيض، نقاب، سدل، تقصير، أبيض، جوارب، روضة)..." 
-            style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 2px solid #fbcfe8; font-size: 0.95rem; outline: none; background: white;">
+    <!-- TAB 5: PACKING CHECKLIST & REAL OFFLINE NUSUK WALLET -->
+    <section id="tab-packing" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#064e3b 0%,#022c22 100%);color:white;">
+        <div class="card-header" style="border-bottom-color:rgba(255,255,255,0.15);">
+          <div class="card-title" style="color:#fef08a;">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</div>
+          <button type="button" class="btn btn-secondary" id="btn-reset-packing" style="min-height:36px;padding:0.25rem 0.7rem;font-size:0.8rem;">🔄 إعادة تعيين</button>
         </div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:0.4rem;">
+          <span>نسبة اكتمال تجهيز أغراض الرحلة:</span>
+          <span id="packing-percentage-label">0%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.2);height:14px;border-radius:10px;overflow:hidden;">
+          <div id="packing-progress-bar" style="background:var(--gold);height:100%;width:0%;transition:width 0.35s ease;"></div>
+        </div>
+        <div style="font-size:0.85rem;color:#a7f3d0;margin-top:0.5rem;" id="packing-status-summary"></div>
       </div>
 
-      <!-- Quick Summary Cards (Pillars for the Muslim Sister) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
-          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">🌸 الإحرام مع الحيض</div>
-          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تُحرم وجوباً من الميقات وتغتسل وتلبي، وتؤخر الطواف حتى تطهر.</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
-          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">👗 لا نقاب ولا قفازين</div>
-          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تلبس ثيابها الساترة المعتادة، ويحرم النقاب المفصل وتستر بسدل الخمار.</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
-          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">🚶‍♀️ هدوء ووقار في الطواف</div>
-          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">لا رمل ولا اضطباع ولا هرولة للمرأة بالإجماع، وشأنها السكينة والستر.</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #fbcfe8; border-right: 4px solid #db2777; border-radius: 12px; padding: 1rem;">
-          <div style="font-weight: 800; color: #9d174d; margin-bottom: 0.3rem;">✂️ التقصير قدر أنملة</div>
-          <div style="font-size: 0.85rem; color: var(--text); line-height: 1.6;">تقص قدر أنملة (~2 سم) من أطراف الشعر، ويحرم كشف الشعر بمروة الحرم.</div>
-        </div>
-      </div>
-
-      <!-- 10 Comprehensive Rulings (Accordion with Searchable Class) -->
-      <div id="women-fiqh-list">
-
-        <!-- 1: Miqat & Menstruation -->
-        <div class="accordion-item women-topic" data-keywords="حيض نفاس ميقات احرام تأخير طواف دم عائشة سرف">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">1. وصول المرأة إلى الميقات وهي حائض أو نفساء</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> إذا بلغت المرأة الميقات وهي حائض أو نُفساء، فهل تحرم أم تؤخر إحرامها حتى تطهر بمكة؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> تغتسل وتُحرم مع الناس من الميقات وجوباً، وتفعل كل ما يفعله المعتمر من الذكر والدعاء والتلبية، غير أنها لا تطوف بالبيت حتى تطهر وتغتسل.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> لا يجوز للمرأة تجاوز الميقات دون إحرام بحجة الحيض. بل تنوي وتلبي في الطائرة أو الحافلة، وإذا وصلت الفندق بمكة تنتظر حتى تطهر تماماً وتغتسل غسل الطهارة، ثم تذهب للحرم وتطوف وتسعى وتقصر. ولا يجوز لها تقديم السعي على الطواف في العمرة بحال.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>الدليل الشرعي:</em> حديث عائشة رضي الله عنها حين حاضت بسرف فقال لها رسول الله ﷺ: «افْعَلِي مَا يَفْعَلُ الْحَاجُّ غَيْرَ أَنْ لا تَطُوفِي بِالْبَيْتِ حَتَّى تَطْهُرِي». (متفق عليه - دليل المعتمر ص 16)
-            </div>
-          </div>
-        </div>
-
-        <!-- 2: Ihram Clothes (No Niqab, No Gloves) -->
-        <div class="accordion-item women-topic" data-keywords="لباس ثياب نقاب قفازين برقع وجه كفين احرام محرمات">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">2. صفة لباس إحرام المرأة وما يحرم عليها ارتداؤه</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> ما هو اللباس المخصص لإحرام المرأة؟ وما الذي يحرم عليها ارتداؤه؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> ليس للمرأة لباس محدد للإحرام، بل تُحرم في لباسها المعتاد الساتر الفضفاض الذي لا زينة فيه ولا يصف جسدها. ويحرم عليها شيئان فقط بالاتفاق: <strong>النقاب (البُرقُع المفصل للوجه) والقفازان للكفين</strong>.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> تلبس المرأة عباءتها أو ثيابها الساترة المعتادة. يحرم عليها لبس النقاب المخيط للعينين والقفازين، وتغطي وجهها بسدل خمارها عند مرور الرجال الأجانب، وتستر كفيها بكم عباءتها الفضفاض دون قفازين.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>الدليل الشرعي:</em> قوله ﷺ: «لا تَنْتَقِبِ المَرْأَةُ المُحْرِمَةُ، ولا تَلْبَسِ القُفَّازَيْنِ». (رواه البخاري - دليل المعتمر ص 17)
-            </div>
-          </div>
-        </div>
-
-        <!-- 3: Bid'ah of Specific White or Green Dress -->
-        <div class="accordion-item women-topic" data-keywords="أبيض اخضر لون ثوب بدعة تخصيص ملابس">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">3. بدعة تخصيص الثوب الأبيض أو الأخضر للمعتمرة</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> هل يجب أو يُستحب للمرأة أن تلبس ثوباً أبيض أو أخضر للإحرام كما يعتقد كثير من الناس؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> تخصيص ثوب أبيض أو أخضر لإحرام المرأة لا أصل له في الشرع وهو من البدع والمحدثات المنكرة.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> تُحرم المرأة في الأسود أو الكحلي أو البني أو أي لون ساتر غير لافت. وقد نص أهل العلم (كالشيخ ابن عثيمين والشيخ ابن باز) على كراهة لبس الثوب الأبيض للمرأة لأنه يشبه لباس الرجال، وقد يلفت الأنظار ويشف عند التعرق والزحام، كما أن وضع الرباط الأبيض على الرأس بدعة لا دليل عليها.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>المرجع:</em> «دليل المعتمر» ص 17 وص 54 (تخصيص ثياب خاصة للنساء خضراء أو بيضاء لا أصل له).
-            </div>
-          </div>
-        </div>
-
-        <!-- 4: Face Veil (Sadl) in Front of Non-Mahram Men -->
-        <div class="accordion-item women-topic" data-keywords="سدل خمار تغطية وجه رجال اجانب عصابة طربوش محرم">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">4. سدل الخمار على الوجه بحضرة الرجال الأجانب دون عصابة</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> كيف تغطي المحرمة وجهها إذا مر بها رجال أجانب مع تحريم النقاب؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> تسدل خمارها أو جلبابها من فوق رأسها على وجهها، ولا يضر إن مس الخمار وجهها إطلاقاً. وبدعة وضع (العصابة أو الطربوش أو الإسفنج) لرفع الخمار عن الوجه لا أصل لها.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> كان نساء الصحابة وأمهات المؤمنين إذا حاذاهن الركبان سدلت إحداهن جلبابها من رأسها على وجهها، فإذا جاوزوهن كشفن وجوههن. ومس القماش للوجه أثناء السدل جائز شرعاً ولا يوجب فدية ولا كفارة خلافاً لما يظنه العامة.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>الدليل الشرعي:</em> حديث عائشة رضي الله عنها: «كَانَ الرُّكْبَانُ يَمُرُّونَ بِنَا وَنَحْنُ مَعَ رَسُولِ اللَّهِ ﷺ مُحْرِمَاتٌ، فَإِذَا حَاذَوْا بِنَا سَدَلَتْ إِحْدَانَا جِلْبَابَهَا مِنْ رَأْسِهَا عَلَى وَجْهِهَا، فَإِذَا جَاوَزُونَا كَشَفْنَاهُ». (أبو داود وابن ماجه)
-            </div>
-          </div>
-        </div>
-
-        <!-- 5: Tawaf Physicality (No Ramal, No Idtiba, No Herwala) -->
-        <div class="accordion-item women-topic" data-keywords="رمل اضطباع هرولة طواف سعي مشي كتف جري سرعة">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">5. لا رمل ولا اضطباع ولا هرولة على النساء في الطواف والسعي</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> هل ترمل المرأة في الأشواط الثلاثة الأولى للطواف أو تسرع بين العلمين الأخضرين في السعي؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> إجماع علماء الأمة قديماً وحديثاً على أنه <strong>لا رمل ولا اضطباع ولا هرولة على النساء</strong> في طواف ولا سعي، بل شأن المرأة الستر والوقار.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> تمشي المرأة مشياً عادياً هادئاً بسكينة في جميع أشواط الطواف وأشواط السعي بين الصفا والمروة. وإذا مرت بين الضوئين الأخضرين في المسعى تمشي كعادتها ولا تسرع. كما يستحب لها الطواف في حواشي المطاف وأطرافه بعيداً عن مزاحمة الرجال واحتكاكهم، وذلك أعظم لأجرها وأصون لعفافها.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>الإجماع:</em> قال ابن المنذر والإمام النووي: «أجمع أهل العلم على أن المرأة لا رمل عليها حول البيت، ولا بين الصفا والمروة، وليس عليها اضطباع، وذلك لأن الرمل والاضطباع والهرولة يطلب فيها إظهار الجلد، والمرأة عورة وشأنها الستر». (دليل المعتمر ص 31)
-            </div>
-          </div>
-        </div>
-
-        <!-- 6: Menstruation after Tawaf & before Sa'i -->
-        <div class="accordion-item women-topic" data-keywords="حيض بعد الطواف قبل السعي طهر نقاء اتمام عمرة">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">6. نزول الحيض بعد إتمام الطواف وقبل السعي بين الصفا والمروة</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> امرأة طافت بالبيت طوافاً تاماً صحيحاً، ثم نزل عليها دم الحيض قبل السعي، فهل تنتظر أم تسعى؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> تسعى بين الصفا والمروة وهي حائض وتتم عمرتها وتقصر من شعرها وتتحلل، وعمرتها صحيحة وتامة بالإجماع.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> الطهارة من الحدث والحيض شرط لصحة الطواف بالبيت العتيق فقط، وليست شرطاً لصحة السعي بين الصفا والمروة، بل هي مستحبة في السعي. والمسعى ليس جزءاً من المسجد الحرام الذي تمنع الحائض من المكث فيه، فتدخل وتسعى وتقصر وتكون قد أتمت نسكها بفضل الله.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>المرجع:</em> «دليل المعتمر» ص 44 (لو حاضت المرأة أو نفست بعد الطواف سعت وأجزأها ذلك لأن الطهارة في السعي سنة وليست شرطاً).
-            </div>
-          </div>
-        </div>
-
-        <!-- 7: Hair Trimming (Taqseer vs Shaving) -->
-        <div class="accordion-item women-topic" data-keywords="تقصير شعر حلق رأس انملة مقص فندق مروة تحلل">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">7. صفة تقصير المرأة لشعرها للتحلل وتحريم الحلق وكشف الشعر بالمروة</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> كيف تتحلل المرأة من عمرتها؟ وهل تحلق رأسها؟ وأين تقص شعرها؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> المرأة لا يُشرع لها الحلق بالإجماع بل يحرم عليها حلق رأسها، والواجب عليها <strong>التقصير فقط قدر أنملة الأصبع</strong>.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> تجمع المرأة شعرها أو أطراف ضفائرها وتقص من أسفله قدر (أنملة الأصبع) أي حوالي 1.5 إلى 2 سم. <strong>تنبيه بالغ الأهمية:</strong> تقع بعض النساء في منكر خطير بكشف حجابهن وشعورهن أمام الرجال عند نهاية المروة لتقصير الشعر بالمقص! بل الواجب عليها تأخير القص حتى تعود إلى غرفتها بالفندق أو في مكان ساتر خاص بالنساء.</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>الحديث النبوي:</em> قال رسول الله ﷺ: «لَيْسَ عَلَى النِّسَاءِ حَلْقٌ، إِنَّمَا عَلَى النِّسَاءِ التَّقْصِيرُ». (رواه أبو داود والدارمي وصححه الألباني - دليل المعتمر ص 47)
-            </div>
-          </div>
-        </div>
-
-        <!-- 8: Socks and Sewn Shoes -->
-        <div class="accordion-item women-topic" data-keywords="جوارب شرابات احذية مخيط خفين قدم عورة ستر">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">8. جواز لبس الجوارب (الشرابات) والأحذية المخيطة للمرأة</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> هل يجوز للمرأة المحرمة لبس الجوارب (الشرابات) أو الأحذية العادية المخيطة؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> يجوز للمرأة المحرمة لبس الجوارب والخفين والأحذية المخيطة دون أي كراهة أو فدية بالإجماع.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> النهي عن لبس المخيط والخفاف خاص بالرجال فقط دون النساء. بل يُسن للمرأة لبس الجوارب لستر قدميها عن أنظار الرجال الأجانب أثناء رفع ثيابها أو أثناء المشي في الطواف والسعي والصلاة، لأن قدمي الحرة عورة أمام الرجال الأجانب.</p>
-          </div>
-        </div>
-
-        <!-- 9: 8 Conditions of Sharia Hijab -->
-        <div class="accordion-item women-topic" data-keywords="حجاب شروط ثمانية عباءة ستر تبرج عطر بخور زينة">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">9. شروط الحجاب الشرعي الثمانية للمعتمرة داخل الحرمين</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> ما هي شروط العباءة والحجاب الشرعي المقبول في أقدس البقاع؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> الحجاب عبادة يُقصد به الستر الكامل لا الزينة، وقد جمع العلماء شروطه الثمانية من الكتاب والسنة:
-            </div>
-            <ol style="margin-right: 1.5rem; line-height: 1.9; font-size: 0.9rem;">
-              <li><strong>استيعاب جميع البدن:</strong> ساتر لجميع جسدها.</li>
-              <li><strong>أن لا يكون زينة في نفسه:</strong> فلا يكون مطرزاً بالخرز أو الذهب أو الألوان الفاقعة اللافتة.</li>
-              <li><strong>أن يكون صفيقاً ثخيناً:</strong> لا يشف عما تحته ولا يكشف لون البشرة.</li>
-              <li><strong>أن يكون فضفاضاً واسعاً:</strong> غير ضيق يفصل تقاطيع الجسد ومفاتنه.</li>
-              <li><strong>أن لا يكون مطيباً ولا مبخراً:</strong> يحرم على المحرمة التطيب أو التعطر برائحة فواحة.</li>
-              <li><strong>أن لا يشبه لباس الرجال:</strong> لحديث لعن المتشبهات بالرجال من النساء.</li>
-              <li><strong>أن لا يشبه لباس الكافرات:</strong> فيما يختص بهن من أزياء.</li>
-              <li><strong>أن لا يكون ثوب شهرة:</strong> يقصد به لفت الأنظار والتعالي على الناس.</li>
-            </ol>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>المرجع:</em> «دليل المعتمر» ص 128 (شروط الحجاب الشرعي).
-            </div>
-          </div>
-        </div>
-
-        <!-- 10: Prophet's Mosque & Rawdah Visits -->
-        <div class="accordion-item women-topic" data-keywords="مسجد نبوي روضة شريفة مقابر بقيع احد قبور نسك تصريح سلام">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: 800; color: #831843;">10. زيارة المرأة للمسجد النبوي والروضة الشريفة وحكم المقابر</span>
-            <span>➕</span>
-          </div>
-          <div class="accordion-body">
-            <p><strong>السؤال:</strong> هل تزور المرأة قبر النبي ﷺ ومقبرة البقيع وشهدء أحد؟ وما حكم صلاتها في الروضة؟</p>
-            <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-right: 3px solid #db2777;">
-              <strong>الفتوى والبيان:</strong> يُشرع للمرأة الصلاة في المسجد النبوي ودخول الروضة الشريفة في الفترات المخصصة للنساء بتصريح نسك. أما زيارة المقابر (البقيع وأحد) أو الوقوف على المواجهة الشريفة للقبر، فالصحيح من قولي العلماء منعه للنساء.
-            </div>
-            <p><strong>الإرشاد العملي:</strong> تصلي الأخت المعتمرة في مصليات النساء بالمسجد النبوي، وتحجز موعد الروضة الشريفة عبر تطبيق «نُسك» لتصلي ركعتين في الروضة. أما السلام على رسول الله ﷺ وصاحبيه فيحصل بالصلاة والسلام عليه من أي مكان، فالملائكة تبلغه صلاتنا وسلامنا أينما كنا. وتجتنب النساء الذهاب للمقابر لحديث النبي ﷺ: «لَعَنَ اللَّهُ زَوَّارَاتِ الْقُبُورِ».</p>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
-              <em>المرجع:</em> «دليل المعتمر» ص 85-87 (فتاوى الزيارة بالمدينة المنورة).
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 5: PACKING CHECKLIST & OFFLINE NUSUK WALLET            -->
-    <!-- (حقيبة السفر وتجهيزات المعتمر + محفظة نُسك أوفلاين)         -->
-    <!-- ========================================================== -->
-    <div id="tab-packing" class="tab-view">
-
-      <!-- Packing Readiness Progress Header -->
-      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #064e3b 0%, #022c22 100%); color: white;">
-        <div class="card-header" style="border-bottom-color: rgba(255,255,255,0.15);">
-          <div class="card-title" style="color: #fef08a;">
-            <span>🧳</span> مؤشر جاهزية حقيبة المعتمر قبل السفر
-          </div>
-          <button class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;" onclick="resetPackingChecklist()">
-            🔄 إعادة تعيين القائمة
-          </button>
-        </div>
-
-        <div style="margin: 1rem 0;">
-          <div style="display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 0.5rem;">
-            <span>نسبة اكتمال تجهيز أغراض الرحلة:</span>
-            <span id="packing-percentage-label">0%</span>
-          </div>
-          <div style="background: rgba(255,255,255,0.2); height: 14px; border-radius: 10px; overflow: hidden;">
-            <div id="packing-progress-bar" style="background: var(--gold); height: 100%; width: 0%; transition: width 0.4s ease;"></div>
-          </div>
-          <div style="font-size: 0.85rem; color: #a7f3d0; margin-top: 0.5rem;" id="packing-status-summary">
-            تم تجهيز 0 من 15 عنصراً ضرورياً
-          </div>
-        </div>
-      </div>
-
-      <!-- Packing Items Accordions / Groups -->
       <div class="grid-2">
-
-        <!-- Column 1: Documents & Men's / Women's Ihram -->
-        <div>
-          <!-- Documents -->
-          <div class="card" style="margin-bottom: 1.5rem;">
-            <div class="card-header">
-              <div class="card-title">📄 وثائق السفر والحجوزات الرسمية</div>
-              <span class="badge badge-danger">إلزامية تماماً</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-doc-passport" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>جواز السفر ساري المفعول (أكثر من 6 أشهر):</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">مع التأشيرة الإلكترونية وصورة إضافية على الجوال.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-doc-nusuk" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>تطبيق نُسك مفعل وحجز تصاريح العمرة والروضة:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">مع أخذ لقطة شاشة للباركود لحفظها في المحفظة بالأسفل.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-doc-tickets" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>تذاكر الطيران وعقد سكن الفندق وبطاقة الباص:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">نسخة ورقية وأخرى محفوظة بهاتفك.</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Ihram Clothes (Men & Women) -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">👕 حقيبة ملابس الإحرام (للرجال والنساء)</div>
-              <span class="badge badge-primary">لباس النسك</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-ihram-cloth" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>طقم إحرام قطني مريح (إزار ورداء للرجال):</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">يفضل طقمان إضافيان للطوارئ وتجنب اتساخ الثياب.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-ihram-belt" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>حزام الإحرام بمحفظة وجيوب بسحاب:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">لتثبيت الإزار وحفظ الأموال والهاتف بأمان.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-slippers" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>حذاء طبي مريح يظهر الكعبين للرجل / حذاء مشي للمرأة:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">مخصص للمشي الطويل وتجنب الانزلاق في الرخام.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-women-clothes" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>عباءات ساترة غير زينة وخمار سدل وجوارب قطنية (للأخوات):</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">تجنب اللون الأبيض أو الأخضر، والحرص على جوارب قطنية لستر القدمين.</div>
-                </div>
-              </label>
-            </div>
-          </div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+          <div class="card"><div class="card-header"><div class="card-title">📄 وثائق السفر والتصاريح</div><span class="badge badge-danger">إلزامي</span></div><div id="pack-docs-list"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">👔 حقيبة إحرام الرجال</div></div><div id="pack-men-list"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">🧕 حقيبة المعتمرة</div></div><div id="pack-women-list"></div></div>
         </div>
 
-        <!-- Column 2: Health, Hygiene & Offline Wallet -->
-        <div>
-          <!-- Health & Hygiene -->
-          <div class="card" style="margin-bottom: 1.5rem;">
-            <div class="card-header">
-              <div class="card-title">🧼 الصحة والعناية الشخصية ومستلزمات الحرم</div>
-              <span class="badge badge-warning">تيسير وراحة</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-soap" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>صابون وشامبو طبي غير معطر (خالي من الروائح):</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">ضروري للاستحمام والغسل أثناء الإحرام دون الوقوع في محظور الطيب.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-vaseline" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>فازلين طبي غير معطر لمنع التسلخات والالتهابات:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">يوضع بين الفخذين قبل الإحرام والمشي الطويل لتجنب الاحتكاك الشديد.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-meds" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>الأدوية الشخصية المزمنة ومسكنات الصداع وحبوب الحلق:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">احفظ كمية كافية في حقيبة اليد مع تقرير طبي رسمي.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-shoebag" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>كيس قماشي خفيف لحفظ الحذاء في الحرم:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">لتجنب ضياع الحذاء وصحبه معك دائماً داخل المطاف والمسعى.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-powerbank" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>شاحن متنقل (باور بانك) أصلي وسلك شحن:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">لضمان بقاء هاتفك مشحوناً للتواصل مع الفوج واستعراض التصاريح.</div>
-                </div>
-              </label>
-              <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
-                <input type="checkbox" class="packing-cb" id="cb-umbrella" onchange="updatePackingProgress()" style="width: 20px; height: 20px; margin-top: 3px;">
-                <div>
-                  <strong>مظلة شمسية خفيفة وقارورة ماء صغيرة:</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">للحماية من حرارة الشمس وقت الظهيرة في ساحات الحرمين.</div>
-                </div>
-              </label>
-            </div>
-          </div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+          <div class="card"><div class="card-header"><div class="card-title">🧼 الصحة والعناية (بدون عطر)</div></div><div id="pack-health-list"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">🕌 مستلزمات الحرم اليومية</div></div><div id="pack-daily-list"></div></div>
 
-          <!-- Offline Nusuk Wallet Card -->
-          <div class="card" style="background: #fdfaf3; border: 2px dashed var(--gold);">
+          <!-- Real Offline Nusuk Wallet -->
+          <div class="card" style="border:2px dashed var(--gold);">
             <div class="card-header">
-              <div class="card-title" style="color: var(--gold-dark);">📲 محفظة تصاريح نُسك أوفلاين (بدون إنترنت)</div>
-              <span class="badge badge-warning">تعمل في وضع الطيران</span>
+              <div class="card-title" style="color:var(--gold-dark);">📲 محفظة لقطات تصاريح نُسك (تعمل أوفلاين)</div>
+              <span class="badge badge-warning">حفظ محلي على جهازك</span>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
-              نظراً لانقطاع شبكة الجوال عند بوابات التفتيش بالحرمين، قم بحفظ لقطة شاشة لباركود تصريحك هنا لتفتحه فوراً لرجال الأمن بدون إنترنت:
+            <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.65;margin-bottom:0.85rem;">
+              ارفع لقطات شاشة واضحة لباركود تصريح العمرة أو الروضة من تطبيق «نُسك» لتصل إليها فوراً عند ضعف الشبكة داخل الحرم (مع إبقاء التطبيق الأصلي جاهزاً ورفع سطوع الشاشة عند المسح).
             </p>
+            <div style="font-size:0.82rem;color:var(--primary-ink);font-weight:700;margin-bottom:0.75rem;" id="nusuk-owner-meta"></div>
 
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-              <button class="btn btn-gold" style="font-size: 0.85rem;" onclick="simulateSaveNusukPermit('عمرة 1447هـ - تصريح نشط')">
-                📥 حفظ تصريح العمرة
-              </button>
-              <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="simulateSaveNusukPermit('زيارة الروضة الشريفة - تصريح مؤكد')">
-                📥 حفظ تصريح الروضة
-              </button>
-            </div>
+            <div class="grid-2" style="margin-bottom:0;">
+              <div class="info-box-neutral" style="text-align:center;">
+                <strong>🕋 تصريح العمرة</strong>
+                <div id="nusuk-empty-umrah" style="font-size:0.82rem;color:var(--text-muted);margin:0.75rem 0;">لم تُرفع صورة بعد</div>
+                <img id="nusuk-preview-umrah" alt="صورة تصريح العمرة" style="display:none;max-width:100%;border-radius:10px;margin:0.6rem auto;border:1px solid var(--border);">
+                <label class="btn btn-gold" style="width:100%;font-size:0.82rem;cursor:pointer;">
+                  📤 رفع لقطة تصريح العمرة
+                  <input type="file" id="input-nusuk-umrah" accept="image/*" hidden>
+                </label>
+                <button type="button" id="nusuk-clear-umrah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.8rem;">🗑️ حذف</button>
+              </div>
 
-            <div id="nusuk-wallet-display" style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: center;">
-              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📱</div>
-              <div style="font-weight: 800; color: var(--primary);" id="nusuk-permit-title">تصريح عمرة معتمد - تطبيق نُسك</div>
-              <div style="font-size: 0.85rem; color: var(--text-muted); margin: 0.5rem 0;">المعتمر: أحمد محمود الشريف | الهوية: A12345678</div>
-              <div style="display: inline-block; background: #ecfdf5; border: 2px solid #059669; padding: 0.75rem 1.5rem; border-radius: 12px; margin-top: 0.5rem;">
-                <div style="font-family: monospace; font-size: 1.2rem; font-weight: 800; color: #047857;">[ NUSUK-QR-VALID-1447 ]</div>
-                <div style="font-size: 0.75rem; color: #047857;">الحالة: مُصرّح بالدخول للمطاف ✅</div>
+              <div class="info-box-neutral" style="text-align:center;">
+                <strong>🕌 تصريح الروضة الشريفة</strong>
+                <div id="nusuk-empty-rawdah" style="font-size:0.82rem;color:var(--text-muted);margin:0.75rem 0;">لم تُرفع صورة بعد</div>
+                <img id="nusuk-preview-rawdah" alt="صورة تصريح الروضة" style="display:none;max-width:100%;border-radius:10px;margin:0.6rem auto;border:1px solid var(--border);">
+                <label class="btn btn-primary" style="width:100%;font-size:0.82rem;cursor:pointer;">
+                  📤 رفع لقطة تصريح الروضة
+                  <input type="file" id="input-nusuk-rawdah" accept="image/*" hidden>
+                </label>
+                <button type="button" id="nusuk-clear-rawdah" class="btn btn-secondary" style="display:none;width:100%;margin-top:0.4rem;font-size:0.8rem;">🗑️ حذف</button>
               </div>
             </div>
           </div>
         </div>
-
       </div>
+    </section>
 
-    </div>
-
-    <!-- ========================================================== -->
-    <!-- TAB 6: HARAM GATES WAYFINDER & TAXI/CURRENCY               -->
-    <!-- (بوابات الحرم ومسار الفندق + دليل التاكسي والعملات)         -->
-    <!-- ========================================================== -->
-    <div id="tab-gates-taxi" class="tab-view">
-
-      <!-- Haram Gates Wayfinder Card -->
-      <div class="card" style="margin-bottom: 1.5rem;">
+    <!-- TAB 6: GATES WAYFINDER, CURRENCY, TAXI & OFFICIAL SAUDI RESOURCES -->
+    <section id="tab-gates-taxi" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <div class="card-title">🧭 دليل بوابات الحرم ومسار العودة لفندقك</div>
-          <span class="badge badge-primary">تجنب الزحام والضياع</span>
+          <div class="card-title">🧭 دليل بوابات الحرم المكي المصحح ومسار الفندق</div>
+          <span class="badge badge-success">أرقام أبواب محققة</span>
         </div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          الحرم المكي يضم أكثر من 100 بوابة. اختر فندق إقامتك لمعرفة أفضل وأقرب بوابة تخرجك مباشرة باتجاه فندقك دون الدخول في زحام أجياد أو الشبيكة:
-        </p>
-
-        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem;">
-          <label style="font-weight: 700; font-size: 0.9rem;">فندق إقامتك المعتمد:</label>
-          <select id="hotel-gate-selector" onchange="updateGateWayfinder()" style="padding: 0.6rem 1rem; border-radius: 10px; border: 1.5px solid var(--primary); font-weight: 700; font-size: 0.95rem; outline: none;">
+        <div style="margin-bottom:1rem;">
+          <label for="hotel-gate-selector" class="field-label">اختر منطقة فندق إقامتك:</label>
+          <select id="hotel-gate-selector" class="field-input">
             <option value="kiswah" selected>🏨 فندق أبراج الكسوة (جرول / التيسير)</option>
             <option value="clock">🏨 وقف الملك عبد العزيز / أبراج البيت (أجياد)</option>
             <option value="jabal-omar">🏨 فنادق جبل عمر / إبراهيم الخليل (الشبيكة)</option>
-            <option value="ghazza">🏨 فنادق الغزة وريع بخش (شمال شرق)</option>
+            <option value="ghazza">🏨 فنادق الغزة وريع بخش (المروة)</option>
           </select>
         </div>
-
-        <div id="gate-result-box" style="background: #f8fafc; border: 2px solid var(--primary); border-radius: 12px; padding: 1.25rem; line-height: 1.8;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">🚪 البوابات الموصى بها: باب الملك فهد (بوابة 79) أو بوابات التوسعة الشمالية (100)</span>
-            <span class="badge badge-success">أقرب مخرج لجرول</span>
-          </div>
-          <p style="font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;">
-            <strong>طريقة الوصول للفندق:</strong> اخرج من باب الملك فهد (79) واتجه مباشرة إلى الساحات الغربية نحو أنفاق جرول المؤدية لشارع التيسير. يستغرق المشي حوالي 12 إلى 15 دقيقة، أو استقل حافلات النقل الترددي المجانية الخاصة بمشروع النقل العام.
-          </p>
-          <div style="font-size: 0.85rem; color: var(--danger); font-weight: 700;">
-            ⚠️ تحذير: تجنب الخروج من باب الملك عبد العزيز (1) لأنك ستخرج في جهة أجياد الجنوبية وستضطر للالتفاف مسافة 3 كم كاملة حول الحرم للوصول لجرول.
-          </div>
-        </div>
+        <div id="gate-result-box" class="info-box-neutral" style="border:2px solid var(--primary);"></div>
       </div>
 
-      <!-- Currency Converter & Fair Taxi Guide Grid -->
       <div class="grid-2">
-
-        <!-- Currency Converter Card -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">💱 محول العملات الفوري وميزانية المعتمر</div>
-            <span class="badge badge-warning">سعر الصرف الحقيقي</span>
+            <div class="card-title">💱 محول العملات (بسعر قابل للتعديل)</div>
           </div>
-
-          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+          <div class="form-grid" style="margin-bottom:0.75rem;">
             <div>
-              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">المبلغ بالريال السعودي (SAR):</label>
-              <input type="number" id="calc-sar" value="100" oninput="convertCurrency('SAR')" style="width: 100%; padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid var(--border); font-size: 1.1rem; font-weight: 800; margin-top: 0.3rem;">
+              <label for="calc-sar" class="field-label">المبلغ بالريال السعودي (SAR):</label>
+              <input type="number" id="calc-sar" value="100" min="0" class="field-input" style="font-weight:800;">
             </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: var(--text-muted);">يعادل بالجنيه المصري (EGP)</div>
-                <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary);" id="calc-egp">1,315 ج.م</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted);">(1 ريال ≈ 13.15 ج.م)</div>
-              </div>
-              <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: var(--text-muted);">يعادل بالدولار (USD)</div>
-                <div style="font-size: 1.3rem; font-weight: 800; color: var(--gold-dark);" id="calc-usd">$26.70</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted);">(1 دولار ≈ 3.75 ريال)</div>
-              </div>
+            <div>
+              <label for="rate-sar-egp" class="field-label">سعر الصرف (1 ريال = ج.م):</label>
+              <input type="number" id="rate-sar-egp" step="0.05" min="1" value="13.15" class="field-input">
             </div>
-
-            <div style="font-size: 0.8rem; color: var(--text-muted); background: #f1f5f9; padding: 0.75rem; border-radius: 8px;">
-              💡 <strong>نصيحة الصرافة:</strong> تجنب الصرافة من بائعين غير مرخصين في الشارع. استخدم مكاتب الصرافة الرسمية المعتمدة المنتشرة حول أبراج الحرم أو بنوك مكة.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;">
+            <div class="info-box-neutral" style="text-align:center;">
+              <div style="font-size:0.76rem;color:var(--text-muted);">بالجنيه المصري (EGP)</div>
+              <div style="font-size:1.25rem;font-weight:800;color:var(--primary-ink);" id="calc-egp">1,315 ج.م</div>
+            </div>
+            <div class="info-box-neutral" style="text-align:center;">
+              <div style="font-size:0.76rem;color:var(--text-muted);">بالدولار الأمريكي (USD)</div>
+              <div style="font-size:1.25rem;font-weight:800;color:var(--gold-dark);" id="calc-usd">$26.7</div>
             </div>
           </div>
         </div>
 
-        <!-- Fair Taxi Price Guide Card -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🚕 دليل الأسعار العادلة لسيارات الأجرة</div>
-            <span class="badge badge-success">لحمايتك من الاستغلال</span>
+            <div class="card-title">🚕 الأسعار الاسترشادية لسيارات الأجرة والنقل</div>
+            <span class="badge badge-success">حماية من الاستغلال</span>
           </div>
-
-          <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem; line-height: 1.6;">
-            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
-              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark);">
-                <span>من الحرم إلى محطة قطار الحرمين (الرصيفة):</span>
-                <span style="color: var(--gold-dark);">25 - 35 ريال</span>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">المسافة 6.5 كم. استخدم تطبيق أوبر أو بولت لتفادي استغلال السائقين عند الزحام.</div>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
-              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark);">
-                <span>من الفندق إلى مسجد التنعيم (ميقات عائشة):</span>
-                <span style="color: var(--gold-dark);">25 - 40 ريال</span>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">تتوفر حافلات مكة المكرمة العامة بـ 4 ريالات فقط، أو سيارة مشتركة بـ 5 إلى 10 ريالات للشخص.</div>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
-              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark);">
-                <span>من الحرم المكي إلى غار حراء (حي حراء الثقافي):</span>
-                <span style="color: var(--gold-dark);">35 - 50 ريال</span>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">اتفق مع السائق مسبقاً قبل الركوب على انتظارك أو احجز الذهاب والعودة معاً.</div>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;">
-              <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--primary-dark);">
-                <span>من الحرم النبوي إلى مسجد قباء:</span>
-                <span style="color: var(--gold-dark);">15 - 25 ريال</span>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">يمكن المشي مجاناً عبر ممشى درب السنة الرائع والمكيف، أو استقلال عربات الغولف بـ 10 ريالات.</div>
-            </div>
-          </div>
+          <div id="taxi-routes-list" style="display:flex;flex-direction:column;gap:0.65rem;"></div>
         </div>
-
       </div>
 
-    </div>
-
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏛️ دليل الجهات الرسمية وأرقام الطوارئ بالمملكة</div>
+          <span class="badge badge-danger">مصادر موثوقة 24/7</span>
+        </div>
+        <div id="official-resources-grid" class="grid-2" style="margin-bottom:0;"></div>
+      </div>
+    </section>
   </main>
 
-  <!-- Modals -->
-  <!-- Taxi Quick Card Modal -->
-  <div class="modal-overlay" id="taxi-modal" onclick="closeModal('taxi-modal')">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="color: var(--primary-dark); font-size: 1.25rem;">🚕 كارت التاكسي السريع (في حال الضياع)</h3>
-        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('taxi-modal')">&times;</button>
-      </div>
+  <!-- Sticky Mobile Bottom Bar -->
+  <nav class="mobile-bottom-nav" aria-label="التنقل السريع للجوال">
+    <button type="button" class="mobile-nav-btn active" data-tab-target="rituals" aria-current="page"><span>🤲</span><span>مناسكي</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="ziyarat"><span>🕌</span><span>المزارات</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="fiqh"><span>📖</span><span>الفقه</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="women-fiqh"><span>🧕</span><span>المرأة</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="packing"><span>🧳</span><span>نُسك</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="gates-taxi"><span>🧭</span><span>الطوارئ</span></button>
+  </nav>
 
-      <div style="background: #f8fafc; border: 2px dashed var(--gold); border-radius: 12px; padding: 1.25rem; font-size: 1.05rem; line-height: 1.8; margin-bottom: 1.5rem;">
-        <p style="font-weight: 700; color: var(--danger); margin-bottom: 0.5rem;">يا سائق التاكسي الكريم، أنا معتمر ضللت طريقي:</p>
-        <p><strong>أرجو توصيلي إلى هذا الفندق:</strong></p>
-        <p>🏨 فندق أبراج الكسوة (Al Kiswah Towers Hotel)</p>
-        <p>📍 العنوان: التيسير، جرول، مكة المكرمة</p>
-        <p>📞 هاتف الاستقبال: <span dir="ltr">+966 12 530 0000</span></p>
-        <p>📱 هاتف مشرف الفوج: <span dir="ltr">+966 50 123 4567</span></p>
-      </div>
+  <footer>
+    رفيق المعتمر • يعمل بدون إنترنت داخل الحرمين الشريفين •
+    <a href="/supervisor" style="color:var(--text-muted);text-decoration:underline;">دخول بوابة المشرفين</a>
+  </footer>
 
-      <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('taxi-modal')">إغلاق النافذة</button>
+  <!-- NATIVE DIALOGS -->
+  <dialog id="taxi-modal" closedby="any" aria-labelledby="taxi-modal-title">
+    <div class="dialog-header">
+      <h1 id="taxi-modal-title" style="font-size:1.15rem;">🚕 كارت التاكسي وإظهار الهوية لرجل الأمن</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="taxi-modal" aria-label="إغلاق">&times;</button>
     </div>
-  </div>
+    <div class="info-box-warn" style="margin-bottom:1rem;">
+      <strong style="color:var(--danger);font-size:1.05rem;">👮 بطاقة الإظهار لرجل الأمن أو سائق التاكسي:</strong><br>
+      أنا معتمر ضللت طريقي، أرجو مساعدتي للوصول إلى فندقي:<br>
+      <strong>المعتمر:</strong> <span id="sec-pilgrim-name"></span><br>
+      <strong>🏨 الفندق:</strong> <span id="taxi-hotel-ar"></span><br>
+      <strong>📍 العنوان:</strong> <span id="taxi-hotel-addr"></span><br>
+      <strong>📞 هاتف الاستقبال:</strong> <span dir="ltr" id="taxi-hotel-phone"></span><br>
+      <strong>📱 هاتف المشرف:</strong> <span dir="ltr" id="taxi-sup-phone"></span><br>
+      <strong>🩺 ملاحظة صحية:</strong> <span id="sec-med-note"></span>
+    </div>
+    <div id="pilgrim-badge-qr" style="text-align:center;background:white;padding:0.75rem;border-radius:12px;margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="taxi-modal">إغلاق</button>
+  </dialog>
 
-  <!-- Umrah Certificate Modal -->
-  <div class="modal-overlay" id="certificate-modal" onclick="closeModal('certificate-modal')">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">📜 شهادة إتمام العمرة المباركة</h3>
-        <button style="border: none; background: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal('certificate-modal')">&times;</button>
-      </div>
+  <dialog id="sos-modal" closedby="any" aria-labelledby="sos-modal-title">
+    <div class="dialog-header">
+      <h1 id="sos-modal-title" style="font-size:1.15rem;color:var(--danger);">🆘 غرفة طوارئ المعتمر التائه</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="sos-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div class="info-box-neutral" style="margin-bottom:0.85rem;">
+      <strong>1. لا تواصل المشي العشوائي:</strong> قف في مكان آمن وظاهر بجوار أقرب باب مرقم أو عمود مميز.<br>
+      <strong>2. أظهر هذه البيانات لأقرب رجل أمن:</strong><br>
+      فندق الإقامة: <span id="sec-hotel-info" style="font-weight:700;"></span><br>
+      المشرف: <span id="sec-sup-info" style="font-weight:700;"></span>
+    </div>
+    <div id="sos-gps-status" class="info-box-warn" style="margin-bottom:0.85rem;"></div>
+    <div id="sos-action-links" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.85rem;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+      <a href="tel:911" class="btn btn-secondary" style="text-decoration:none;">🚨 طوارئ الحرم (911)</a>
+      <a href="tel:997" class="btn btn-secondary" style="text-decoration:none;">🚑 الإسعاف (997)</a>
+    </div>
+  </dialog>
 
-      <div class="certificate-card">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🕋</div>
-        <h2 style="color: #d97706; font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">شهادة إتمام مناسك العمرة</h2>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">قال ﷺ: «العُمْرَةُ إلى العُمْرَةِ كَفَّارَةٌ لِما بيْنَهُما»</p>
-        <p style="font-size: 1rem; line-height: 1.8;">
-          تشهد إدارة الفوج بأن الأخ المعتمر الكريم:<br>
-          <strong style="font-size: 1.3rem; color: var(--primary-dark);">أحمد محمود الشريف</strong><br>
-          قد أتم بحمد الله وتوفيقه مناسك العمرة (طوافاً وسعياً وتحللاً) لعام 1447هـ.<br>
-          نسأل الله تعالى أن يتقبل منه وأن يجعلها عمرة مقبولة وذنباً مغفوراً.
-        </p>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: space-around; font-size: 0.85rem; font-weight: 700;">
-          <div>تاريخ الإتمام: شعبان 1447هـ</div>
-          <div>مشرف الفوج: أبو عبد الرحمن ✍️</div>
+  <dialog id="profile-modal" closedby="any" aria-labelledby="profile-modal-title">
+    <div class="dialog-header">
+      <h1 id="profile-modal-title" style="font-size:1.15rem;">✏️ تخصيص بيانات المعتمر والفوج</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="profile-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="profile-form">
+      <div class="form-grid">
+        <div><label for="edit-name" class="field-label">الاسم الكامل:</label><input id="edit-name" class="field-input" required></div>
+        <div><label for="edit-passport" class="field-label">رقم الجواز:</label><input id="edit-passport" class="field-input" required></div>
+        <div>
+          <label for="edit-hotel-preset" class="field-label">فندق مكة المكرمة:</label>
+          <select id="edit-hotel-preset" class="field-input">
+            <option value="kiswah">فندق أبراج الكسوة (جرول)</option>
+            <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
+            <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
+            <option value="ghazza">فنادق الغزة وريع بخش</option>
+          </select>
         </div>
+        <div><label for="edit-room" class="field-label">رقم الغرفة:</label><input id="edit-room" class="field-input"></div>
+        <div><label for="edit-bus" class="field-label">رقم الباص:</label><input id="edit-bus" class="field-input"></div>
+        <div><label for="edit-sup-name" class="field-label">اسم المشرف:</label><input id="edit-sup-name" class="field-input"></div>
+        <div><label for="edit-sup-phone" class="field-label">رقم واتساب المشرف (مع كود الدولة):</label><input id="edit-sup-phone" dir="ltr" class="field-input" required></div>
+        <div><label for="edit-med" class="field-label">حالة صحية / حساسية (تظهر للأمن):</label><input id="edit-med" class="field-input"></div>
       </div>
+      <div style="margin-bottom:1rem;">
+        <label for="edit-meeting" class="field-label">نقطة التجمع المعتمدة:</label>
+        <input id="edit-meeting" class="field-input">
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ البيانات</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="profile-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
 
-      <button class="btn btn-gold" style="width: 100%;" onclick="window.print()">
-        🖨️ طباعة الشهادة
-      </button>
+  <dialog id="dhikr-modal" closedby="any" aria-labelledby="dhikr-modal-title">
+    <div class="dialog-header">
+      <h1 id="dhikr-modal-title" style="font-size:1.15rem;">الذكر المأثور</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="dhikr-modal" aria-label="إغلاق">&times;</button>
     </div>
-  </div>
+    <div id="dhikr-modal-body" style="margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="dhikr-modal">حسناً</button>
+  </dialog>
 
-  <!-- Toast -->
-  <div class="toast" id="toast-msg">تم بنجاح!</div>
+  <dialog id="completion-modal" closedby="any" aria-labelledby="completion-modal-title">
+    <div class="dialog-header">
+      <h1 id="completion-modal-title" style="font-size:1.15rem;color:var(--primary-ink);">اكتمل النسك بفضل الله</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="completion-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div id="completion-modal-body" style="line-height:1.8;margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-gold" style="width:100%;" data-close-dialog="completion-modal">الحمد لله — متابعة</button>
+  </dialog>
 
-  <script>
-    // PWA Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
-    }
+  <dialog id="certificate-modal" closedby="any" aria-labelledby="cert-modal-title">
+    <div class="dialog-header no-print">
+      <h1 id="cert-modal-title" style="font-size:1.15rem;">📜 شهادة إتمام العمرة المباركة</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="certificate-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div class="certificate-card">
+      <div style="font-size:2.4rem;margin-bottom:0.4rem;">🕋</div>
+      <h2 style="color:var(--gold-dark);font-size:1.35rem;font-weight:800;margin-bottom:0.4rem;">شهادة إتمام مناسك العمرة</h2>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1rem;">قال ﷺ: «العُمْرَةُ إلى العُمْرَةِ كَفَّارَةٌ لِما بيْنَهُما»</p>
+      <p style="font-size:1rem;line-height:1.85;">
+        تشهد إدارة الفوج بأن المعتمر الكريم:<br>
+        <strong style="font-size:1.25rem;color:var(--primary-ink);" id="cert-pilgrim-name">أحمد محمود الشريف</strong><br>
+        قد أتم بحمد الله مناسك العمرة (طوافاً وسعياً وتحللاً) ضمن (<span id="cert-trip-title">عمرة شعبان 1447هـ</span>).<br>
+        نسأل الله تعالى أن يتقبل منه ويجعلها عمرة مقبولة وذنباً مغفوراً.
+      </p>
+      <div style="margin-top:1.25rem;display:flex;justify-content:space-around;flex-wrap:wrap;gap:0.5rem;font-size:0.85rem;font-weight:700;">
+        <div id="cert-hijri-date"></div>
+        <div id="cert-supervisor-name"></div>
+      </div>
+    </div>
+    <button type="button" id="btn-print-cert" class="btn btn-gold no-print" style="width:100%;">🖨️ طباعة الشهادة</button>
+  </dialog>
 
-    // Senior Mode Toggle
-    let isSeniorMode = false;
-    function toggleSeniorMode() {
-      isSeniorMode = !isSeniorMode;
-      document.body.classList.toggle('senior-mode', isSeniorMode);
-      const btn = document.getElementById('senior-btn');
-      btn.classList.toggle('active', isSeniorMode);
-      if (isSeniorMode) {
-        btn.innerHTML = '<span>👵</span> وضع كبار السن: مُفعّل';
-        showToast('تم تفعيل وضع كبار السن (خط كبير)');
-      } else {
-        btn.innerHTML = '<span>👵</span> وضع كبار السن (خط كبير)';
-        showToast('تم الرجوع للوضع المعتاد');
-      }
-    }
+  <div class="toast" id="toast-msg" role="status" aria-live="polite"></div>
 
-    // Tab Navigation
-    function switchTab(tab) {
-      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
-
-      const tabs = ['rituals', 'ziyarat', 'fiqh', 'women-fiqh', 'packing', 'gates-taxi'];
-      const index = tabs.indexOf(tab);
-      if (index !== -1) {
-        document.querySelectorAll('.mode-btn')[index].classList.add('active');
-        document.getElementById(`tab-${tab}`).classList.add('active');
-      }
-    }
-
-    // Filter Women's Fiqh Search
-    function filterWomenFiqh() {
-      const query = document.getElementById('women-search-input').value.toLowerCase().trim();
-      const items = document.querySelectorAll('.women-topic');
-      items.forEach(item => {
-        const text = (item.innerText + ' ' + (item.getAttribute('data-keywords') || '')).toLowerCase();
-        item.style.display = text.includes(query) ? 'block' : 'none';
-      });
-    }
-
-    // Talbiyah Loop Player
-    let isTalbiyahPlaying = false;
-    let talbiyahLoopTimer = null;
-    function toggleTalbiyahLoop() {
-      if (isTalbiyahPlaying) {
-        stopTalbiyah();
-      } else {
-        startTalbiyah();
-      }
-    }
-
-    function startTalbiyah() {
-      isTalbiyahPlaying = true;
-      document.getElementById('talbiyah-icon').innerText = '⏸️';
-      document.getElementById('talbiyah-btn-label').innerText = 'إيقاف التلبية النبوية';
-      showToast('🔊 تم تشغيل التلبية النبوية بالتكرار المستمر');
-      playTalbiyahOnce();
-    }
-
-    function playTalbiyahOnce() {
-      if (!isTalbiyahPlaying) return;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance('لبيك اللهم لبيك، لبيك لا شريك لك لبيك، إن الحمد والنعمة لك والملك، لا شريك لك');
-        u.lang = 'ar-SA';
-        u.rate = 0.85;
-        u.pitch = 1.0;
-        u.onend = () => {
-          if (isTalbiyahPlaying) {
-            talbiyahLoopTimer = setTimeout(playTalbiyahOnce, 1200);
-          }
-        };
-        window.speechSynthesis.speak(u);
-      }
-    }
-
-    function stopTalbiyah() {
-      isTalbiyahPlaying = false;
-      if (talbiyahLoopTimer) clearTimeout(talbiyahLoopTimer);
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      document.getElementById('talbiyah-icon').innerText = '▶️';
-      document.getElementById('talbiyah-btn-label').innerText = 'تشغيل التلبية بالتكرار التلقائي';
-      showToast('تم إيقاف التلبية');
-    }
-
-    // Packing Checklist with LocalStorage
-    function updatePackingProgress() {
-      const checkboxes = document.querySelectorAll('.packing-cb');
-      const total = checkboxes.length;
-      let checkedCount = 0;
-      const checkedIds = [];
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          checkedCount++;
-          checkedIds.push(cb.id);
-        }
-      });
-      const pct = Math.round((checkedCount / total) * 100);
-      document.getElementById('packing-percentage-label').innerText = `${pct}%`;
-      document.getElementById('packing-progress-bar').style.width = `${pct}%`;
-      document.getElementById('packing-status-summary').innerText = `تم تجهيز ${checkedCount} من ${total} عنصراً ضرورياً`;
-      try {
-        localStorage.setItem('umrah_packing_checked', JSON.stringify(checkedIds));
-      } catch (e) {}
-    }
-
-    function loadPackingProgress() {
-      try {
-        const saved = JSON.parse(localStorage.getItem('umrah_packing_checked') || '[]');
-        saved.forEach(id => {
-          const cb = document.getElementById(id);
-          if (cb) cb.checked = true;
-        });
-        updatePackingProgress();
-      } catch (e) {}
-    }
-
-    function resetPackingChecklist() {
-      if (confirm('هل تريد إعادة تعيين قائمة التجهيز؟')) {
-        document.querySelectorAll('.packing-cb').forEach(cb => cb.checked = false);
-        try { localStorage.removeItem('umrah_packing_checked'); } catch (e) {}
-        updatePackingProgress();
-        showToast('تمت إعادة تعيين القائمة');
-      }
-    }
-
-    // Offline Nusuk Wallet Simulation
-    function simulateSaveNusukPermit(title) {
-      document.getElementById('nusuk-permit-title').innerText = `${title} (محفوظ أوفلاين)`;
-      showToast(`✅ تم حفظ ${title} بالمحفظة، متاح بدون إنترنت`);
-    }
-
-    // Haram Gates Wayfinder
-    function updateGateWayfinder() {
-      const val = document.getElementById('hotel-gate-selector').value;
-      const box = document.getElementById('gate-result-box');
-      if (val === 'kiswah') {
-        box.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">🚪 البوابات الموصى بها: باب الملك فهد (بوابة 79) أو بوابات التوسعة الشمالية (100)</span>
-            <span class="badge badge-success">أقرب مخرج لجرول</span>
-          </div>
-          <p style="font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;">
-            <strong>طريقة الوصول للفندق:</strong> اخرج من باب الملك فهد (79) واتجه مباشرة إلى الساحات الغربية نحو أنفاق جرول المؤدية لشارع التيسير. يستغرق المشي حوالي 12 إلى 15 دقيقة، أو استقل حافلات النقل الترددي المجانية.
-          </p>
-          <div style="font-size: 0.85rem; color: var(--danger); font-weight: 700;">
-            ⚠️ تحذير: تجنب الخروج من باب الملك عبد العزيز (1) لأنك ستخرج في جهة أجياد وستضطر للالتفاف مسافة 3 كم حول الحرم للوصول لجرول.
-          </div>`;
-      } else if (val === 'clock') {
-        box.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">🚪 البوابة الموصى بها: باب الملك عبد العزيز (بوابة 1)</span>
-            <span class="badge badge-success">أقرب مخرج لأجياد</span>
-          </div>
-          <p style="font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;">
-            <strong>طريقة الوصول للفندق:</strong> يخرجك هذا الباب مباشرة إلى الساحة الجنوبية أمام مجمع وقف الملك عبد العزيز (أبراج البيت وبرج الساعة). المسافة: دقيقتان مشياً.
-          </p>`;
-      } else if (val === 'jabal-omar') {
-        box.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">🚪 البوابة الموصى بها: باب العمرة (بوابة 45)</span>
-            <span class="badge badge-success">أقرب مخرج لإبراهيم الخليل</span>
-          </div>
-          <p style="font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;">
-            <strong>طريقة الوصول للفندق:</strong> يخرجك باب العمرة إلى ساحة الشبيكة ومدخل شارع إبراهيم الخليل المؤدي لفنادق مشروع جبل عمر وهيلتون مكة. المسافة: 5 دقائق مشياً.
-          </p>`;
-      } else {
-        box.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">🚪 البوابات الموصى بها: باب الفتح (64) أو بوابات المروة الشرقية</span>
-            <span class="badge badge-success">أقرب مخرج للغزة</span>
-          </div>
-          <p style="font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;">
-            <strong>طريقة الوصول للفندق:</strong> بعد الانتهاء من السعي عند جبل المروة، اخرج من أبواب المروة السفلية أو باب الفتح (64) لتجد نفسك مباشرة في ساحة الغزة المؤدية للمدعى وريع بخش.
-          </p>`;
-      }
-    }
-
-    // Currency Converter
-    function convertCurrency(source) {
-      const sarInput = document.getElementById('calc-sar');
-      let sar = parseFloat(sarInput.value) || 0;
-      const egp = Math.round(sar * 13.15 * 100) / 100;
-      const usd = Math.round(sar * 0.267 * 100) / 100;
-      document.getElementById('calc-egp').innerText = `${egp.toLocaleString()} ج.م`;
-      document.getElementById('calc-usd').innerText = `$${usd.toLocaleString()}`;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadPackingProgress();
-    });
-
-    function openTaxiModal() { document.getElementById('taxi-modal').classList.add('active'); }
-    function openCertificateModal() { document.getElementById('certificate-modal').classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    // Prayer Times
-    const prayerSchedules = {
-      MAKKAH: {
-        name: 'المسجد الحرام (مكة المكرمة)',
-        times: { fajr: '05:15', sunrise: '06:35', dhuhr: '12:30', asr: '15:45', maghrib: '18:25', isha: '19:55' }
-      },
-      MADINAH: {
-        name: 'المسجد النبوي الشريف (المدينة المنورة)',
-        times: { fajr: '05:18', sunrise: '06:40', dhuhr: '12:32', asr: '15:48', maghrib: '18:24', isha: '19:54' }
-      }
-    };
-
-    let activePrayerCity = 'MAKKAH';
-
-    function setPrayerCity(city) {
-      activePrayerCity = city;
-      const data = prayerSchedules[city];
-      document.getElementById('prayer-city-title').innerText = `مواقيت الصلاة في ${data.name}`;
-      document.getElementById('time-fajr').innerText = data.times.fajr;
-      document.getElementById('time-sunrise').innerText = data.times.sunrise;
-      document.getElementById('time-dhuhr').innerText = data.times.dhuhr;
-      document.getElementById('time-asr').innerText = data.times.asr;
-      document.getElementById('time-maghrib').innerText = data.times.maghrib;
-      document.getElementById('time-isha').innerText = data.times.isha;
-      updatePrayerCountdown();
-      showToast(`مواقيت ${city === 'MAKKAH' ? 'مكة المكرمة' : 'المدينة المنورة'}`);
-    }
-
-    function updatePrayerCountdown() {
-      const now = new Date();
-      const currentMins = now.getHours() * 60 + now.getMinutes();
-      const times = prayerSchedules[activePrayerCity].times;
-
-      const prayerList = [
-        { name: 'الفجر', str: times.fajr },
-        { name: 'الشروق', str: times.sunrise },
-        { name: 'الظهر', str: times.dhuhr },
-        { name: 'العصر', str: times.asr },
-        { name: 'المغرب', str: times.maghrib },
-        { name: 'العشاء', str: times.isha }
-      ];
-
-      let next = null;
-      for (const p of prayerList) {
-        const [h, m] = p.str.split(':').map(Number);
-        const mins = h * 60 + m;
-        if (mins > currentMins) {
-          next = { name: p.name, diff: mins - currentMins };
-          break;
-        }
-      }
-
-      const warningBanner = document.getElementById('mataf-warning-banner');
-      if (next) {
-        document.getElementById('prayer-countdown-text').innerText = `متبقي على أذان ${next.name}: ${next.diff} دقيقة`;
-        if (activePrayerCity === 'MAKKAH' && next.diff <= 25 && next.name !== 'الشروق') {
-          warningBanner.style.display = 'block';
-        } else {
-          warningBanner.style.display = 'none';
-        }
-      } else {
-        document.getElementById('prayer-countdown-text').innerText = 'انتهت صلوات اليوم، القادمة: صلاة فجر الغد';
-        warningBanner.style.display = 'none';
-      }
-    }
-
-    setInterval(updatePrayerCountdown, 60000);
-    updatePrayerCountdown();
-
-    // Web Speech Audio Player for Duas
-    function speakText(text) {
-      if (!('speechSynthesis' in window)) {
-        showToast('ميزة الصوت غير مدعومة في هذا المتصفح');
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.85;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-      showToast('🔊 جاري قراءة الذكر بالصوت...');
-    }
-
-    function playCurrentTawafDua() {
-      const duaText = document.getElementById('tawaf-dua-ar').innerText;
-      speakText(duaText);
-    }
-
-    // Tawaf Logic
-    let currentTawafLap = 1;
-    const tawafDuas = [
-      {
-        ar: "بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ إِيمَانًا بِكَ وَتَصْدِيقًا بِكِتَابِكَ وَوَفَاءً بِعَهْدِكَ وَاتِّبَاعًا لِسُنَّةِ نَبِيِّكَ مُحَمَّدٍ ﷺ.",
-        tr: "Bismillahi Allahu Akbar, Allahumma imanan bika wa tasdiqan bikitabik..."
-      },
-      {
-        ar: "اللَّهُمَّ إِنَّ هَذَا الْبَيْتَ بَيْتُكَ، وَالْحَرَمَ حَرَمُكَ، وَالأَمْنَ أَمْنُكَ، وَهَذَا مَقَامُ الْعَائِذِ بِكَ مِنَ النَّارِ.",
-        tr: "Allahumma inna hadhal-bayta baytuk, wal-harama haramuk..."
-      },
-      {
-        ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الشَّكِّ وَالشِّرْكِ وَالشِّقَاقِ وَالنِّفَاقِ وَسُوءِ الأَخْلاقِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ.",
-        tr: "Allahumma inni a'udhu bika minash-shakki wash-shirk..."
-      },
-      {
-        ar: "اللَّهُمَّ اجْعَلْهُ حَجًّا مَبْرُورًا، وَسَعْيًا مَشْكُورًا، وَذَنْبًا مَغْفُورًا، وَعَمَلاً صَالِحًا مَقْبُولاً، وَتِجَارَةً لَنْ تَبُورَ.",
-        tr: "Allahummaj-'alhu hajjan mabruran, wa sa'yan mashkuran..."
-      },
-      {
-        ar: "اللَّهُمَّ أَظِلَّنِي تَحْتَ ظِلِّ عَرْشِكَ يَوْمَ لا ظِلَّ إِلا ظِلُّكَ، وَاسْقِنِي مِنْ حَوْضِ نَبِيِّكَ مُحَمَّدٍ ﷺ شَرْبَةً لا أَظْمَأُ بَعْدَهَا.",
-        tr: "Allahumma azillani tahta zilli 'arshik..."
-      },
-      {
-        ar: "اللَّهُمَّ إِنَّ لَكَ عَلَيَّ حُقُوقًا كَثِيرَةً فِيمَا بَيْنِي وَبَيْنَكَ، فَاغْفِرْهَا لِي وَتَحَمَّلْ عَنِّي حُقُوقَ خَلْقِكَ.",
-        tr: "Allahumma inna laka 'alayya huquqan kathirah... faghfirha li."
-      },
-      {
-        ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ إِيمَانًا كَامِلاً، وَيَقِينًا صَادِقًا، وَتَوْبَةً نَصُوحًا قَبْلَ الْمَوْتِ، وَرَاحَةً عِنْدَ الْمَوْتِ، وَمَغْفِرَةً بَعْدَ الْمَوْتِ.",
-        tr: "Allahumma inni as'aluka imanan kamilan wa yaqinan sadiqa..."
-      }
-    ];
-
-    function incrementTawaf() {
-      if (currentTawafLap < 7) {
-        currentTawafLap++;
-        updateTawafUI();
-        if ('vibrate' in navigator) navigator.vibrate(100);
-        showToast(`بدأ الشوط رقم (${currentTawafLap})`);
-      } else {
-        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        alert('🎉 هنيئاً لك! اكتملت أشواط الطواف السبعة بفضل الله.\n\nالمطلوب الآن:\n1. صلاة ركعتي الطواف خلف مقام إبراهيم.\n2. الشرب من ماء زمزم والتضلع منه.\n3. التوجه إلى الصفا لبدء السعي.');
-      }
-    }
-
-    function resetTawaf() {
-      currentTawafLap = 1;
-      updateTawafUI();
-      showToast('تمت إعادة ضبط عداد الطواف');
-    }
-
-    function updateTawafUI() {
-      document.getElementById('tawaf-lap-num').innerHTML = `${currentTawafLap} <span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">/ 7</span>`;
-      document.getElementById('tawaf-dua-ar').innerText = tawafDuas[currentTawafLap - 1].ar;
-      document.getElementById('tawaf-dua-tr').innerText = tawafDuas[currentTawafLap - 1].tr;
-    }
-
-    function showRuknYamani() {
-      const dua = "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ";
-      speakText(dua);
-      alert(`🕋 الذكر المسنون بين الركن اليماني والحجر الأسود:\n\n"${dua}"`);
-    }
-
-    // Sa'i Logic
-    let currentSaiLap = 1;
-    function incrementSai() {
-      if (currentSaiLap < 7) {
-        currentSaiLap++;
-        const isOdd = currentSaiLap % 2 === 1;
-        document.getElementById('sai-direction-text').innerText = isOdd ? 'الاتجاه: من الصفا ⬅️ إلى المروة' : 'الاتجاه: من المروة ⬅️ إلى الصفا';
-        document.getElementById('sai-lap-num').innerHTML = `${currentSaiLap} <span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">/ 7</span>`;
-        if ('vibrate' in navigator) navigator.vibrate(100);
-        showToast(`بدأ الشوط رقم (${currentSaiLap})`);
-      } else {
-        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        alert('🎉 تقبل الله طاعتكم! اكتمل السعي سبعة أشواط بنجاح.\n\nالمتبقي هو التحلل:\n• الحلق أو التقصير (الحلق أفضل للرجال).\n• التقصير للنساء بأخذ قدر أنملة من أطراف الشعر.');
-      }
-    }
-
-    function resetSai() {
-      currentSaiLap = 1;
-      document.getElementById('sai-direction-text').innerText = 'الاتجاه: من الصفا ⬅️ إلى المروة';
-      document.getElementById('sai-lap-num').innerHTML = `1 <span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">/ 7</span>`;
-      showToast('تمت إعادة ضبط عداد السعي');
-    }
-
-    // SOS Trigger
-    function triggerSOSAlert() {
-      showToast('🚨 تم إرسال إشعار الطوارئ وموقعك للمشرف');
-      openTaxiModal();
-    }
-
-    // Lap Doubt Calculator
-    function calculateLapDoubt() {
-      const l1 = parseInt(document.getElementById('lap-doubt-1').value);
-      const l2 = parseInt(document.getElementById('lap-doubt-2').value);
-      const lesser = Math.min(l1, l2);
-      const resDiv = document.getElementById('lap-doubt-result');
-      resDiv.style.display = 'block';
-      resDiv.innerHTML = `<strong>الفتوى الشرعية:</strong> تبني على اليقين وهو الأقل، فتعتبر نفسك قد أتممت <strong>(${lesser}) أشواط</strong>، وتكمل ما بقي عليك حتى تتم سبعة أشواط كاملة، ولا شيء عليك وتجزئك عمرتك بإذن الله تعالى.`;
-    }
-
-    function toggleAccordion(header) {
-      const item = header.parentElement;
-      item.classList.toggle('open');
-      const icon = header.querySelector('span:last-child');
-      icon.innerText = item.classList.contains('open') ? '➖' : '➕';
-    }
-
-    function showToast(text) {
-      const toast = document.getElementById('toast-msg');
-      toast.innerText = text;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2800);
-    }
-  </script>
+  <script type="module" src="/src/ui/pilgrim-app.ts"></script>
 </body>
 </html>

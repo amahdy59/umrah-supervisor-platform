@@ -4,12 +4,16 @@ import { CurrencyAndTaxiService } from '../../src/financial/currency-and-taxi.js
 describe('CurrencyAndTaxiService - محول العملات ودليل أسعار التاكسي', () => {
   const service = new CurrencyAndTaxiService();
 
-  it('should accurately convert SAR to EGP and USD', () => {
+  it('should accurately convert SAR to EGP and USD and support custom live rates', () => {
     const sar100InEgp = service.convertSARtoEGP(100);
     expect(sar100InEgp).toBe(1315);
 
     const sar100InUsd = service.convertSARtoUSD(100);
     expect(sar100InUsd).toBe(26.7);
+
+    const custom = new CurrencyAndTaxiService();
+    custom.setRates({ SAR_TO_EGP: 13.5 });
+    expect(custom.convertSARtoEGP(100)).toBe(1350);
   });
 
   it('should provide standard taxi routes and fair price ranges in Makkah & Madinah', () => {

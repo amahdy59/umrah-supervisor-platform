@@ -4,7 +4,7 @@
  */
 
 export interface CurrencyRates {
-  SAR_TO_EGP: number; // e.g. 13.10
+  SAR_TO_EGP: number; // e.g. 13.15
   SAR_TO_USD: number; // e.g. 0.267
   USD_TO_SAR: number; // e.g. 3.75
   EGP_TO_SAR: number; // e.g. 0.076
@@ -38,7 +38,7 @@ export class CurrencyAndTaxiService {
       distanceKm: 6.5,
       fairPriceMinSAR: 25,
       fairPriceMaxSAR: 35,
-      adviceAr: 'لا تدفع أكثر من 35 ريالاً، أو استخدم تطبيق أوبر / بولت لتفادي استغلال السائقين عند الزحام.',
+      adviceAr: 'لا تدفع أكثر من 35 ريالاً، أو استخدم تطبيق أوبر / كريم / بولت، أو حافلات مكة (4 ريالات) لتفادي استغلال السائقين.',
     },
     {
       id: 'mkk-haram-taneem',
@@ -68,7 +68,7 @@ export class CurrencyAndTaxiService {
       distanceKm: 3.5,
       fairPriceMinSAR: 15,
       fairPriceMaxSAR: 25,
-      adviceAr: 'يمكنك المشي عبر درب السنة المخصص للمشاة (3 كم ممشى رائع ومكيف ومخدوم بعربات الغولف بـ 10 ريالات).',
+      adviceAr: 'يمكنك المشي عبر درب السنة المخصص للمشاة (~3 كم ممشى مريح مخدوم بالمظلات وعربات الغولف بـ 10 ريالات).',
     },
     {
       id: 'mad-haram-train',
@@ -78,9 +78,20 @@ export class CurrencyAndTaxiService {
       distanceKm: 9.0,
       fairPriceMinSAR: 30,
       fairPriceMaxSAR: 45,
-      adviceAr: 'تتواجد سيارات الأجرة الرسمية الخضراء بالعداد، أو اطلب السيارة عبر التطبيقات الذكية.',
+      adviceAr: 'تتواجد سيارات الأجرة الرسمية بالعداد، أو اطلب السيارة عبر التطبيقات الذكية.',
     },
   ];
+
+  getRates(): CurrencyRates {
+    return { ...this.rates };
+  }
+
+  setRates(partial: Partial<CurrencyRates>): void {
+    this.rates = { ...this.rates, ...partial };
+    if (partial.SAR_TO_EGP && !partial.EGP_TO_SAR && partial.SAR_TO_EGP > 0) {
+      this.rates.EGP_TO_SAR = Math.round((1 / partial.SAR_TO_EGP) * 10000) / 10000;
+    }
+  }
 
   convertSARtoEGP(sarAmount: number): number {
     return Math.round(sarAmount * this.rates.SAR_TO_EGP * 100) / 100;

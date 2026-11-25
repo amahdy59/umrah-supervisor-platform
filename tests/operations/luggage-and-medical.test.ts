@@ -46,7 +46,7 @@ describe('LuggageTracker - إدارة وفرز أمتعة الفوج', () => {
 });
 
 describe('MedicalRegistry - السجل الصحي ورعاية ذوي الاحتياجات الخاصة', () => {
-  it('should register medical profile and identify wheelchair and insulin requirements', () => {
+  it('should register medical profile and include 937 and international Hajj hotline', () => {
     const registry = new MedicalRegistry();
 
     registry.registerProfile({
@@ -78,5 +78,7 @@ describe('MedicalRegistry - السجل الصحي ورعاية ذوي الاحت
 
     const emergencyNumbers = registry.getEmergencyNumbers();
     expect(emergencyNumbers.RED_CRESCENT_AMBULANCE).toBe('997');
+    expect(emergencyNumbers.MOH_HEALTH_HOTLINE).toBe('937');
+    expect(emergencyNumbers.MINISTRY_OF_HAJJ_INTL).toBe('+966920002814');
   });
 });

@@ -16,45 +16,72 @@ export interface LapResult {
   nextActionPrompt?: string;
 }
 
+export interface SunnahDhikrItem {
+  titleAr: string;
+  arabic: string;
+  transliteration: string;
+  meaningEn: string;
+  sourceAr: string;
+}
+
 export class TawafCounter {
   private _currentLap: number = 1;
   private _isCompleted: boolean = false;
 
-  private static readonly LAP_DUAS: Record<number, { arabic: string; transliteration: string; meaningEn: string }> = {
+  /**
+   * Authentic Sunnah & Quranic Adhkar (Jawami' al-Du'a) for general remembrance during Tawaf.
+   * Note: Per Imam Ibn Baz & Imam Ibn Uthaymeen, no specific Dua is prescribed per lap;
+   * these are verified Quranic/Prophetic supplications the pilgrim may recite freely in any lap.
+   */
+  private static readonly SUGGESTED_ADHKAR: Record<number, SunnahDhikrItem> = {
     1: {
-      arabic: 'بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ إِيمَانًا بِكَ وَتَصْدِيقًا بِكِتَابِكَ وَوَفَاءً بِعَهْدِكَ وَاتِّبَاعًا لِسُنَّةِ نَبِيِّكَ مُحَمَّدٍ ﷺ.',
-      transliteration: "Bismillahi Allahu Akbar, Allahumma imanan bika wa tasdiqan bikitabik wa wafa'an bi'ahdika wattiba'an lisunnati Nabiyyika Muhammad ﷺ.",
-      meaningEn: 'In the name of Allah, Allah is the greatest. O Allah, out of faith in You, belief in Your Book, fulfilling Your covenant, and following the Sunnah of Your Prophet Muhammad ﷺ.',
+      titleAr: 'الافتتاح عند الحجر الأسود (سنة ثابتة)',
+      arabic: 'بِسْمِ اللَّهِ، وَاللَّهُ أَكْبَرُ (يُكَبِّرُ عند محاذاة الحجر الأسود في بداية كل شوط ويشير إليه بيده اليمنى).',
+      transliteration: 'Bismillahi, Allahu Akbar (say upon facing the Black Stone at the start of each circuit).',
+      meaningEn: 'In the name of Allah, Allah is the Greatest.',
+      sourceAr: 'صحيح البخاري (حديث ابن عباس في الإشارة والتكبير)',
     },
     2: {
-      arabic: 'اللَّهُمَّ إِنَّ هَذَا الْبَيْتَ بَيْتُكَ، وَالْحَرَمَ حَرَمُكَ، وَالأَمْنَ أَمْنُكَ، وَهَذَا مَقَامُ الْعَائِذِ بِكَ مِنَ النَّارِ.',
-      transliteration: "Allahumma inna hadhal-bayta baytuk, wal-harama haramuk, wal-amna amnuk, wa hadha maqamul-'a'idhi bika minan-nar.",
-      meaningEn: 'O Allah, this House is Your House, this sanctuary is Your sanctuary, this safety is Your safety, and this is the station of one who seeks refuge in You from the Fire.',
+      titleAr: 'دعاء جامع من القرآن الكريم',
+      arabic: 'رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ، وَتُبْ عَلَيْنَا إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ.',
+      transliteration: 'Rabbana taqabbal minna innaka Antas-Sami’ul-Alim, wa tub ‘alayna innaka Antat-Tawwabur-Rahim.',
+      meaningEn: 'Our Lord, accept from us; indeed You are the Hearing, the Knowing, and accept our repentance.',
+      sourceAr: 'سورة البقرة: 127-128 (دعاء إبراهيم وإسماعيل عليهما السلام عند بناء البيت)',
     },
     3: {
-      arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الشَّكِّ وَالشِّرْكِ وَالشِّقَاقِ وَالنِّفَاقِ وَسُوءِ الأَخْلاقِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ وَالْوَلَدِ.',
-      transliteration: "Allahumma inni a'udhu bika minash-shakki wash-shirki wash-shiqaqi wan-nifaqi wa su'il-akhlaq.",
-      meaningEn: 'O Allah, I seek refuge in You from doubt, association of partners, dissension, hypocrisy, bad manners, and an unfortunate return to family and wealth.',
+      titleAr: 'سيد الاستغفار وطلب المغفرة',
+      arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ.',
+      transliteration: 'Allahumma Anta Rabbi la ilaha illa Anta, khalaqtani wa ana ‘abduka... faghfir li.',
+      meaningEn: 'O Allah, You are my Lord, none has the right to be worshipped except You... forgive me.',
+      sourceAr: 'صحيح البخاري (6306)',
     },
     4: {
-      arabic: 'اللَّهُمَّ اجْعَلْهُ حَجًّا مَبْرُورًا، وَسَعْيًا مَشْكُورًا، وَذَنْبًا مَغْفُورًا، وَعَمَلاً صَالِحًا مَقْبُولاً، وَتِجَارَةً لَنْ تَبُورَ.',
-      transliteration: "Allahummaj-'alhu hajjan mabruran, wa sa'yan mashkuran, wa dhanban maghfuran, wa 'amalan salihan maqbula.",
-      meaningEn: 'O Allah, make it an accepted pilgrimage, a praiseworthy striving, a forgiven sin, an accepted righteous deed, and an enduring commerce.',
+      titleAr: 'دعاء العفو والعافية في الدنيا والآخرة',
+      arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي.',
+      transliteration: 'Allahumma inni as’alukal-‘afwa wal-‘afiyata fid-dunya wal-akhirah.',
+      meaningEn: 'O Allah, I ask You for pardon and well-being in this life and the Hereafter.',
+      sourceAr: 'سنن أبي داود وابن ماجه (حديث صحيح)',
     },
     5: {
-      arabic: 'اللَّهُمَّ أَظِلَّنِي تَحْتَ ظِلِّ عَرْشِكَ يَوْمَ لا ظِلَّ إِلا ظِلُّكَ، وَلا بَاقِيَ إِلا وَجْهُكَ، وَاسْقِنِي مِنْ حَوْضِ نَبِيِّكَ مُحَمَّدٍ ﷺ شَرْبَةً هَنِيئَةً لا أَظْمَأُ بَعْدَهَا أَبَدًا.',
-      transliteration: "Allahumma azillani tahta zilli 'arshika yawma la zilla illa zilluk.",
-      meaningEn: 'O Allah, shade me beneath the shade of Your Throne on the Day when there is no shade except Your shade, and grant me a drink from the basin of Your Prophet Muhammad ﷺ.',
+      titleAr: 'سؤال الله الهداية والتقوى والغنى',
+      arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى، رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا.',
+      transliteration: 'Allahumma inni as’alukal-huda wat-tuqa wal-‘afafa wal-ghina.',
+      meaningEn: 'O Allah, I ask You for guidance, piety, chastity, and contentment.',
+      sourceAr: 'صحيح مسلم (2721) وسورة الفرقان: 74',
     },
     6: {
-      arabic: 'اللَّهُمَّ إِنَّ لَكَ عَلَيَّ حُقُوقًا كَثِيرَةً فِيمَا بَيْنِي وَبَيْنَكَ، وَحُقُوقًا كَثِيرَةً فِيمَا بَيْنِي وَبَيْنَ خَلْقِكَ، اللَّهُمَّ مَا كَانَ لَكَ مِنْهَا فَاغْفِرْهُ لِي، وَمَا كَانَ لِخَلْقِكَ فَتَحَمَّلْهُ عَنِّي.',
-      transliteration: "Allahumma inna laka 'alayya huquqan kathirah... faghfirhu li.",
-      meaningEn: 'O Allah, You have many rights over me between me and You, and between me and Your creation. Forgive what is Yours, and absolve me from what is owed to Your creation.',
+      titleAr: 'الباقيات الصالحات والذكر المطلق',
+      arabic: 'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ.',
+      transliteration: 'Subhanallahi walhamdulillahi wa la ilaha illallahu wallahu Akbar.',
+      meaningEn: 'Glory be to Allah, praise be to Allah, none has the right to be worshipped except Allah, Allah is the Greatest.',
+      sourceAr: 'صحيح مسلم (أحب الكلام إلى الله)',
     },
     7: {
-      arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ إِيمَانًا كَامِلاً، وَيَقِينًا صَادِقًا، وَرِزْقًا وَاسِعًا، وَقَلْبًا خَاشِعًا، وَلِسَانًا ذَاكِرًا، وَتَوْبَةً نَصُوحًا قَبْلَ الْمَوْتِ، وَرَاحَةً عِنْدَ الْمَوْتِ، وَمَغْفِرَةً وَرَحْمَةً بَعْدَ الْمَوْتِ.',
-      transliteration: "Allahumma inni as'aluka imanan kamilan, wa yaqinan sadiqan, wa rizqan wasi'an, wa qalban khashi'an.",
-      meaningEn: 'O Allah, I ask You for complete faith, truthful certainty, abundant provision, a humble heart, a tongue constantly remembering You, and sincere repentance before death.',
+      titleAr: 'دعاء الصلاح في الدين والدنيا والآخرة',
+      arabic: 'اللَّهُمَّ أَصْلِحْ لِي دِينِي الَّذِي هُوَ عِصْمَةُ أَمْرِي، وَأَصْلِحْ لِي دُنْيَايَ الَّتِي فِيهَا مَعَاشِي، وَأَصْلِحْ لِي آخِرَتِي الَّتِي فِيهَا مَعَادِي، وَاجْعَلِ الْحَيَاةَ زِيَادَةً لِي فِي كُلِّ خَيْرٍ.',
+      transliteration: 'Allahumma aslih li dini alladhi huwa ‘ismatu amri, wa aslih li dunyaya wa akhirati.',
+      meaningEn: 'O Allah, set right for me my religion, my worldly affairs, and my Hereafter.',
+      sourceAr: 'صحيح مسلم (2720)',
     },
   };
 
@@ -66,20 +93,36 @@ export class TawafCounter {
     return this._isCompleted;
   }
 
-  getCurrentLapInfo(): { lapNumber: number; duaArabic: string; duaTransliteration: string; meaningEn: string } {
-    const info = TawafCounter.LAP_DUAS[this._currentLap] || TawafCounter.LAP_DUAS[1];
+  getSunnahNote(): string {
+    return 'تنبيه شرعي: لم يثبت في السنة تخصيص دعاء معين لكل شوط (فتوى ابن باز وابن عثيمين رحمهما الله)؛ هذه أدعية قرآنية ونبوية جامعة للاستئناس بها، وادعُ الله بما يفتح به عليك من خيري الدنيا والآخرة.';
+  }
+
+  getCurrentLapInfo(): {
+    lapNumber: number;
+    titleAr: string;
+    duaArabic: string;
+    duaTransliteration: string;
+    meaningEn: string;
+    sourceAr: string;
+    sunnahNote: string;
+  } {
+    const info = TawafCounter.SUGGESTED_ADHKAR[this._currentLap] || TawafCounter.SUGGESTED_ADHKAR[1];
     return {
       lapNumber: this._currentLap,
+      titleAr: info.titleAr,
       duaArabic: info.arabic,
       duaTransliteration: info.transliteration,
       meaningEn: info.meaningEn,
+      sourceAr: info.sourceAr,
+      sunnahNote: this.getSunnahNote(),
     };
   }
 
-  getRuknYamaniDua(): { arabic: string; transliteration: string } {
+  getRuknYamaniDua(): { arabic: string; transliteration: string; sourceAr: string } {
     return {
       arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.',
       transliteration: 'Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina adhaban-nar.',
+      sourceAr: 'سنن أبي داود (1892) - الدعاء الثابت بين الركن اليماني والحجر الأسود',
     };
   }
 
@@ -107,6 +150,22 @@ export class TawafCounter {
       hapticFeedbackPattern: 'VIBRATE_LAP',
     };
   }
+
+  undoLap(): number {
+    if (this._isCompleted) {
+      this._isCompleted = false;
+      return this._currentLap;
+    }
+    if (this._currentLap > 1) {
+      this._currentLap -= 1;
+    }
+    return this._currentLap;
+  }
+
+  reset(): void {
+    this._currentLap = 1;
+    this._isCompleted = false;
+  }
 }
 
 export class SaiCounter {
@@ -122,16 +181,35 @@ export class SaiCounter {
   }
 
   get currentStartingPoint(): SaiLocation {
-    // Odd laps (1, 3, 5, 7) start at Safa; Even laps (2, 4, 6) start at Marwa
     return this._currentLap % 2 === 1 ? SaiLocation.SAFA : SaiLocation.MARWA;
   }
 
   get currentDestination(): SaiLocation {
-    // Odd laps end at Marwa; Even laps end at Safa
     return this._currentLap % 2 === 1 ? SaiLocation.MARWA : SaiLocation.SAFA;
   }
 
+  getSafaMarwaDhikr(): {
+    verseOnFirstSafa: string;
+    hillDhikr: string;
+    instructionAr: string;
+  } {
+    return {
+      verseOnFirstSafa: '﴿إِنَّ الصَّفَا وَالْمَرْوَةَ مِن شَعَائِرِ اللَّهِ﴾ — أَبْدَأُ بِمَا بَدَأَ اللَّهُ بِهِ.',
+      hillDhikr:
+        'اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ، أَنْجَزَ وَعْدَهُ، وَنَصَرَ عَبْدَهُ، وَهَزَمَ الْأَحْزَابَ وَحْدَهُ.',
+      instructionAr: 'يستقبل الكعبة على الصفا والمروة، ويكبر ثلاثاً، ويقول الذكر ثم يدعو ويردد ذلك ثلاث مرات (صحيح مسلم 1218).',
+    };
+  }
+
   completeCurrentLap(): { nextLap: number; isCompleted: boolean; nextActionPrompt?: string } {
+    if (this._isCompleted) {
+      return {
+        nextLap: 7,
+        isCompleted: true,
+        nextActionPrompt: 'تم السعي بحمد الله بنجاح. الآن مرحلة التحلل: الحلق أو التقصير (الحلق أفضل للرجال، وتقصير قيد أنملة للنساء). تقبل الله عمرتكم!',
+      };
+    }
+
     if (this._currentLap === 7) {
       this._isCompleted = true;
       return {
@@ -146,6 +224,22 @@ export class SaiCounter {
       nextLap: this._currentLap,
       isCompleted: false,
     };
+  }
+
+  undoLap(): number {
+    if (this._isCompleted) {
+      this._isCompleted = false;
+      return this._currentLap;
+    }
+    if (this._currentLap > 1) {
+      this._currentLap -= 1;
+    }
+    return this._currentLap;
+  }
+
+  reset(): void {
+    this._currentLap = 1;
+    this._isCompleted = false;
   }
 
   getHerwalaGuidance(): { arabicTitle: string; description: string; applicableFor: 'MEN_ONLY' } {
@@ -254,7 +348,7 @@ export class HaramainBestPracticesCatalog {
       titleEn: 'Heatstroke Prevention & Zamzam Etiquette',
       practicalAdvice:
         'احرص على شرب كميات وفيرة من ماء زمزم البارد والمعتدل بانتظام، واستخدم مظلة شمسية فاتحة اللون، وتجنب أداء الطواف والسعي في صحن المطاف المكشوف وقت اشتداد الظهيرة (11:30 ص إلى 3:30 م) لكبار السن.',
-      officialSource: 'وزارة الصحة السعودية',
+      officialSource: 'وزارة الصحة السعودية (937)',
     },
     {
       id: 'EMERGENCY_CORRIDORS',
@@ -262,23 +356,39 @@ export class HaramainBestPracticesCatalog {
       titleEn: 'Emergency Corridors & Crowd Movement Safety',
       practicalAdvice:
         'يمنع الصلاة أو الجلوس في ممرات المشاة، أمام السلالم الكهربائية، أو في مسارات عربات الطوارئ وكبار السن. عند حدوث تكدس، استمر في التحرك الهادئ مع اتجاه تيار المشاة وتجنب الوقوف المفاجئ.',
-      officialSource: 'قوات أمن الحج والعمرة',
+      officialSource: 'قوات أمن الحج والعمرة (911)',
     },
     {
       id: 'NUSUK_RAWDAH_PERMITS',
       titleAr: 'تصاريح الروضة الشريفة عبر تطبيق نسك',
       titleEn: 'Nusuk App Permits for Rawdah Al-Sharifa',
       practicalAdvice:
-        'دخول الروضة الشريفة في المسجد النبوي يتطلب تصريحاً مسبقاً مؤكداً عبر تطبيق "نسك" (Nusuk). احرص على الحضور قبل الموعد بنصف ساعة عند البوابة المحددة للرجال أو النساء مع إبراز رمز الاستجابة السريعة (QR).',
-      officialSource: 'وزارة الحج والعمرة',
+        'دخول الروضة الشريفة في المسجد النبوي يتطلب تصريحاً مسبقاً مؤكداً عبر تطبيق "نسك" (Nusuk). احرص على الحضور قبل الموعد بـ 15 إلى 30 دقيقة عند البوابة المحددة باللوحات الإرشادية (مثل باب عثمان بن عفان 25 أو مسار 37/32 للنساء، وباب السلام للرجال)، واحتفظ بلقطة شاشة عالية الوضوح مع إبقاء التطبيق جاهزاً.',
+      officialSource: 'وزارة الحج والعمرة (منصة نُسك)',
     },
     {
       id: 'OFFICIAL_WHEELCHAIR_BOOKING',
       titleAr: 'حجز عربات الطواف والسعي الرسمية (الكهربائية واليدوية)',
       titleEn: 'Official Electric Golf Carts & Wheelchairs',
       practicalAdvice:
-        'احجز العربات الكهربائية الرسمية من خلال منصة نسك أو من نقاط التوزيع المعتمدة داخل الحرمين في الميزانين والدور العلوي. احذر التعامل مع الوسطاء غير المرخصين في الساحات الخارجية.',
+        'احجز العربات الكهربائية الرسمية عبر تطبيق «نُسك» (الخدمات ← النقل ← عربات الحرمين) أو من نقاط التوزيع المعتمدة بالدور العلوي والميزانين والسطح (حيث يمنع دخول العربات لصحن المطاف الأرضي وقت الذروة). احذر الوسطاء غير المرخصين في الساحات.',
       officialSource: 'الهيئة العامة للعناية بشؤون المسجد الحرام والمسجد النبوي',
+    },
+    {
+      id: 'ZAMZAM_AIRPORT_RULES',
+      titleAr: 'ضوابط شحن عبوات ماء زمزم (5 لتر) في المطار',
+      titleEn: 'Official 5-Liter Zamzam Airport Regulations',
+      practicalAdvice:
+        'يُسمح لكل معتمر بعبوة واحدة فقط (5 لتر) مغلفة رسمياً من مشروع الملك عبد الله بن عبد العزيز لسقيا زمزم وتُشترى من منافذ المطار الرسمية بجدة أو المدينة (~12 ريالاً). يُمنع وضع جالونات غير مغلفة داخل الحقائب، وتُشحن العبوة الرسمية على سير الأمتعة المخصص لزمزم.',
+      officialSource: 'الهيئة العامة للطيران المدني السعودي (GACA)',
+    },
+    {
+      id: 'LOST_PILGRIM_PROTOCOL',
+      titleAr: 'بروتوكول التصرف عند الضياع داخل الحرمين',
+      titleEn: 'Lost Pilgrim Safety Protocol',
+      practicalAdvice:
+        'لا تواصل المشي العشوائي إذا ضللت الطريق؛ توقف عند أقرب باب مرقم أو عمود مميز، وأظهر بطاقة الفندق أو شاشة الطوارئ لرجال الأمن أو المشرفات، وشارك موقعك (GPS) عبر واتساب مع مشرف الفوج.',
+      officialSource: 'قوات أمن الحج والعمرة',
     },
   ];
 

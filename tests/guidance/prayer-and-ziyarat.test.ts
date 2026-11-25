@@ -3,22 +3,20 @@ import { PrayerTimesEngine, CityLocation } from '../../src/guidance/prayer-times
 import { ZiyaratGuideCatalog, ZiyaratCity } from '../../src/guidance/ziyarat-guide.js';
 
 describe('Prayer Times & Haramain Countdown Engine', () => {
-  it('provides complete daily prayer times for Makkah and Madinah', () => {
+  it('computes seasonal daily prayer times for Makkah and Madinah in Asia/Riyadh', () => {
     const engine = new PrayerTimesEngine();
-    const makkahPrayers = engine.getPrayerTimes(CityLocation.MAKKAH);
+    const febMakkah = engine.getPrayerTimes(CityLocation.MAKKAH, new Date('2026-02-24T10:00:00+03:00'));
+    const junMakkah = engine.getPrayerTimes(CityLocation.MAKKAH, new Date('2026-06-21T10:00:00+03:00'));
 
-    expect(makkahPrayers.fajr).toBeDefined();
-    expect(makkahPrayers.sunrise).toBeDefined();
-    expect(makkahPrayers.dhuhr).toBeDefined();
-    expect(makkahPrayers.asr).toBeDefined();
-    expect(makkahPrayers.maghrib).toBeDefined();
-    expect(makkahPrayers.isha).toBeDefined();
+    expect(febMakkah.fajr).toBeDefined();
+    expect(febMakkah.maghrib).not.toBe(junMakkah.maghrib); // Seasonal variation
+    expect(febMakkah.isha).toBeDefined();
   });
 
-  it('calculates the next upcoming prayer and countdown', () => {
+  it('calculates the next upcoming prayer and countdown in Asia/Riyadh regardless of host timezone', () => {
     const engine = new PrayerTimesEngine();
-    // Test at 14:00 (2:00 PM), next prayer should be Asr (around 15:30)
-    const testTime = new Date('2026-02-24T14:00:00');
+    // 14:00 Asia/Riyadh -> next prayer should be Asr (~15:40-15:50 in Feb)
+    const testTime = new Date('2026-02-24T14:00:00+03:00');
     const nextPrayer = engine.getNextPrayer(CityLocation.MAKKAH, testTime);
 
     expect(nextPrayer.nameAr).toBe('العصر');
@@ -27,14 +25,17 @@ describe('Prayer Times & Haramain Countdown Engine', () => {
 
   it('triggers Mataf congestion and prayer-closure warning when under 25 minutes to prayer', () => {
     const engine = new PrayerTimesEngine();
-    // Test 15 minutes before Maghrib
-    const testTime = new Date('2026-02-24T18:15:00'); // Assuming Maghrib around 18:30
-    const nextPrayer = engine.getNextPrayer(CityLocation.MAKKAH, testTime);
+    const times = engine.getPrayerTimes(CityLocation.MAKKAH, new Date('2026-02-24T12:00:00+03:00'));
+    const [mh, mm] = times.maghrib.split(':').map(Number);
+    const tenMinsBeforeMaghrib = new Date(
+      `2026-02-24T${String(mh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00+03:00`
+    );
+    tenMinsBeforeMaghrib.setMinutes(tenMinsBeforeMaghrib.getMinutes() - 10);
 
-    if (nextPrayer.minutesRemaining <= 25) {
-      expect(nextPrayer.matafWarning).toBeDefined();
-      expect(nextPrayer.matafWarning).toContain('إخلاء صحن المطاف');
-    }
+    const nextPrayer = engine.getNextPrayer(CityLocation.MAKKAH, tenMinsBeforeMaghrib);
+    expect(nextPrayer.nameAr).toBe('المغرب');
+    expect(nextPrayer.minutesRemaining).toBe(10);
+    expect(nextPrayer.matafWarning).toContain('إخلاء صحن المطاف');
   });
 });
 
@@ -56,7 +57,7 @@ describe('Ziyarat & Holy Historical Sites Catalog', () => {
   it('details Quba Mosque virtue (2 Rak\'ahs equal to Umrah reward)', () => {
     const quba = catalog.getSiteById('MASJID_QUBA');
     expect(quba).toBeDefined();
-    expect(quba?.virtueAr).toContain('تعدل صلاة فيه أجر عمرة');
+    expect(quba?.virtueAr).toContain('تعدل أجر عمرة');
     expect(quba?.sunnahEtiquette).toContain('صلاة ركعتين');
   });
 

@@ -43,6 +43,16 @@ describe('HaramGatesGuide - دليل بوابات الحرم ومسار الفن
     expect(gateNumbers).toContain(100); // King Abdullah Expansion
   });
 
+  it('should map Bab al-Fath to Gate 45 and Bab al-Umrah to Gate 62 accurately', () => {
+    const gate45 = guide.getGateByNumber(45);
+    expect(gate45).toBeDefined();
+    expect(gate45?.nameAr).toContain('باب الفتح');
+
+    const gate62 = guide.getGateByNumber(62);
+    expect(gate62).toBeDefined();
+    expect(gate62?.nameAr).toContain('باب العمرة');
+  });
+
   it('should retrieve gate by exact number', () => {
     const gate1 = guide.getGateByNumber(1);
     expect(gate1).toBeDefined();

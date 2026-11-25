@@ -7,9 +7,9 @@ import {
 describe('WomenFiqhCatalog - احكام المرأة في العمرة', () => {
   const catalog = new WomenFiqhCatalog();
 
-  it('should contain all 10 core verified rulings from Daleel Al-Mutamir', () => {
+  it('should contain all 11 core verified rulings including Istihadah distinction', () => {
     const items = catalog.getAllItems();
-    expect(items.length).toBe(10);
+    expect(items.length).toBe(11);
   });
 
   it('should correctly clarify Miqat menstruation rulings (Ghusl, Ihram, but delay Tawaf)', () => {
@@ -19,6 +19,12 @@ describe('WomenFiqhCatalog - احكام المرأة في العمرة', () => {
     expect(item?.rulingAr).toContain('لا تطوف بالبيت حتى تطهر');
     expect(item?.practicalGuidance).toContain('لا يجوز لها تجاوز الميقات دون إحرام');
     expect(item?.sourceText).toContain('افْعَلِي مَا يَفْعَلُ الْحَاجُّ');
+  });
+
+  it('should clarify Istihadah does not prohibit Tawaf', () => {
+    const item = catalog.getItemByTopic(WomenFiqhTopic.ISTIHADAH_DIFFERENCE);
+    expect(item).toBeDefined();
+    expect(item?.rulingAr).toContain('لا تمنع من الصلاة ولا من الطواف');
   });
 
   it('should rule on Ihram clothes forbidding Niqab and gloves only, with no designated color', () => {
@@ -64,7 +70,7 @@ describe('WomenFiqhCatalog - احكام المرأة في العمرة', () => {
     expect(socks?.rulingAr).toContain('يجوز للمرأة المحرمة لبس الجوارب');
   });
 
-  it('should guide women regarding the Prophet Mosque prayer and refraining from visiting graves', () => {
+  it('should guide women regarding the Prophet Mosque prayer and scholarly nuance on cemeteries', () => {
     const mosque = catalog.getItemByTopic(WomenFiqhTopic.VISITING_PROPHET_MOSQUE);
     expect(mosque?.rulingAr).toContain('المسجد النبوي ودخول الروضة الشريفة بتصريح نسك');
     expect(mosque?.practicalGuidance).toContain('لَعَنَ الله زَوَّارَاتِ القُبُورِ');

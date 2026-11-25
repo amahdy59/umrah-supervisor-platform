@@ -5,6 +5,7 @@ import {
   FiqhAssistant,
   FiqhRulingCategory,
 } from '../../src/guidance/whatsapp-and-fiqh.js';
+import { OFFICIAL_SAUDI_RESOURCES, MIQAT_ROUTE_GUIDES } from '../../src/guidance/official-resources.js';
 
 describe('WhatsApp Broadcast Manager', () => {
   const manager = new WhatsAppBroadcastManager();
@@ -18,6 +19,18 @@ describe('WhatsApp Broadcast Manager', () => {
     expect(phases).toContain(BroadcastPhase.HARAMAIN_MORALS);
     expect(phases).toContain(BroadcastPhase.RAWDAH_PERMIT);
     expect(phases).toContain(BroadcastPhase.DEPARTURE_WADA);
+  });
+
+  it('formats pre-departure and Rawdah broadcasts with accurate gate & airport Zamzam rules', () => {
+    const pre = manager.getFormattedPost(BroadcastPhase.PRE_DEPARTURE, { tripTitle: 'عمرة 1447' });
+    expect(pre.messageBody).toContain('قبل موعد إقلاع الرحلة بـ 4 ساعات');
+
+    const rawdah = manager.getFormattedPost(BroadcastPhase.RAWDAH_PERMIT);
+    expect(rawdah.messageBody).toContain('بوابة 25');
+
+    const wada = manager.getFormattedPost(BroadcastPhase.DEPARTURE_WADA);
+    expect(wada.messageBody).toContain('5 لتر');
+    expect(wada.messageBody).toContain('مطار جدة أو المدينة');
   });
 
   it('formats roommate etiquette broadcast with practical courtesy rules', () => {
@@ -43,7 +56,7 @@ describe('WhatsApp Broadcast Manager', () => {
   });
 });
 
-describe('Fiqh Assistant & Common Mistakes Engine', () => {
+describe('Fiqh Assistant & Official Saudi Resources', () => {
   const fiqh = new FiqhAssistant();
 
   it('resolves lap count doubt by applying the certainty principle (the lesser count)', () => {
@@ -63,5 +76,17 @@ describe('Fiqh Assistant & Common Mistakes Engine', () => {
     const ruling = fiqh.getRuling(FiqhRulingCategory.FORGETFUL_HAIR_NAIL_CLIP);
     expect(ruling).toBeDefined();
     expect(ruling?.actionRequired).toContain('لا فدية عليه عند جمهور العلماء للنسيان');
+  });
+
+  it('provides ruling for Istihadah (non-menstrual spotting) allowing Tawaf', () => {
+    const ruling = fiqh.getRuling(FiqhRulingCategory.ISTIHADAH_NON_MENSTRUAL_BLEEDING);
+    expect(ruling).toBeDefined();
+    expect(ruling?.rulingArabic).toContain('لا تمنع من الصلاة ولا من دخول المسجد الحرام ولا من الطواف');
+  });
+
+  it('includes verified official Saudi resources and Miqat route guides', () => {
+    expect(OFFICIAL_SAUDI_RESOURCES.some((r) => r.id === 'moh-937')).toBe(true);
+    expect(OFFICIAL_SAUDI_RESOURCES.some((r) => r.id === 'nusuk-app')).toBe(true);
+    expect(MIQAT_ROUTE_GUIDES.some((m) => m.id === 'haramain-train-makkah')).toBe(true);
   });
 });
