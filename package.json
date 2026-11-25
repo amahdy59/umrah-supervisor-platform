@@ -8,6 +8,7 @@
     "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "build": "tsc -p tsconfig.build.json && vite build",
     "deploy": "wrangler pages deploy dist --project-name=umrah-supervisor"
   },
@@ -23,6 +24,8 @@
   "author": "Antigravity Engineering",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.1",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^22.10.1",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

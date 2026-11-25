@@ -1,20 +1,52 @@
 {
   "name": "منظومة رفيق المعتمر ومشرف الأفواج",
   "short_name": "رفيق المعتمر",
-  "description": "تطبيق رفيق المعتمر التفاعلي: عداد الطواف والسعي، مواقيت مكة والمدينة، كارت الطوارئ، ودليل المناسك بدون إنترنت",
+  "description": "تطبيق رفيق المعتمر التفاعلي: عداد الطواف والسعي، مواقيت مكة والمدينة، كارت الطوارئ، وأطلس الأبواب بدون إنترنت",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#064e3b",
   "theme_color": "#064e3b",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "ar",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23064e3b'/><text x='50%' y='65%' font-size='50' text-anchor='middle'>🕋</text></svg>",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "عداد الطواف والسعي",
+      "short_name": "الطواف",
+      "url": "/?tab=rituals",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "أبواب ومنافع الحرمين",
+      "short_name": "الأبواب",
+      "url": "/?tab=haram-atlas",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "بوابة المشرف",
+      "short_name": "المشرف",
+      "url": "/supervisor",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

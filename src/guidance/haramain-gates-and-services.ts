@@ -58,7 +58,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Door of the Kaaba, Al-Multazam & Maqam Ibrahim',
       directionAr: 'الجهة الشرقية للكعبة المشرفة',
       areaOrLandmarkAr: 'صحن المطاف أمام مقام إبراهيم عليه السلام',
-      imageUrl: '/images/makkah/kaaba-door.jpg',
+      imageUrl: '/images/makkah/kaaba-door.webp',
       imageAltAr: 'صورة حقيقية لباب الكعبة المشرفة المذهب وكسوة الكعبة وأمامه مقام إبراهيم عليه السلام',
       summaryAr:
         'باب الكعبة المذهب يقع في الجدار الشرقي للكعبة المشرفة، وبين الحجر الأسود وباب الكعبة يوجد «الملتزم» الذي يُستحب عنده الدعاء إذا تيسر دون مزاحمة، وأمامهما «مقام إبراهيم» حيث يُصلى ركعتا سنة الطواف.',
@@ -76,7 +76,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Mataf Courtyard, Hijr Ismail & Yamani Corner',
       directionAr: 'مركز المسجد الحرام حول الكعبة',
       areaOrLandmarkAr: 'المطاف الأرضي والأدوار العلوية',
-      imageUrl: '/images/makkah/kaaba-courtyard.jpg',
+      imageUrl: '/images/makkah/kaaba-courtyard.webp',
       imageAltAr: 'صورة شاملة للكعبة المشرفة وحِجر إسماعيل وصحن المطاف والمعتمرين',
       summaryAr:
         'الحِجر (الحطيم) جزء من أصل بناء الكعبة؛ لذا يجب أن يكون الطواف من خارجه بجميع الجسد، ومن دخله أثناء الطواف لم يُحتسب شوطه. وبين الركن اليماني والحجر الأسود يُقال: ﴿رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ﴾.',
@@ -94,7 +94,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Al-Masaa (Safa & Marwah Gallery)',
       directionAr: 'الجهة الشرقية من المسجد الحرام',
       areaOrLandmarkAr: 'بداية السعي من الصفا والانتهاء عند المروة',
-      imageUrl: '/images/makkah/safa-marwah-masa.jpg',
+      imageUrl: '/images/makkah/safa-marwah-masa.webp',
       imageAltAr: 'صورة داخلية لممر المسعى المكيف بين الصفا والمروة والأنوار الخضراء',
       summaryAr:
         'يمتد المسعى عبر عدة أدوار مكيفة ومزودة بسلالم كهربائية ومصاعد، وتوضح الإضاءة الخضراء في السقف مسافة الهرولة المسنونة للرجال فقط، بينما تمشي النساء بسكينة في جميع الأشواط.',
@@ -115,7 +115,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'King Abdulaziz Gate (Gate 1)',
       directionAr: 'الجهة الجنوبية (مقابل برج الساعة)',
       areaOrLandmarkAr: 'أجياد / مجمع وقف الملك عبد العزيز',
-      imageUrl: '/images/makkah/gate-abdulaziz.jpg',
+      imageUrl: '/images/makkah/gate-abdulaziz.webp',
       imageAltAr: 'صورة لبوابة الملك عبد العزيز ومئذنتيها الشامختين في الساحة الجنوبية للمسجد الحرام',
       summaryAr:
         'أشهر البوابات الجنوبية وأكبرها في الساحة المقابلة لبرج الساعة (وقف الملك عبد العزيز)، ومنها وصول مباشر نحو صحن المطاف ومصليات الدور الأرضي والأول.',
@@ -135,7 +135,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'King Fahd Gate (Gate 79)',
       directionAr: 'الجهة الغربية (جبل عمر / التيسير)',
       areaOrLandmarkAr: 'الساحات الغربية وأنفاق جرول والتيسير',
-      imageUrl: '/images/makkah/gate-fahd.jpg',
+      imageUrl: '/images/makkah/gate-fahd.webp',
       imageAltAr: 'صورة لباب الملك فهد ومئذنتيه في التوسعة الغربية للمسجد الحرام',
       summaryAr:
         'المدخل الغربي المهيب بتوسعة الملك فهد، يمتاز بسلالمه الكهربائية السريعة نحو الدور الأول والسطح وتوسعة الصحن الغربية بعيداً عن زحام أجياد.',
@@ -155,7 +155,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'King Abdullah Expansion Gate (Gate 100)',
       directionAr: 'الجهة الشمالية (التوسعة السعودية الثالثة)',
       areaOrLandmarkAr: 'الساحات الشمالية / الغزة / جرول',
-      imageUrl: '/images/makkah/king-abdullah-gate.jpg',
+      imageUrl: '/images/makkah/king-abdullah-gate.webp',
       imageAltAr: 'صورة لبوابة التوسعة الشمالية الكبرى للمسجد الحرام وساحاتها الرخامية الواسعة',
       summaryAr:
         'أضخم مداخل التوسعة السعودية الثالثة من الجهة الشمالية؛ تتميز بمساحات صلاة ضخمة فائقة التبريد وهدوء نسبي وإمكانية الوصول السهل للحافلات.',
@@ -175,7 +175,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Bab Al-Umrah (Gate 62)',
       directionAr: 'الجهة الشمالية الغربية',
       areaOrLandmarkAr: 'الشبيكة / جبل عمر / شارع إبراهيم الخليل',
-      imageUrl: '/images/makkah/bab-al-umrah.jpg',
+      imageUrl: '/images/makkah/bab-al-umrah.webp',
       imageAltAr: 'صورة لمدخل باب العمرة التاريخي بأقواسه الرخامية وأبوابه المزخرفة',
       summaryAr:
         'بوابة تاريخية في الجهة الشمالية الغربية تقود مباشرة إلى المطاف وهي أقرب المداخل لضيوف فنادق جبل عمر وهيلتون ومنطقة الشبيكة.',
@@ -195,7 +195,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Bab Al-Fath & Marwah Exits (Gate 45)',
       directionAr: 'الجهة الشمالية الشرقية',
       areaOrLandmarkAr: 'ساحة الغزة / المروة / شعب علي',
-      imageUrl: '/images/makkah/gate-main-entrance.jpg',
+      imageUrl: '/images/makkah/gate-main-entrance.webp',
       imageAltAr: 'صورة لواجهة ومدخل رئيسي في الجهة الشرقية الشمالية للمسجد الحرام بمكة',
       summaryAr:
         'مخرج مباشر في محيط جبل المروة وباب الفتح، يستخدمه المعتمرون فور الانتهاء من الشوط السابع للسعي والتحلل من الإحرام.',
@@ -217,7 +217,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Bab Al-Salam - Prophet Mosque (Gate 1)',
       directionAr: 'الجهة الجنوبية الغربية (جهة السلام على النبي ﷺ)',
       areaOrLandmarkAr: 'الممر المؤدي للروضة والحجرة النبوية الشريفة',
-      imageUrl: '/images/madinah/nabawi-bab-salam.jpg',
+      imageUrl: '/images/madinah/nabawi-bab-salam.webp',
       imageAltAr: 'صورة حقيقية لباب السلام المزخرف بالنحاس والذهب في المسجد النبوي بالمدينة المنورة',
       summaryAr:
         'المدخل التاريخي والأشهر لدخول الرجال للسلام بأدب وسكينة وخفض صوت على رسول الله ﷺ وصاحبيه أبي بكر وعمر رضي الله عنهما.',
@@ -236,7 +236,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Ar-Rawdah Ash-Sharifah & The Green Dome',
       directionAr: 'قلب المسجد النبوي الشريف بين الحجرة والمنبر',
       areaOrLandmarkAr: 'الدخول المنظم بتصريح نُسك (عبر الساحات الجنوبية/الشرقية)',
-      imageUrl: '/images/madinah/nabawi-rawdah.jpg',
+      imageUrl: '/images/madinah/nabawi-rawdah.webp',
       imageAltAr: 'صورة للقبة الخضراء ومبنى المسجد النبوي الشريف جهة الروضة الشريفة بالمدينة المنورة',
       summaryAr:
         'قال رسول الله ﷺ: «مَا بَيْنَ بَيْتِي وَمِنْبَرِي رَوْضَةٌ مِنْ رِيَاضِ الْجَنَّةِ» (متفق عليه). يتم تنظيم الدخول إليها بتصاريح تطبيق «نُسك» لضمان طمأنينة الصلاة فيها.',
@@ -255,7 +255,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Bab Uthman ibn Affan & Women Access Plaza (Gate 25)',
       directionAr: 'الجهة الشمالية والشرقية للمسجد النبوي',
       areaOrLandmarkAr: 'تجمع مصليات النساء وتنظيم دخول الروضة النسائي',
-      imageUrl: '/images/madinah/nabawi-bab-uthman-25.jpg',
+      imageUrl: '/images/madinah/nabawi-bab-uthman-25.webp',
       imageAltAr: 'صورة لساحة المسجد النبوي وبوابة عثمان بن عفان رقم 25 مع المظلات البيضاء',
       summaryAr:
         'نقطة التوجيه الرئيسية لدخول مصليات النساء وتنسيق أفواج الأخوات الحاملات لتصاريح الروضة الشريفة عبر تطبيق «نُسك» (مع بوابات 24–26 و32/37).',
@@ -274,7 +274,7 @@ export class HaramainAtlasCatalog {
       nameEn: 'Shading Canopy Courtyards & Al-Baqi Plaza',
       directionAr: 'الساحات المحيطة بالمسجد النبوي وباب البقيع شرقاً',
       areaOrLandmarkAr: '250 مظلة عملاقة + دورات المياه تحت الأرض + بوابة 36/41 للبقيع',
-      imageUrl: '/images/madinah/nabawi-umbrellas.jpg',
+      imageUrl: '/images/madinah/nabawi-umbrellas.webp',
       imageAltAr: 'صورة للمصلين تحت المظلات العملاقة المبردة في ساحات المسجد النبوي الشريف بالمدينة المنورة',
       summaryAr:
         'تضم الساحات 250 مظلة ذكية مزودة بمراوح رذاذ تبرد الأجواء صيفاً، وأبراج مداخل سلالم كهربائية تنزل مباشرة لمواضئ ودورات مياه واسعة ومواقف سيارات تحت الأرض.',
@@ -295,7 +295,7 @@ export class HaramainAtlasCatalog {
       whereToFindAr: 'موزعة عند كل بوابة، وأطراف صحن المطاف، والمسعى، وساحات المسجد النبوي',
       howToBenefitAr:
         'اشرب من ماء زمزم وتضلع منه بنية صالحة (شفاءً وعلماً ورزقاً)، وتُستخدم الحافظات ذات اللون الخشبي للماء غير المبرد لكبار السن وأصحاب الحساسية.',
-      imageUrl: '/images/makkah/zamzam-stations.jpg',
+      imageUrl: '/images/makkah/zamzam-stations.webp',
       imageAltAr: 'صورة لحافظات مياه زمزم المبردة داخل المسجد الحرام مع الأكواب الورقية النظيفة',
     },
     {

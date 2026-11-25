@@ -14,6 +14,8 @@
   </script>
   <title>لوحة عمليات مشرف العمرة | Supervisor Mission Control</title>
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="theme-color" content="#064e3b">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,6 +131,9 @@
         <button type="button" id="btn-new-group" class="header-chip-btn" style="background:#b45309;border-color:#fde68a;">➕ فوج جديد</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings>⚙️ إعدادات الفوج</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
+        <button type="button" id="btn-cloud-sync-now" class="header-chip-btn desktop-only-tools">☁️ مزامنة</button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-lang-toggle>🌐 English</button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-pin-lock-now hidden>🔒 قفل</button>
         <a href="/" class="header-chip-btn desktop-only-tools">🤲 تطبيق المعتمر</a>
       </div>
     </div>
@@ -625,6 +630,10 @@
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health">🧳 الأمتعة والسجل الطبي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings>⚙️ إعدادات الفوج النشط</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
+      <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" style="justify-content:flex-start;">☁️ مزامنة السحابة (D1)</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn>🔒 تفعيل قفل الخصوصية (PIN)</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now hidden>🔐 قفل الشاشة الآن</button>
       <button type="button" id="btn-export-backup-json" class="btn btn-secondary" style="justify-content:flex-start;">💾 حفظ نسخة احتياطية (JSON)</button>
       <label for="input-restore-backup-json" class="btn btn-secondary" style="justify-content:flex-start;cursor:pointer;">
         📤 استعادة نسخة (JSON)
@@ -782,6 +791,38 @@
     </div>
     <div id="luggage-tags-print-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.85rem;margin-bottom:1rem;"></div>
     <button type="button" class="btn btn-primary btn-print-active no-print" style="width:100%;">🖨️ طباعة جميع البطاقات</button>
+  </dialog>
+
+  <dialog id="pin-unlock-modal" aria-labelledby="pin-unlock-title">
+    <div class="dialog-header">
+      <h1 id="pin-unlock-title" style="font-size:1.15rem;">🔐 لوحة المشرف محمية برمز سري</h1>
+    </div>
+    <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
+      أدخل رمز الخصوصية المكون من 4–6 أرقام للوصول لبيانات الجوازات والملفات الطبية والأقساط.
+    </p>
+    <form id="pin-unlock-form">
+      <label for="pin-unlock-input" class="field-label">رمز الحماية (PIN):</label>
+      <input id="pin-unlock-input" type="password" inputmode="numeric" autocomplete="off" minlength="4" maxlength="6" pattern="\d{4,6}" class="field-input" style="margin-bottom:0.85rem;" required>
+      <button type="submit" class="btn btn-primary" style="width:100%;">🔓 فتح اللوحة</button>
+    </form>
+  </dialog>
+
+  <dialog id="pin-setup-modal" closedby="any" aria-labelledby="pin-setup-title">
+    <div class="dialog-header">
+      <h1 id="pin-setup-title" style="font-size:1.15rem;">🔒 إدارة قفل الخصوصية (PIN)</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="pin-setup-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.85rem;">
+      يُحفظ الرمز مشفراً بخوارزمية SHA-256 على جهازك لحماية بيانات المعتمرين من العبث عند فقدان الهاتف أو مشاركته.
+    </p>
+    <form id="pin-setup-form">
+      <label for="pin-setup-input" class="field-label">رمز جديد (4 إلى 6 أرقام):</label>
+      <input id="pin-setup-input" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="6" pattern="\d{4,6}" class="field-input" style="margin-bottom:0.85rem;" required>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ وتفعيل القفل</button>
+        <button type="button" id="btn-pin-remove" class="btn btn-danger" hidden>🗑️ إلغاء القفل</button>
+      </div>
+    </form>
   </dialog>
 
   <div id="a11y-polite-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>

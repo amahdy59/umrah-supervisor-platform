@@ -15,8 +15,6 @@ import { Money } from '../financial/money.js';
 import { GameyaGroup, GameyaType, PaymentMethod, InstallmentStatus } from '../financial/gameya.js';
 import { WhatsAppBroadcastManager, BroadcastPhase } from '../guidance/whatsapp-and-fiqh.js';
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
-import { HaramainAtlasCatalog } from '../guidance/haramain-gates-and-services.js';
-import { ZiyaratGuideCatalog } from '../guidance/ziyarat-guide.js';
 import {
   TRIP_STAGE_LABELS,
   escapeHtml,
@@ -33,120 +31,16 @@ import {
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
-
-interface PilgrimRecord {
-  id: string;
-  personId?: string;
-  fullName: string;
-  gender: Gender;
-  passportNumber: string;
-  phone: string;
-  roomNumber: string;
-  boarded: boolean;
-  nusukReady: boolean;
-}
-
-interface RoomRecord {
-  id: string;
-  roomNumber: string;
-  type: RoomType;
-  capacity: number;
-  isFamilyRoom: boolean;
-  occupantIds: string[];
-}
-
-interface InstallmentPaymentLog {
-  id: string;
-  amount: number;
-  method: PaymentMethod;
-  ref?: string;
-  dateIso: string;
-}
-
-interface GameyaRecord {
-  id: string;
-  name: string;
-  phone: string;
-  planType: GameyaType;
-  turnMonth: number;
-  totalTarget: number;
-  downPayment: number;
-  installmentCount: number;
-  totalPaid: number;
-  startDateIso: string;
-  payments: InstallmentPaymentLog[];
-}
-
-interface LuggageRecord {
-  id: string;
-  tagCode: string;
-  pilgrimName: string;
-  roomNumber: string;
-  bagType: BagType;
-  status: LuggageStatus;
-}
-
-interface MedicalRecord {
-  id: string;
-  pilgrimName: string;
-  roomNumber: string;
-  conditions: ChronicCondition[];
-  requiresWheelchair: boolean;
-  requiresElectricCart: boolean;
-  requiresInsulinRefrigeration: boolean;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  notes: string;
-}
-
-interface SOSRecord {
-  id: string;
-  pilgrimName: string;
-  phone: string;
-  latitude: number;
-  longitude: number;
-  distanceMeters: number;
-  notes: string;
-  resolved: boolean;
-  createdAt: string;
-}
-
-interface GroupSettings {
-  tripTitle: string;
-  tripCode: string;
-  status: TripStatus;
-  startDate: string;
-  endDate: string;
-  busNumber: string;
-  hotelKey: string;
-  hotelNameAr: string;
-  hotelNameEn: string;
-  hotelAddressAr: string;
-  hotelPhone: string;
-  hotelLat: number;
-  hotelLng: number;
-  supervisorName: string;
-  supervisorPhone: string;
-  gatheringTime: string;
-  meetingPoint: string;
-}
-
-interface GroupWorkspace {
-  id: string;
-  settings: GroupSettings;
-  pilgrims: PilgrimRecord[];
-  rooms: RoomRecord[];
-  gameya: GameyaRecord[];
-  luggage: LuggageRecord[];
-  medical: MedicalRecord[];
-  sosAlerts: SOSRecord[];
-}
-
-interface MultiGroupRootState {
-  activeGroupId: string;
-  groups: GroupWorkspace[];
-  people: PersonRecord[];
-}
+import { initLanguage, toggleLanguage } from './i18n.js';
+import { pushGroupWorkspaceToCloud, flushSyncOutbox } from './cloud-sync.js';
+import { renderSupervisorHaramAtlas } from './supervisor/atlas-view.js';
+import { enforcePrivacyLockIfConfigured, wirePrivacyLockHandlers } from './supervisor/privacy-lock.js';
+import type {
+  PilgrimRecord,
+  GameyaRecord,
+  GroupWorkspace,
+  MultiGroupRootState,
+} from './supervisor/types.js';
 
 const STORAGE_KEY = 'umrah_supervisor_multi_v3';
 const broadcastManager = new WhatsAppBroadcastManager();
@@ -471,10 +365,6 @@ const syncChannel = createSyncChannel((scope) => {
   }
 });
 
-const haramainAtlas = new HaramainAtlasCatalog();
-const ziyaratCatalog = new ZiyaratGuideCatalog();
-let activeSupAtlasFilter = 'ALL';
-
 function normalizeRootState(parsed: Partial<MultiGroupRootState>): MultiGroupRootState {
   const fallback = createInitialState();
   return {
@@ -743,8 +633,12 @@ function renderGroupsOverviewBoard(): void {
 // TAB 1: MANIFEST, ROOMING & QR SHARE LINK
 // =========================================================================
 function buildPilgrimShareUrl(p: PilgrimRecord): string {
-  const s = getActiveGroup().settings;
+  const active = getActiveGroup();
+  const s = active.settings;
   const base = `${window.location.origin}/`;
+  const matchGameya = active.gameya.find(
+    (g) => g.name.trim() === p.fullName.trim() || (p.phone && g.phone === p.phone)
+  );
   const qs = new URLSearchParams({
     name: p.fullName,
     passport: p.passportNumber,
@@ -761,6 +655,13 @@ function buildPilgrimShareUrl(p: PilgrimRecord): string {
     stage: s.status,
     meeting: s.meetingPoint,
   });
+  if (matchGameya) {
+    qs.set('payPlan', matchGameya.planType);
+    qs.set('payTarget', String(matchGameya.totalTarget));
+    qs.set('payPaid', String(matchGameya.totalPaid));
+    qs.set('payDown', String(matchGameya.downPayment));
+    qs.set('payCount', String(matchGameya.installmentCount));
+  }
   return `${base}?${qs.toString()}`;
 }
 
@@ -1643,84 +1544,6 @@ function renderMedicalSection(): void {
   });
 }
 
-function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter): void {
-  activeSupAtlasFilter = filter;
-  const cardsEl = document.getElementById('sup-haram-atlas-cards');
-  const benefitsEl = document.getElementById('sup-haram-benefits-grid');
-
-  if (cardsEl) {
-    if (filter === 'ZIYARAT') {
-      cardsEl.innerHTML = ziyaratCatalog
-        .getAllSites()
-        .map(
-          (s) => `
-        <article class="card">
-          ${
-            s.imageUrl
-              ? `<img class="landmark-card-img" src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.imageAltAr || s.nameAr)}" loading="lazy" width="640" height="400">`
-              : ''
-          }
-          <div class="card-header">
-            <h3 class="card-title">${escapeHtml(s.nameAr)}</h3>
-            <span class="badge ${s.city === 'MADINAH' ? 'badge-warning' : 'badge-primary'}">${s.city === 'MADINAH' ? 'المدينة' : 'مكة'}</span>
-          </div>
-          <p style="font-size:0.9rem;line-height:1.7;margin-bottom:0.5rem;">${escapeHtml(s.virtueAr)}</p>
-          <div class="info-box-neutral"><strong>توجيه للمشرف والمعتمر:</strong> ${escapeHtml(s.sunnahEtiquette)}</div>
-          ${s.bidahWarnings ? `<div class="info-box-danger" style="margin-top:0.5rem;"><strong>⚠️ تنبيه شرعي:</strong> ${escapeHtml(s.bidahWarnings)}</div>` : ''}
-        </article>
-      `
-        )
-        .join('');
-    } else {
-      const gatesAndZones =
-        filter === 'MAKKAH'
-          ? haramainAtlas.getByCity('MAKKAH')
-          : filter === 'MADINAH'
-            ? haramainAtlas.getByCity('MADINAH')
-            : haramainAtlas.getAllLandmarksAndGates();
-      cardsEl.innerHTML = gatesAndZones
-        .map(
-          (item) => `
-        <article class="card">
-          <img class="landmark-card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.imageAltAr)}" loading="lazy" width="640" height="400">
-          <div class="card-header">
-            <h3 class="card-title">${escapeHtml(item.nameAr)}</h3>
-            <span class="badge ${item.city === 'MADINAH' ? 'badge-warning' : 'badge-primary'}">${item.gateNumber ? `بوابة ${item.gateNumber}` : item.city === 'MADINAH' ? 'المدينة' : 'مكة'}</span>
-          </div>
-          <div style="font-size:0.82rem;font-weight:700;color:var(--gold-dark);margin-bottom:0.4rem;">🧭 ${escapeHtml(item.directionAr)}</div>
-          <p style="font-size:0.88rem;line-height:1.7;margin-bottom:0.5rem;">${escapeHtml(item.summaryAr)}</p>
-          <ul class="benefits-list">${item.benefitsAndServicesAr.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
-        </article>
-      `
-        )
-        .join('');
-    }
-  }
-
-  if (benefitsEl) {
-    benefitsEl.innerHTML = haramainAtlas
-      .getAllBenefits()
-      .map(
-        (b) => `
-      <div class="info-box-neutral">
-        ${
-          b.imageUrl
-            ? `<img class="landmark-card-img" src="${escapeHtml(b.imageUrl)}" alt="${escapeHtml(b.imageAltAr || b.titleAr)}" loading="lazy" width="640" height="400">`
-            : ''
-        }
-        <div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.35rem;">
-          <strong style="color:var(--primary-ink);">${escapeHtml(b.titleAr)}</strong>
-          <span class="badge badge-success">${escapeHtml(b.categoryAr)}</span>
-        </div>
-        <div style="font-size:0.83rem;color:var(--gold-dark);font-weight:700;margin-bottom:0.3rem;">📍 ${escapeHtml(b.whereToFindAr)}</div>
-        <p style="font-size:0.87rem;line-height:1.65;">${escapeHtml(b.howToBenefitAr)}</p>
-      </div>
-    `
-      )
-      .join('');
-  }
-}
-
 // =========================================================================
 // TAB SWITCHING & CSV EXPORT
 // =========================================================================
@@ -1811,8 +1634,22 @@ function updateGameyaFormFields(): void {
   setFieldState('gam-turn-wrap', 'new-gam-turn', showTurn);
 }
 
+async function syncActiveGroupToCloud(notifyUser: boolean): Promise<void> {
+  const active = getActiveGroup();
+  const res = await pushGroupWorkspaceToCloud(active.id, active);
+  if (!notifyUser) return;
+  if (res.mode === 'd1') {
+    showToast('☁️ تمت المزامنة السحابية مع قاعدة Cloudflare D1 بنجاح');
+  } else if (res.mode === 'offline-queued') {
+    showToast(`📴 التغييرات محفوظة محلياً ومجدولة للمزامنة (${res.pendingCount})`);
+  } else {
+    showToast('💾 الحفظ المحلي (IndexedDB) نشط — اربط قاعدة D1 للتزامن السحابي الحي');
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
+  initLanguage();
   setupDialogs();
   initStickyHeaders();
   registerServiceWorkerAndNetworkStatus();
@@ -1820,7 +1657,13 @@ window.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderAll();
   updateGameyaFormFields();
+  enforcePrivacyLockIfConfigured();
+  wirePrivacyLockHandlers();
   void hydrateFromIndexedDb();
+
+  window.addEventListener('online', () => {
+    void flushSyncOutbox();
+  });
 
   document.querySelectorAll<HTMLButtonElement>('[data-tab-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1830,6 +1673,20 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', toggleColorScheme);
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-lang-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = toggleLanguage();
+      showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
+    });
+  });
+
+  document.getElementById('btn-cloud-sync-now')?.addEventListener('click', () => {
+    void syncActiveGroupToCloud(true);
+  });
+  document.getElementById('btn-cloud-sync-popover')?.addEventListener('click', () => {
+    void syncActiveGroupToCloud(true);
   });
 
   document.getElementById('active-group-switcher')?.addEventListener('change', (e) => {

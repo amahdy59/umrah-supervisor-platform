@@ -1,20 +1,22 @@
-const CACHE_NAME = 'umrah-companion-v5';
+const CACHE_NAME = 'umrah-companion-v6';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/supervisor.html',
   '/manifest.json',
-  '/images/makkah/kaaba-door.jpg',
-  '/images/makkah/gate-abdulaziz.jpg',
-  '/images/makkah/gate-fahd.jpg',
-  '/images/makkah/king-abdullah-gate.jpg',
-  '/images/makkah/bab-al-umrah.jpg',
-  '/images/makkah/safa-marwah-masa.jpg',
-  '/images/makkah/zamzam-stations.jpg',
-  '/images/madinah/nabawi-bab-salam.jpg',
-  '/images/madinah/nabawi-bab-uthman-25.jpg',
-  '/images/madinah/nabawi-rawdah.jpg',
-  '/images/madinah/quba-mosque.jpg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/images/makkah/kaaba-door.webp',
+  '/images/makkah/gate-abdulaziz.webp',
+  '/images/makkah/gate-fahd.webp',
+  '/images/makkah/king-abdullah-gate.webp',
+  '/images/makkah/bab-al-umrah.webp',
+  '/images/makkah/safa-marwah-masa.webp',
+  '/images/makkah/zamzam-stations.webp',
+  '/images/madinah/nabawi-bab-salam.webp',
+  '/images/madinah/nabawi-bab-uthman-25.webp',
+  '/images/madinah/nabawi-rawdah.webp',
+  '/images/madinah/quba-mosque.webp',
 ];
 
 self.addEventListener('install', (event) => {

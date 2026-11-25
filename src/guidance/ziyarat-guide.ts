@@ -24,7 +24,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'مسجد قباء',
       nameEn: 'Quba Mosque',
       city: ZiyaratCity.MADINAH,
-      imageUrl: '/images/madinah/quba-mosque.jpg',
+      imageUrl: '/images/madinah/quba-mosque.webp',
       imageAltAr: 'صورة حقيقية لمسجد قباء بالمدينة المنورة بقبابه البيضاء ومآذنه',
       virtueAr:
         'أول مسجد أُسس على التقوى في الإسلام، وصلاة ركعتين فيه تعدل أجر عمرة تامة بنص حديث رسول الله ﷺ: «مَنْ تَطَهَّرَ فِي بَيْتِهِ ثُمَّ أَتَى مَسْجِدَ قُبَاءٍ فَصَلَّى فِيهِ صَلَاةً كَانَ لَهُ كَأَجْرِ عُمْرَةٍ» (رواه ابن ماجه وصححه الألباني).',
@@ -37,7 +37,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'جبل أحد ومقبرة شهداء أحد',
       nameEn: 'Mount Uhud & Martyrs Cemetery',
       city: ZiyaratCity.MADINAH,
-      imageUrl: '/images/madinah/mount-uhud.jpg',
+      imageUrl: '/images/madinah/mount-uhud.webp',
       imageAltAr: 'صورة حقيقية لجبل أحد وساحة شهداء أحد بالمدينة المنورة',
       virtueAr:
         'جبل عظيم قال فيه النبي ﷺ: «أُحُدٌ جَبَلٌ يُحِبُّنَا وَنُحِبُّهُ» (متفق عليه)، وموقع معركة أحد المشهورة حيث دُفن سبعون صحابياً شهيداً وعلى رأسهم حمزة بن عبد المطلب ومصعب بن عمير رضي الله عنهما.',
@@ -52,7 +52,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'مسجد القبلتين',
       nameEn: 'Al-Qiblatayn Mosque',
       city: ZiyaratCity.MADINAH,
-      imageUrl: '/images/madinah/qiblatayn-mosque.jpg',
+      imageUrl: '/images/madinah/qiblatayn-mosque.webp',
       imageAltAr: 'صورة حقيقية لمسجد القبلتين بالمدينة المنورة',
       virtueAr:
         'المسجد التاريخي الذي نزل فيه الوحي بتحويل القبلة أثناء الصلاة من بيت المقدس إلى الكعبة المشرفة بمكة المكرمة استجابة لرغبة النبي ﷺ: ﴿قَدْ نَرَى تَقَلُّبَ وَجْهِكَ فِي السَّمَاءِ فَلَنُوَلِّيَنَّكَ قِبْلَةً تَرْضَاهَا﴾ (البقرة: 144).',
@@ -63,7 +63,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'بقيع الغرقد (مقبرة أهل المدينة)',
       nameEn: 'Al-Baqi Cemetery',
       city: ZiyaratCity.MADINAH,
-      imageUrl: '/images/madinah/baqi-cemetery.jpg',
+      imageUrl: '/images/madinah/baqi-cemetery.webp',
       imageAltAr: 'صورة حقيقية لبقيع الغرقد الملاصق للساحة الشرقية للمسجد النبوي',
       virtueAr:
         'مقبرة الصحابة والتابعين وأمهات المؤمنين وبنات النبي ﷺ الملاصقة للجهة الشرقية من المسجد النبوي الشريف، وكان النبي ﷺ يخرج إلى أهلها ويدعو لهم بالمغفرة.',
@@ -79,7 +79,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'جبل النور وغار حراء (وحي حراء الثقافي)',
       nameEn: 'Jabal al-Nur & Hira Cave',
       city: ZiyaratCity.MAKKAH,
-      imageUrl: '/images/makkah/jabal-al-nour.jpg',
+      imageUrl: '/images/makkah/jabal-al-nour.webp',
       imageAltAr: 'صورة حقيقية لجبل النور بمكة المكرمة حيث يقع غار حراء',
       virtueAr:
         'المكان الذي كان يتحنث فيه رسول الله ﷺ قبل البعثة، وفيه نزل جبريل عليه السلام بأول آيات القرآن الكريم: ﴿اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ﴾ (العلق: 1).',
@@ -92,7 +92,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'غار ثور (جبل ثور)',
       nameEn: 'Cave Thawr',
       city: ZiyaratCity.MAKKAH,
-      imageUrl: '/images/makkah/jabal-thawr.jpg',
+      imageUrl: '/images/makkah/jabal-thawr.webp',
       imageAltAr: 'صورة حقيقية لجبل ثور التاريخي في مكة المكرمة',
       virtueAr:
         'الغار الذي أوى إليه رسول الله ﷺ وصاحبه الصديق أبو بكر رضي الله عنه أثناء الهجرة النبوية الشريفة إلى المدينة، وفيه تجلت عناية الله ومعيته: ﴿إِذْ يَقُولُ لِصَاحِبِهِ لَا تَحْزَنْ إِنَّ اللَّهَ مَعَنَا﴾ (التوبة: 40).',
@@ -105,7 +105,7 @@ export class ZiyaratGuideCatalog {
       nameAr: 'المشاعر المقدسة (منى، مزدلفة، عرفات)',
       nameEn: 'Holy Shrines (Mina, Muzdalifah, Arafat)',
       city: ZiyaratCity.MAKKAH,
-      imageUrl: '/images/makkah/jabal-arafat.jpg',
+      imageUrl: '/images/makkah/jabal-arafat.webp',
       imageAltAr: 'صورة حقيقية لجبل الرحمة بصعيد عرفات الطاهر في مكة المكرمة',
       virtueAr:
         'أرض المناسك الكبرى، وفيها جبل الرحمة ومسجد نمرة بعرفات، ومسجد الخيف بمنى، وجمرات العقبة.',

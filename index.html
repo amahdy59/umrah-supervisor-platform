@@ -14,6 +14,8 @@
   </script>
   <title>رفيق المعتمر | تطبيق الحاج والمعتمر التفاعلي</title>
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="theme-color" content="#064e3b">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -195,20 +197,21 @@
           <span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>
         </button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-wake-toggle aria-pressed="false">
-          <span aria-hidden="true">🔆</span> <span>منع إغلاق الشاشة</span>
+          <span aria-hidden="true">🔆</span> <span data-i18n="tools.wake">منع إغلاق الشاشة</span>
         </button>
+        <button type="button" class="header-chip-btn desktop-only-tools" data-lang-toggle>🌐 English</button>
       </div>
     </div>
 
     <nav class="top-primary-nav" aria-label="التنقل الرئيسي">
       <div class="nav-list-inline">
-        <button type="button" class="mode-btn active" data-tab-target="rituals" aria-current="page">🤲 مناسكي</button>
-        <button type="button" class="mode-btn" data-tab-target="fiqh">📖 الفقه</button>
-        <button type="button" class="mode-btn" data-tab-target="packing">🧳 الحقيبة ونُسك</button>
-        <button type="button" class="mode-btn" data-tab-target="gates-taxi">🧭 البوابات والطوارئ</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas">⛩️ أبواب ومنافع الحرمين</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="ziyarat">🕌 المزارات والميقات</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-fiqh">🧕 فقه المرأة</button>
+        <button type="button" class="mode-btn active" data-tab-target="rituals" data-i18n="nav.rituals" aria-current="page">🤲 مناسكي</button>
+        <button type="button" class="mode-btn" data-tab-target="fiqh" data-i18n="nav.fiqh">📖 الفقه</button>
+        <button type="button" class="mode-btn" data-tab-target="packing" data-i18n="nav.packing">🧳 الحقيبة ونُسك</button>
+        <button type="button" class="mode-btn" data-tab-target="gates-taxi" data-i18n="nav.gates">🧭 البوابات والطوارئ</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas" data-i18n="nav.atlas">⛩️ أبواب ومنافع الحرمين</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="ziyarat" data-i18n="nav.ziyarat">🕌 المزارات والميقات</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-fiqh" data-i18n="nav.women">🧕 فقه المرأة</button>
       </div>
       <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="pilgrim-more-popover">
         ☰ المزيد والأدوات
@@ -282,6 +285,7 @@
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
             <button type="button" id="btn-open-taxi" class="btn btn-gold" style="flex:1;">🚕 كارت التاكسي والأمن</button>
             <button type="button" id="btn-badge-nusuk" class="btn btn-secondary">📲 تصريح نُسك</button>
+            <button type="button" id="btn-my-installments" class="btn btn-secondary" data-i18n="badge.accountBtn">💳 حسابي وأقساطي</button>
             <button type="button" id="btn-open-cert" class="btn btn-secondary">📜 الشهادة</button>
           </div>
         </div>
@@ -558,6 +562,8 @@
           <h2 class="card-title">🧭 دليل بوابات الحرم المكي المصحح ومسار الفندق</h2>
           <button type="button" id="btn-jump-haram-atlas" class="btn btn-primary" style="font-size:0.84rem;" data-tab-target="haram-atlas">⛩️ أطلس كل الأبواب والمنافع بالصور</button>
         </div>
+        <button type="button" id="btn-find-nearest-gate" class="btn btn-gold" style="width:100%;margin-bottom:0.85rem;" data-i18n="compass.btn">🧭 حدد أقرب بوابة لي الآن (GPS)</button>
+        <div id="nearest-gate-compass-box" class="info-box-warn" role="status" hidden style="margin-bottom:0.85rem;"></div>
         <div style="margin-bottom:1rem;">
           <label for="hotel-gate-selector" class="field-label">اختر منطقة فندق إقامتك:</label>
           <select id="hotel-gate-selector" class="field-input">
@@ -664,6 +670,7 @@
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-wake-toggle aria-pressed="false">🔆 منع إغلاق الشاشة</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
     </nav>
   </div>
 
@@ -816,6 +823,15 @@
         <button type="button" id="btn-focus-sos" class="btn btn-danger" style="flex:1;">🆘 أنا تائه</button>
       </div>
     </div>
+  </dialog>
+
+  <dialog id="my-installments-modal" closedby="any" aria-labelledby="my-installments-title">
+    <div class="dialog-header">
+      <h1 id="my-installments-title" style="font-size:1.15rem;">💳 حسابي وأقساطي وإيصالات الرحلة</h1>
+      <button type="button" class="dialog-close-btn" data-close-dialog="my-installments-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div id="my-installments-body" style="margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="my-installments-modal">إغلاق</button>
   </dialog>
 
   <div id="a11y-polite-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>

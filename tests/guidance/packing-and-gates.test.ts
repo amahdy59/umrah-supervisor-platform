@@ -5,9 +5,11 @@ import {
   PackingCatalog,
   ChecklistCategory,
 } from '../../src/guidance/packing-checklist.js';
-import { HaramGatesGuide } from '../../src/guidance/haram-gates-guide.js';
+import { HaramGatesGuide, bearingToArabicDirection } from '../../src/guidance/haram-gates-guide.js';
 import { HaramainAtlasCatalog } from '../../src/guidance/haramain-gates-and-services.js';
 import { ZiyaratGuideCatalog } from '../../src/guidance/ziyarat-guide.js';
+import { hashSupervisorPin } from '../../src/ui/supervisor/privacy-lock.js';
+import { onRequestPost as syncPost } from '../../functions/api/sync.js';
 
 describe('PackingCatalog - قائمة تجهيز حقيبة المعتمر', () => {
   const catalog = new PackingCatalog();
@@ -94,7 +96,35 @@ describe('HaramainAtlasCatalog & Ziyarat Image Integrity', () => {
     for (const rel of urls) {
       const fullPath = resolve(process.cwd(), 'public', rel.replace(/^\/+/, ''));
       expect(existsSync(fullPath), `Missing image asset: ${fullPath}`).toBe(true);
-      expect(statSync(fullPath).size).toBeGreaterThan(10000);
+      expect(statSync(fullPath).size).toBeGreaterThan(5000);
     }
+  });
+
+  it('finds the nearest Haram gate and directional bearing from GPS coordinates offline', () => {
+    // Near Northern Expansion Gate 100
+    const northMatch = gates.findNearestGate(21.4261, 39.8255);
+    expect(northMatch.gate.gateNumber).toBe(100);
+    expect(northMatch.distanceMeters).toBeLessThan(100);
+
+    // Near Southern Clock Tower / Gate 1
+    const southMatch = gates.findNearestGate(21.4198, 39.8257);
+    expect(southMatch.gate.gateNumber).toBe(1);
+    expect(bearingToArabicDirection(0)).toContain('شمال');
+  });
+
+  it('hashes supervisor PINs deterministically and returns local-only fallback when D1 DB is unbound', async () => {
+    const h1 = await hashSupervisorPin('1234');
+    const h2 = await hashSupervisorPin('1234');
+    const h3 = await hashSupervisorPin('9999');
+    expect(h1).toBe(h2);
+    expect(h1).not.toBe(h3);
+
+    const res = await syncPost({
+      request: new Request('https://example.com/api/sync', { method: 'POST', body: '{}' }),
+      env: {},
+    });
+    const json = (await res.json()) as { mode: string; synced: boolean };
+    expect(json.mode).toBe('local-only');
+    expect(json.synced).toBe(false);
   });
 });
