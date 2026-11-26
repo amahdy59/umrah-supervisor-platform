@@ -36,6 +36,7 @@ import {
 } from './shared.js';
 import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
 import { getCurrentLanguage, initLanguage, toggleLanguage } from './i18n.js';
+import { renderEditorialMethodologyHtml, renderReferencePillsHtml } from './references-ui.js';
 import {
   pushGroupWorkspaceToCloud,
   pullGroupWorkspaceFromCloud,
@@ -477,6 +478,7 @@ function renderAll(): void {
   renderGroupSwitcher();
   syncPilgrimsDatalist();
   renderTopMetrics();
+  renderAttentionQueueStrip();
   renderGroupsOverviewBoard();
   renderManifestTable();
   renderRoomsBoard();
@@ -490,6 +492,81 @@ function renderAll(): void {
   renderLuggageSection();
   renderMedicalSection();
   renderSupervisorHaramAtlas();
+}
+
+function renderAttentionQueueStrip(): void {
+  const strip = document.getElementById('sup-attention-strip');
+  if (!strip) return;
+  const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
+  const dir = buildPeopleDirectoryFromState();
+  const tripStart = new Date(active.settings.startDate || Date.now());
+
+  const unroomedCount = active.pilgrims.filter((p) => !p.roomNumber || p.roomNumber.trim() === '').length;
+  const expiringPassports = dir.getExpiringPassports(tripStart, 6).length;
+  const overdueInstallments = active.gameya.filter(
+    (m) => buildScheduleSummaryForMember(m, active.settings.endDate).summary.overdueCount > 0
+  ).length;
+  const activeSos = active.sosAlerts.filter((a) => !a.resolved).length;
+  const mobilityCount = active.medical.filter(
+    (m) => m.requiresWheelchair || m.requiresElectricCart || m.requiresInsulinRefrigeration
+  ).length;
+
+  const chips: Array<{ tab: string; badgeCls: string; label: string }> = [];
+  if (activeSos > 0) {
+    chips.push({
+      tab: 'sos',
+      badgeCls: 'btn-danger',
+      label: isEn ? `🚨 ${activeSos} Active SOS` : `🚨 ${activeSos} بلاغ طوارئ نشط`,
+    });
+  }
+  if (expiringPassports > 0) {
+    chips.push({
+      tab: 'people',
+      badgeCls: 'btn-gold',
+      label: isEn ? `⚠️ ${expiringPassports} Passport < 6 Mo` : `⚠️ ${expiringPassports} جواز أقل من 6 أشهر`,
+    });
+  }
+  if (unroomedCount > 0) {
+    chips.push({
+      tab: 'manifest',
+      badgeCls: 'btn-secondary',
+      label: isEn ? `🏨 ${unroomedCount} Unassigned Rooms` : `🏨 ${unroomedCount} معتمر بلا غرفة`,
+    });
+  }
+  if (overdueInstallments > 0) {
+    chips.push({
+      tab: 'gameya',
+      badgeCls: 'btn-gold',
+      label: isEn ? `💰 ${overdueInstallments} Overdue Plan(s)` : `💰 ${overdueInstallments} اشتراك متأخر`,
+    });
+  }
+  if (mobilityCount > 0) {
+    chips.push({
+      tab: 'logistics-health',
+      badgeCls: 'btn-secondary',
+      label: isEn ? `♿ ${mobilityCount} Mobility / Insulin Care` : `♿ ${mobilityCount} رعاية كرسي/إنسولين`,
+    });
+  }
+
+  if (chips.length === 0) {
+    strip.innerHTML = `<span class="badge badge-success">✅ ${isEn ? 'All active group checklists and accommodations are up to date' : 'جميع تسكين وجوازات وطوارئ الفوج النشط مكتملة ✅'}</span>`;
+    return;
+  }
+
+  strip.innerHTML = chips
+    .map(
+      (c) =>
+        `<button type="button" class="btn ${c.badgeCls}" style="min-height:44px;font-size:0.82rem;padding:0.35rem 0.75rem;" data-attention-jump="${c.tab}">${escapeHtml(c.label)}</button>`
+    )
+    .join('');
+
+  strip.querySelectorAll<HTMLElement>('[data-attention-jump]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.attentionJump;
+      if (target) switchTab(target);
+    });
+  });
 }
 
 function renderGroupSwitcher(): void {
@@ -660,6 +737,7 @@ function buildPilgrimShareUrl(p: PilgrimRecord, badgeToken?: string): string {
   const qs = new URLSearchParams({
     name: p.fullName,
     passport: p.passportNumber,
+    gender: p.gender,
     room: p.roomNumber || 'بدون غرفة',
     bus: s.busNumber,
     hotelKey: s.hotelKey,
@@ -1061,7 +1139,12 @@ function renderPeopleDirectory(): void {
 // =========================================================================
 function renderWhatsAppHub(): void {
   const s = getActiveGroup().settings;
+  const isEn = getCurrentLanguage() === 'en';
   const container = document.getElementById('whatsapp-posts-container');
+  const methBox = document.getElementById('sup-editorial-methodology-box');
+  if (methBox) {
+    methBox.innerHTML = renderEditorialMethodologyHtml(isEn);
+  }
   if (!container) return;
 
   const params = {
@@ -1073,21 +1156,26 @@ function renderWhatsAppHub(): void {
   };
 
   container.innerHTML = broadcastManager
-    .getAllPhases()
+    .getOrderedPhasesForStage(s.status)
     .map((phase: BroadcastPhase, idx: number) => {
       const post = broadcastManager.getFormattedPost(phase, params);
+      const isRecommended = post.recommendedStages.includes(s.status);
       const textareaId = `wa-post-text-${idx}`;
       return `
-      <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card" style="margin-bottom:1.25rem;${isRecommended ? 'border:2px solid var(--gold);' : ''}">
         <div class="card-header">
-          <h3 class="card-title">${escapeHtml(post.title)}</h3>
-          <span class="badge badge-primary">${escapeHtml(post.badge)}</span>
+          <h3 class="card-title">${escapeHtml(isEn ? post.titleEn : post.title)}</h3>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+            ${isRecommended ? `<span class="badge badge-warning">⭐ ${isEn ? 'Recommended Now' : 'موصى به لمرحلة الفوج الحالية'}</span>` : ''}
+            <span class="badge badge-primary">${escapeHtml(isEn ? post.badgeEn : post.badge)}</span>
+          </div>
         </div>
-        <label for="${textareaId}" class="field-label">نص الرسالة (قابل للتعديل قبل الإرسال):</label>
+        <label for="${textareaId}" class="field-label">${isEn ? 'Message Text (editable before sending):' : 'نص الرسالة (قابل للتعديل قبل الإرسال):'}</label>
         <textarea id="${textareaId}" class="whatsapp-textarea" rows="8">${escapeHtml(post.messageBody)}</textarea>
+        ${renderReferencePillsHtml(post.references, isEn)}
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
-          <button type="button" class="btn btn-primary" data-copy-textarea="${textareaId}">📋 نسخ للواتساب</button>
-          <button type="button" class="btn btn-gold" data-open-wa-textarea="${textareaId}">📲 فتح في واتساب</button>
+          <button type="button" class="btn btn-primary" data-copy-textarea="${textareaId}">📋 ${isEn ? 'Copy for WhatsApp' : 'نسخ للواتساب'}</button>
+          <button type="button" class="btn btn-gold" data-open-wa-textarea="${textareaId}">📲 ${isEn ? 'Open in WhatsApp' : 'فتح في واتساب'}</button>
         </div>
       </div>
     `;
@@ -1106,6 +1194,19 @@ function renderWhatsAppHub(): void {
       const ta = document.getElementById(btn.dataset.openWaTextarea!) as HTMLTextAreaElement | null;
       if (ta) window.open(buildWhatsAppUrl(ta.value), '_blank', 'noopener');
     });
+  });
+}
+
+function setCommsSubTab(sub: 'BROADCASTS' | 'WOMEN' | 'ATLAS'): void {
+  const bPanel = document.getElementById('sup-comms-broadcasts-panel');
+  const wPanel = document.getElementById('sup-comms-women-panel');
+  const aPanel = document.getElementById('sup-comms-atlas-panel');
+  if (bPanel) bPanel.hidden = sub !== 'BROADCASTS';
+  if (wPanel) wPanel.hidden = sub !== 'WOMEN';
+  if (aPanel) aPanel.hidden = sub !== 'ATLAS';
+
+  document.querySelectorAll<HTMLButtonElement>('[data-comms-subtab]').forEach((btn) => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.commsSubtab === sub));
   });
 }
 
@@ -1595,9 +1696,24 @@ function renderMedicalSection(): void {
 // =========================================================================
 // TAB SWITCHING & CSV EXPORT
 // =========================================================================
-function switchTab(tab: string): void {
-  const tabs = ['manifest', 'people', 'gameya', 'whatsapp', 'print', 'sos', 'women-guide', 'logistics-health', 'haram-atlas'];
+function switchTab(rawTab: string): void {
+  let tab = rawTab;
+  let commsSub: 'BROADCASTS' | 'WOMEN' | 'ATLAS' | null = null;
+  if (rawTab === 'women-guide') {
+    tab = 'whatsapp';
+    commsSub = 'WOMEN';
+  } else if (rawTab === 'haram-atlas') {
+    tab = 'whatsapp';
+    commsSub = 'ATLAS';
+  } else if (rawTab === 'print') {
+    tab = 'logistics-health';
+  }
+
+  const tabs = ['manifest', 'people', 'gameya', 'whatsapp', 'sos', 'logistics-health'];
   if (!tabs.includes(tab)) return;
+  if (commsSub) {
+    setCommsSubTab(commsSub);
+  }
   document.querySelectorAll<HTMLElement>('.tab-view').forEach((v) => {
     const active = v.id === `tab-${tab}`;
     v.classList.toggle('active', active);
@@ -2347,6 +2463,13 @@ window.addEventListener('DOMContentLoaded', () => {
     renderMedicalSection();
     (e.target as HTMLFormElement).reset();
     showToast(`✅ تمت إضافة الملف الصحي لـ ${name}`);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-comms-subtab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sub = (btn.dataset.commsSubtab || 'BROADCASTS') as 'BROADCASTS' | 'WOMEN' | 'ATLAS';
+      setCommsSubTab(sub);
+    });
   });
 
   document.querySelectorAll<HTMLButtonElement>('[data-sup-atlas-filter]').forEach((btn) => {

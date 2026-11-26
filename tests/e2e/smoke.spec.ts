@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v11');
+    expect(swText).toContain('umrah-companion-v12');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -76,18 +76,17 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#my-installments-modal')).toBeVisible();
     await page.click('[data-close-dialog="my-installments-modal"]');
 
-    // Complete AR -> EN -> AR switching including Atlas, Fiqh, Packing & Taxi cards
+    // Complete AR -> EN -> AR switching including Atlas, Fiqh, Wallet (Packing & Taxi) cards
     await page.click('.header-tools [data-lang-toggle]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await page.click('[data-tab-target="haram-atlas"]');
     await expect(page.locator('#haram-atlas-cards')).toContainText('Door of the Kaaba');
-    await page.click('[data-tab-target="packing"]');
+    await page.click('[data-tab-target="wallet"]');
     await expect(page.locator('#pack-docs-list')).toContainText('Valid Passport');
+    await expect(page.locator('#taxi-routes-list')).toContainText('Haramain Train Station');
     await page.click('[data-tab-target="fiqh"]');
     await expect(page.locator('#fiqh-rulings-list')).toContainText('Losing Wudu Mid-Tawaf');
-    await page.click('[data-tab-target="gates-taxi"]');
-    await expect(page.locator('#taxi-routes-list')).toContainText('Haramain Train Station');
     await page.click('.header-tools [data-lang-toggle]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
@@ -172,6 +171,14 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(pullModal).toBeHidden();
     await expect(page.locator('#metric-trip-title')).toHaveText('Cloud Synced Group X');
 
+    // Verify Proactive Attention Queue Strip & Consolidated Comms Hub (Broadcasts / Women / Haram Atlas)
+    await expect(page.locator('#sup-attention-strip')).toBeVisible();
+    await page.click('.top-primary-nav [data-tab-target="whatsapp"]');
+    await expect(page.locator('#tab-whatsapp')).toBeVisible();
+    await page.click('[data-comms-subtab="ATLAS"]');
+    await expect(page.locator('#sup-comms-atlas-panel')).toBeVisible();
+    await expect(page.locator('#sup-haram-atlas-cards')).toContainText('باب الملك');
+
     // Reset confirmation modal guard from popover (open via evaluate or trigger)
     await page.evaluate(() => {
       (document.querySelector('[data-reset-demo]') as HTMLElement | null)?.click();
@@ -205,10 +212,30 @@ test.describe('Mobile Viewport (390x844): Navigation & WCAG 2 AA', () => {
     await expect(page.locator('.mobile-bottom-nav')).toBeVisible();
     await expect(page.locator('.top-primary-nav')).toBeHidden();
 
-    // Open mobile More popover and jump to Haram Atlas
+    // Verify Situational Stage Priority Card, Quick Situation modal, & Unified Fiqh
+    await expect(page.locator('#stage-priority-card')).toBeVisible();
+    await page.click('#btn-quick-wudu');
+    await expect(page.locator('#quick-ruling-modal')).toBeVisible();
+    await expect(page.locator('#quick-ruling-body')).toContainText('الطواف');
+    await page.click('#quick-ruling-modal [data-close-dialog="quick-ruling-modal"] >> nth=0');
+    await expect(page.locator('#quick-ruling-modal')).toBeHidden();
+
+    // Verify Unified Fiqh filters + Reference disclosure via mobile bottom nav
+    await page.click('.mobile-bottom-nav [data-tab-target="fiqh"]');
+    await expect(page.locator('#tab-fiqh')).toBeVisible();
+    await page.click('[data-fiqh-filter="WOMEN"]');
+    const firstWomenItem = page.locator('#fiqh-rulings-list .accordion-item.women-topic').first();
+    await expect(firstWomenItem).toBeVisible();
+    await firstWomenItem.locator('.accordion-header').click();
+    await firstWomenItem.locator('.ref-disclosure summary').click();
+    await expect(firstWomenItem.locator('.ref-disclosure')).toHaveAttribute('open', '');
+
+    // Open mobile More popover for tools, then use mobile bottom bar directly for Haram Atlas
     await page.click('.more-trigger-mobile');
     await expect(page.locator('#pilgrim-more-popover')).toBeVisible();
-    await page.click('#pilgrim-more-popover [data-tab-target="haram-atlas"]');
+    await expect(page.locator('#pilgrim-more-popover [data-senior-toggle]')).toBeVisible();
+    await page.click('.more-trigger-mobile');
+    await page.click('.mobile-bottom-nav [data-tab-target="haram-atlas"]');
     await expect(page.locator('#tab-haram-atlas')).toBeVisible();
     await expect(page.locator('#pilgrim-more-popover')).toBeHidden();
 

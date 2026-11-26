@@ -1,3 +1,5 @@
+import { KnowledgeReference, REF_CATALOG } from '../guidance/references.js';
+
 /**
  * Currency Converter & Makkah/Madinah Taxi Fare Guide
  * Protects pilgrims from overcharging and facilitates easy budget planning.
@@ -19,6 +21,7 @@ export interface TaxiRouteFare {
   fairPriceMinSAR: number;
   fairPriceMaxSAR: number;
   adviceAr: string;
+  references?: KnowledgeReference[];
 }
 
 export class CurrencyAndTaxiService {
@@ -106,10 +109,13 @@ export class CurrencyAndTaxiService {
   }
 
   getAllTaxiRoutes(): TaxiRouteFare[] {
-    return [...this.taxiRoutes];
+    return this.taxiRoutes.map((r) => ({
+      ...r,
+      references: r.references || [REF_CATALOG.MAKKAH_TRANSPORT_TARIFF],
+    }));
   }
 
   getRoutesByCity(city: 'MAKKAH' | 'MADINAH'): TaxiRouteFare[] {
-    return this.taxiRoutes.filter((r) => r.city === city);
+    return this.getAllTaxiRoutes().filter((r) => r.city === city);
   }
 }

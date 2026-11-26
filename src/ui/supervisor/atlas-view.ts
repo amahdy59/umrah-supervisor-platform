@@ -2,6 +2,7 @@ import { HaramainAtlasCatalog } from '../../guidance/haramain-gates-and-services
 import { ZiyaratGuideCatalog } from '../../guidance/ziyarat-guide.js';
 import { escapeHtml } from '../shared.js';
 import { getCurrentLanguage } from '../i18n.js';
+import { renderReferencePillsHtml } from '../references-ui.js';
 import { HARAM_ATLAS_EN, HARAM_BENEFITS_EN, ZIYARAT_SITES_EN } from '../guidance-en.js';
 
 const haramainAtlas = new HaramainAtlasCatalog();
@@ -39,6 +40,7 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
           <p style="font-size:0.9rem;line-height:1.7;margin-bottom:0.5rem;">${escapeHtml(isEn && en ? en.virtueEn : s.virtueAr)}</p>
           <div class="info-box-neutral"><strong>${isEn ? 'Supervisor Guidance:' : 'توجيه للمشرف والمعتمر:'}</strong> ${escapeHtml(isEn && en ? en.etiquetteEn : s.sunnahEtiquette)}</div>
           ${warn ? `<div class="info-box-danger" style="margin-top:0.5rem;"><strong>${isEn ? '⚠️ Caution:' : '⚠️ تنبيه شرعي:'}</strong> ${escapeHtml(warn)}</div>` : ''}
+          ${renderReferencePillsHtml(s.references, isEn)}
         </article>
       `;
         })
@@ -78,6 +80,7 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
           <div style="font-size:0.82rem;font-weight:700;color:var(--gold-dark);margin-bottom:0.4rem;">🧭 ${escapeHtml(isEn && en ? en.directionEn : item.directionAr)}</div>
           <p style="font-size:0.88rem;line-height:1.7;margin-bottom:0.5rem;">${escapeHtml(isEn && en ? en.summaryEn : item.summaryAr)}</p>
           <ul class="benefits-list">${(isEn && en ? en.benefitsEn : item.benefitsAndServicesAr).map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+          ${renderReferencePillsHtml(item.references, isEn)}
         </article>
       `;
         })
@@ -107,6 +110,7 @@ export function renderSupervisorHaramAtlas(filter: string = activeSupAtlasFilter
         </div>
         <div style="font-size:0.83rem;color:var(--gold-dark);font-weight:700;margin-bottom:0.3rem;">📍 ${escapeHtml(isEn && en ? en.whereToFindEn : b.whereToFindAr)}</div>
         <p style="font-size:0.87rem;line-height:1.65;">${escapeHtml(isEn && en ? en.howToBenefitEn : b.howToBenefitAr)}</p>
+        ${renderReferencePillsHtml(b.references, isEn)}
       </div>
     `;
       })

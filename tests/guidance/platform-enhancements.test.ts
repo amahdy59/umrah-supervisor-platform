@@ -263,7 +263,7 @@ describe('Self-Hosted Assets, Audio & Service Worker Precache', () => {
     expect(headersContent).toContain('Content-Security-Policy:');
 
     const swContent = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8');
-    expect(swContent).toContain('umrah-companion-v11');
+    expect(swContent).toContain('umrah-companion-v12');
     expect(swContent).toContain('/fonts/cairo/cairo-arabic.woff2');
     expect(swContent).toContain('/audio/talbiyah.mp3');
     expect(swContent).toContain('/audio/rukn-yamani.mp3');

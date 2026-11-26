@@ -27,6 +27,7 @@ import {
 } from './shared.js';
 import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
 import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
+import { renderEditorialMethodologyHtml, renderReferencePillsHtml } from './references-ui.js';
 import {
   FIQH_RULINGS_EN,
   OFFICIAL_RESOURCES_EN,
@@ -62,6 +63,7 @@ interface PilgrimProfile {
   hotelLng: number;
   roomNumber: string;
   busNumber: string;
+  gender?: 'MALE' | 'FEMALE';
   supervisorName: string;
   supervisorPhone: string;
   meetingPoint: string;
@@ -83,6 +85,7 @@ const DEFAULT_PROFILE: PilgrimProfile = {
   hotelLng: 39.8165,
   roomNumber: '502 (الدور الخامس)',
   busNumber: 'باص رقم (1)',
+  gender: 'MALE',
   supervisorName: 'أبو عبد الرحمن',
   supervisorPhone: '+966501234567',
   meetingPoint: 'ساحة بوابة الملك عبد العزيز (بوابة 1) بجوار صيدلية برج الساعة',
@@ -134,21 +137,21 @@ const STAGE_RELEVANCE: Record<
   [TripStatus.DRAFT]: {
     hintAr: 'تحقق من جاهزية جواز السفر (صلاحية > 6 أشهر) وقائمة الحقيبة.',
     hintEn: 'Verify passport validity (> 6 months) and complete your packing checklist.',
-    targetTab: 'packing',
-    ctaAr: '🧳 افتح قائمة الحقيبة',
-    ctaEn: '🧳 Open Packing List',
+    targetTab: 'wallet',
+    ctaAr: '🧳 افتح حقيبتي ونُسك',
+    ctaEn: '🧳 Open Trip Wallet',
   },
   [TripStatus.REGISTRATION_OPEN]: {
     hintAr: 'تأكد من تفعيل تطبيق نُسك وحفظ تصاريح العمرة والروضة.',
     hintEn: 'Ensure your Nusuk account is active and save screenshots of your Umrah & Rawdah permits.',
-    targetTab: 'packing',
-    ctaAr: '📲 محفظة نُسك',
+    targetTab: 'wallet',
+    ctaAr: '📲 محفظة نُسك والحقيبة',
     ctaEn: '📲 Nusuk Wallet',
   },
   [TripStatus.PRE_DEPARTURE]: {
     hintAr: 'موعد التجهيز للسفر: راجع الحقيبة وتأكد من ارتداء الإحرام قبل صعود الطائرة.',
     hintEn: 'Pre-departure checklist: review essentials and wear Ihram garments before boarding if flying via Miqat.',
-    targetTab: 'packing',
+    targetTab: 'wallet',
     ctaAr: '✅ راجع جاهزية الحقيبة',
     ctaEn: '✅ Review Checklist',
   },
@@ -162,9 +165,9 @@ const STAGE_RELEVANCE: Record<
   [TripStatus.IN_MAKKAH]: {
     hintAr: 'أهلاً بك في مكة: استخدم عداد الطواف والسعي ودليل بوابات الحرم للعودة للفندق.',
     hintEn: 'Welcome to Makkah: use the Tawaf & Sa’i counters and Haram gate wayfinder to return safely.',
-    targetTab: 'rituals',
-    ctaAr: '🕋 عداد الطواف والسعي',
-    ctaEn: '🕋 Tawaf & Sa’i Counter',
+    targetTab: 'haram-atlas',
+    ctaAr: '⛩️ بوابات الحرم والعودة للفندق',
+    ctaEn: '⛩️ Gates & Wayfinder',
   },
   [TripStatus.IN_MADINAH]: {
     hintAr: 'أهلاً بك في المدينة المنورة: راجع مزارات قباء وأحد وتصاريح الروضة الشريفة.',
@@ -176,7 +179,7 @@ const STAGE_RELEVANCE: Record<
   [TripStatus.RETURN_TRANSIT]: {
     hintAr: 'تذكير المغادرة: طواف الوداع، وضوابط عبوة زمزم (5 لتر) المغلفة بمطار جدة أو المدينة.',
     hintEn: 'Departure reminder: review airport 5L Zamzam wrapping rules at Jeddah & Madinah terminals.',
-    targetTab: 'ziyarat',
+    targetTab: 'services',
     ctaAr: '🛫 ضوابط زمزم والمطار',
     ctaEn: '🛫 Zamzam Airport Rules',
   },
@@ -218,6 +221,8 @@ let lapChimeAudio: HTMLAudioElement | null = null;
 let wakeLockSentinel: WakeLockSentinel | null = null;
 let activeFocusMode: 'tawaf' | 'sai' = 'tawaf';
 let currentAtlasFilter = 'ALL';
+let currentFiqhFilter = 'ALL';
+let currentFiqhQuery = '';
 const nusukObjectUrls: Partial<Record<'umrah' | 'rawdah', string>> = {};
 
 function hasCustomProfileData(p: PilgrimProfile | null): boolean {
@@ -273,6 +278,11 @@ function loadProfile(): void {
   const stageParam = params.get('stage') as TripStatus | null;
   if (stageParam && Object.values(TripStatus).includes(stageParam)) {
     candidate.tripStage = stageParam;
+    updatedFromUrl = true;
+  }
+  const genderParam = params.get('gender');
+  if (genderParam === 'MALE' || genderParam === 'FEMALE') {
+    candidate.gender = genderParam;
     updatedFromUrl = true;
   }
   const hotelKeyParam = params.get('hotelKey');
@@ -469,6 +479,153 @@ function renderProfileUI(): void {
     gateSelect.value = profile.hotelKey;
     renderGateWayfinder();
   }
+
+  renderStagePriorityCard();
+}
+
+function renderStagePriorityCard(): void {
+  const container = document.getElementById('stage-priority-card');
+  if (!container) return;
+  const isEn = getCurrentLanguage() === 'en';
+  const isFemale = profile.gender === 'FEMALE';
+
+  let badge = getTripStageLabel(profile.tripStage);
+  let title = '';
+  let body = '';
+  let primaryBtnHtml = '';
+
+  if (
+    profile.tripStage === TripStatus.DRAFT ||
+    profile.tripStage === TripStatus.REGISTRATION_OPEN ||
+    profile.tripStage === TripStatus.PRE_DEPARTURE
+  ) {
+    title = isEn ? '🧳 Focus Now: Pre-Departure & Nusuk Readiness' : '🧳 الأولوية الآن: جاهزية السفر وتصاريح نُسك';
+    body = isEn
+      ? 'Review your passport validity (> 6 months), fragrance-free hygiene pack, and upload your Nusuk barcode screenshots offline before flying.'
+      : 'تأكد من صلاحية الجواز (> 6 أشهر)، وتجهيز أدوات النظافة الخالية من العطور، ورفع لقطات باركود تصريح «نُسك» لتعمل دون إنترنت.';
+    primaryBtnHtml = `<button type="button" class="btn btn-primary" data-jump-to-tab="wallet">${isEn ? '🧳 Go to Packing & Nusuk Wallet' : '🧳 مراجعة الحقيبة ومحفظة نُسك'}</button>`;
+  } else if (profile.tripStage === TripStatus.IN_TRANSIT) {
+    title = isEn ? '✈️ Focus Now: Miqat Crossing & Talbiyah' : '✈️ الأولوية الآن: الإحرام عند الميقات والتلبية';
+    body = isEn
+      ? `Follow pilot/train announcements before crossing the Miqat.${isFemale ? ' For women: remain in modest clothes without tailored niqab or gloves, and drape headscarf cleanly.' : ''}`
+      : `انتبه لإعلان الطيار أو مسار قطار الحرمين عند محاذاة الميقات.${isFemale ? ' للمعتمرة: تحرم في لباسها الساتر بلا نقاب ولا قفازين (ويكفي سدل الخمار عند الرجال)، وتُحرم ولو كانت حائضاً.' : ''}`;
+    primaryBtnHtml = `<button type="button" class="btn btn-gold" data-jump-to-tab="ziyarat">${isEn ? '🧭 Open Miqat Route Guide' : '🧭 دليل الميقات حسب مسارك'}</button>`;
+  } else if (profile.tripStage === TripStatus.IN_MADINAH) {
+    title = isEn ? '🌴 Focus Now: Masjid an-Nabawi & Al-Rawdah' : '🌴 الأولوية الآن: المسجد النبوي والروضة الشريفة';
+    body = isEn
+      ? isFemale
+        ? 'Women’s Rawdah staging follows scheduled Nusuk slots (typically Gate 25 / Northern-Eastern plazas 24–26, 32/37). Visit Masjid Quba with wudu from your hotel for 2 rak’ahs = Umrah reward.'
+        : 'Men enter for Salam calmly via Bab Al-Salam (Gate 1). Remember: ablution at hotel + 2 rak’ahs at Masjid Quba equals an Umrah reward (Ibn Majah #1412).'
+      : isFemale
+        ? 'تنظيم دخول الأخوات للروضة الشريفة عبر تصريح «نُسك» (غالباً بوابة عثمان 25 وممرات 32/37). وتذكري زيارة مسجد قباء بوضوء الفندق ففيه أجر عمرة.'
+        : 'دخول الرجال للسلام عبر باب السلام (بوابة 1) بأدب وخفض صوت. ولا تفتك صلاة ركعتين بقباء على طهارة من الفندق فأجرها كعمرة.';
+    primaryBtnHtml = `<button type="button" class="btn btn-primary" data-jump-madinah-atlas>${isEn ? '🌴 Madinah Gates & Quba Photos' : '🌴 بوابات المدينة ومسجد قباء بالصور'}</button>`;
+  } else if (profile.tripStage === TripStatus.RETURN_TRANSIT || profile.tripStage === TripStatus.COMPLETED) {
+    title = isEn ? '🛫 Focus Now: Farewell Tawaf & GACA 5L Zamzam Rule' : '🛫 الأولوية الآن: طواف الوداع وضوابط زمزم بالمطار';
+    body = isEn
+      ? 'Perform Tawaf al-Wada (exempt for menstruating women) before departing Makkah. GACA permits one factory-sealed 5L Zamzam bottle (~12 SAR) checked separately at Jeddah/Madinah airports.'
+      : 'أدِّ طواف الوداع قبل مغادرة مكة (وتُعفى الحائض والنفساء). وبالمطار يُسمح بعبوة واحدة (5 لتر) مغلفة رسمياً (~12 ريالاً) عبر السير المخصص ولا تُوضع داخل الحقائب.';
+    primaryBtnHtml = `<button type="button" class="btn btn-gold" data-jump-to-tab="services">${isEn ? '🛫 View GACA Zamzam Rules' : '🛫 استعراض ضوابط المطار الرسمية'}</button>`;
+  } else {
+    // IN_MAKKAH
+    title = isEn
+      ? `🕋 In Makkah: Calm Tawaf & Sa’i (${isFemale ? 'Women’s Mode' : 'Men’s Mode'})`
+      : `🕋 في رحاب الحرم المكي: (${isFemale ? 'إرشاد المعتمرة' : 'إرشاد المعتمر'})`;
+    body = isEn
+      ? isFemale
+        ? 'Walk calmly in Tawaf and Sa’i (no Ramal or Herwala for women). Keep to shaded edges away from heavy pushing, and follow Gate 79/62/45 signs back to your hotel.'
+        : 'ابدأ الطواف بمحاذة الحجر الأسود (والكعبة عن يسارك) دون مزاحمة لتقبيل الحجر؛ تكفي الإشارة باليد اليمنى والتكبير (البخاري 1613).'
+      : isFemale
+        ? 'المشي بسكينة ووقار في جميع الأشواط (لا رمل ولا هرولة للنساء)، وتجنبي الزحام عند الحجر الأسود بالوقوف في الأطراف والعودة عبر بوابة فندقك المعتمدة.'
+        : 'ابدأ بمحاذاة الحجر الأسود (والكعبة عن يسارك) واكتفِ بالإشارة والتكبير عن بعد دون مزاحمة (صحيح البخاري 1613)، واتجه لبوابة فندقك الموصى بها بعد السعي.';
+    primaryBtnHtml = `<button type="button" class="btn btn-primary" data-jump-to-tab="haram-atlas">${isEn ? '🚪 Haram Gates & Hotel Wayfinder' : '🚪 بوابات الحرم والعودة للفندق'}</button>`;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.45rem;">
+      <strong style="color:var(--primary-ink);font-size:0.98rem;">${escapeHtml(title)}</strong>
+      <span class="badge badge-primary">${escapeHtml(badge)}${isFemale ? (isEn ? ' • Women Profile' : ' • ملف معتمرة') : ''}</span>
+    </div>
+    <p style="font-size:0.88rem;line-height:1.7;color:var(--text-muted);margin-bottom:0.65rem;">${escapeHtml(body)}</p>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      ${primaryBtnHtml}
+    </div>
+  `;
+
+  container.querySelector('[data-jump-to-tab]')?.addEventListener('click', (e) => {
+    const target = (e.currentTarget as HTMLElement).getAttribute('data-jump-to-tab');
+    if (target) switchTab(target);
+  });
+  container.querySelector('[data-jump-madinah-atlas]')?.addEventListener('click', () => {
+    currentAtlasFilter = 'MADINAH_ALL';
+    switchTab('haram-atlas');
+    document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.atlasFilter === 'MADINAH_ALL'));
+    });
+    renderHaramAtlasSection('MADINAH_ALL');
+  });
+}
+
+function openQuickSituationModal(kind: 'wudu' | 'miqat' | 'cart'): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const titleEl = document.getElementById('quick-ruling-title');
+  const bodyEl = document.getElementById('quick-ruling-body');
+  if (!titleEl || !bodyEl) return;
+
+  if (kind === 'cart') {
+    titleEl.textContent = isEn
+      ? '♿ Official Electric Carts & Free Wheelchairs (Masjid al-Haram)'
+      : '♿ حجز العربات الكهربائية والكراسي المجانية بالحرم';
+    bodyEl.innerHTML = `
+      <div class="info-box-warn" style="margin-bottom:0.75rem;">
+        <strong>${isEn ? 'Avoid unlicensed middlemen:' : 'احذر الوسطاء غير المرخصين:'}</strong>
+        <p style="margin-top:0.35rem;font-size:0.9rem;line-height:1.75;">
+          ${
+            isEn
+              ? '1) Book electric golf carts officially inside the Nusuk app (Services → Transport → Haramain Carts).\n2) Borrow complimentary manual wheelchairs with ID from official kiosks at Gate 1 (King Abdulaziz), Gate 62 (Umrah), Gate 79 (King Fahd), or Marwah Mezzanine.'
+              : '1) تُحجز العربات الكهربائية رسمياً من تطبيق «نُسك» (الخدمات ← النقل ← عربات الحرمين).\n2) تتوفر كراسي متحركة يدوية مجاناً بالهوية عند المكاتب الرسمية ببوابات 1 و62 و79 والمروة (الأدوار العليا والسطح).'
+          }
+        </p>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <a href="https://www.nusuk.sa/" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;flex:1;">${isEn ? 'Open Nusuk Official Site ↗' : 'فتح موقع نُسك الرسمي ↗'}</a>
+        <button type="button" id="btn-quick-to-services" class="btn btn-secondary">${isEn ? 'View All Haram Services' : 'كل خدمات الحرم بالأطلس'}</button>
+      </div>
+    `;
+    openDialogById('quick-ruling-modal');
+    document.getElementById('btn-quick-to-services')?.addEventListener('click', () => {
+      closeDialogById('quick-ruling-modal');
+      switchTab('services');
+    });
+    return;
+  }
+
+  const rulingId =
+    kind === 'wudu'
+      ? ('WUDU_BREAK_DURING_TAWAF' as const)
+      : ('PASSING_MIQAT_WITHOUT_IHRAM' as const);
+  const ruling = fiqhAssistant.getAllRulings().find((r) => r.id === rulingId);
+  if (!ruling) return;
+
+  const en = FIQH_RULINGS_EN[ruling.id];
+  titleEl.textContent = isEn && en ? en.titleEn : ruling.titleAr;
+  bodyEl.innerHTML = `
+    <p style="font-size:0.92rem;line-height:1.7;margin-bottom:0.65rem;">
+      <strong>${isEn ? 'Scholarly Ruling:' : 'الحكم الشرعي:'}</strong>
+      ${escapeHtml(isEn && en ? en.rulingEn : ruling.rulingArabic)}
+    </p>
+    <div class="info-box-neutral" style="margin-bottom:0.65rem;">
+      <strong>${isEn ? 'What To Do Now:' : 'الإجراء العملي الآن:'}</strong>
+      <p style="margin-top:0.25rem;font-size:0.9rem;line-height:1.7;">${escapeHtml(isEn && en ? en.actionEn : ruling.actionRequired)}</p>
+    </div>
+    ${
+      ruling.madhhabNoteAr
+        ? `<div class="info-box-warn" style="font-size:0.86rem;line-height:1.65;"><strong>${isEn ? 'Madhhab Perspective:' : 'بيان الخلاف المعتبر:'}</strong> ${escapeHtml(isEn && ruling.madhhabNoteEn ? ruling.madhhabNoteEn : ruling.madhhabNoteAr)}</div>`
+        : ''
+    }
+    ${renderReferencePillsHtml(ruling.references, isEn)}
+  `;
+  openDialogById('quick-ruling-modal');
 }
 
 function openProfileEditModal(): void {
@@ -480,6 +637,7 @@ function openProfileEditModal(): void {
   (document.getElementById('edit-bus') as HTMLInputElement).value = profile.busNumber;
   (document.getElementById('edit-sup-name') as HTMLInputElement).value = profile.supervisorName;
   (document.getElementById('edit-sup-phone') as HTMLInputElement).value = profile.supervisorPhone;
+  (document.getElementById('edit-gender') as HTMLSelectElement).value = profile.gender || 'MALE';
   (document.getElementById('edit-meeting') as HTMLInputElement).value = profile.meetingPoint;
   (document.getElementById('edit-med') as HTMLInputElement).value = profile.medicalNote;
   openDialogById('profile-modal');
@@ -490,6 +648,7 @@ function handleProfileSave(e: Event): void {
   const presetKey = (document.getElementById('edit-hotel-preset') as HTMLSelectElement).value;
   const preset = HOTEL_PRESETS[presetKey] || HOTEL_PRESETS.kiswah;
   const nextStage = (document.getElementById('edit-stage') as HTMLSelectElement).value as TripStatus;
+  const nextGender = ((document.getElementById('edit-gender') as HTMLSelectElement)?.value || 'MALE') as 'MALE' | 'FEMALE';
 
   profile = {
     ...profile,
@@ -505,6 +664,7 @@ function handleProfileSave(e: Event): void {
     hotelLng: preset.lng,
     roomNumber: (document.getElementById('edit-room') as HTMLInputElement).value.trim() || DEFAULT_PROFILE.roomNumber,
     busNumber: (document.getElementById('edit-bus') as HTMLInputElement).value.trim() || DEFAULT_PROFILE.busNumber,
+    gender: nextGender,
     supervisorName: (document.getElementById('edit-sup-name') as HTMLInputElement).value.trim() || DEFAULT_PROFILE.supervisorName,
     supervisorPhone: (document.getElementById('edit-sup-phone') as HTMLInputElement).value.trim() || DEFAULT_PROFILE.supervisorPhone,
     meetingPoint: (document.getElementById('edit-meeting') as HTMLInputElement).value.trim() || DEFAULT_PROFILE.meetingPoint,
@@ -1066,9 +1226,21 @@ function incrementTawaf(): void {
           <li>اشرب من ماء زمزم وتضلع منه وادعُ الله بما تحب.</li>
           <li>توجّه إلى الصفا لبدء أشواط السعي السبعة.</li>
         </ul>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
+          <button type="button" id="btn-tawaf-done-zamzam" class="btn btn-secondary" style="flex:1;">📸 صورة مقام إبراهيم وزمزم بالأطلس</button>
+          <button type="button" id="btn-tawaf-done-start-sai" class="btn btn-gold" style="flex:1;">🎯 بدء السعي المركز الآن</button>
+        </div>
       `;
     }
     openDialogById('completion-modal');
+    document.getElementById('btn-tawaf-done-zamzam')?.addEventListener('click', () => {
+      closeDialogById('completion-modal');
+      switchTab('kaaba-core');
+    });
+    document.getElementById('btn-tawaf-done-start-sai')?.addEventListener('click', () => {
+      closeDialogById('completion-modal');
+      openFocusRitual('sai');
+    });
     showToast('🎉 اكتمل الطواف (7 أشواط)');
   } else {
     if ('vibrate' in navigator) navigator.vibrate(100);
@@ -1108,9 +1280,14 @@ function incrementSai(): void {
           • <strong>للرجال:</strong> يُفضل التوجه إلى صالونات الحلاقة المرخصة بأبراج البيت أو جبل عمر أو الشبيكة والتأكد من شفرة معقمة جديدة.<br>
           • <strong>للنساء:</strong> تقص قدر أنملة (~1.5–2 سم) من أطراف الشعر <strong>في غرفتها بالفندق</strong> ولا يجوز كشف شعرها أمام الرجال عند المروة.
         </div>
+        <button type="button" id="btn-sai-done-gate45" class="btn btn-primary" style="width:100%;margin-top:0.65rem;">🚪 عرض مخرج المروة وباب الفتح (بوابة 45) والفنادق</button>
       `;
     }
     openDialogById('completion-modal');
+    document.getElementById('btn-sai-done-gate45')?.addEventListener('click', () => {
+      closeDialogById('completion-modal');
+      switchTab('haram-atlas');
+    });
     showToast('🎉 اكتمل السعي (7 أشواط)');
   } else {
     if ('vibrate' in navigator) navigator.vibrate(100);
@@ -1304,56 +1481,91 @@ async function triggerSOSAlert(): Promise<void> {
 function renderFiqhSection(): void {
   const isEn = getCurrentLanguage() === 'en';
   const list = document.getElementById('fiqh-rulings-list');
+  const methBox = document.getElementById('editorial-methodology-box');
+  if (methBox) {
+    methBox.innerHTML = renderEditorialMethodologyHtml(isEn);
+  }
   if (!list) return;
-  list.innerHTML = fiqhAssistant
+
+  const q = currentFiqhQuery.toLowerCase().trim();
+  const generalCards = fiqhAssistant
     .getAllRulings()
     .map((r) => {
       const en = FIQH_RULINGS_EN[r.id];
-      return `
-    <details class="accordion-item">
-      <summary class="accordion-header">${escapeHtml(isEn && en ? en.titleEn : r.titleAr)}</summary>
+      return {
+        filterGroup: r.category,
+        badgeAr: r.category === 'IHRAM_MIQAT' ? 'إحرام وميقات' : r.category === 'TAWAF_SAI' ? 'طواف وسعي' : 'المرأة والطوارئ',
+        badgeEn: r.category === 'IHRAM_MIQAT' ? 'Ihram & Miqat' : r.category === 'TAWAF_SAI' ? 'Tawaf & Sa’i' : 'Women & Care',
+        isWomen: r.category === 'WOMEN_HARDSHIP',
+        title: isEn && en ? en.titleEn : r.titleAr,
+        question: isEn && en ? en.questionEn : r.questionAr,
+        ruling: isEn && en ? en.rulingEn : r.rulingArabic,
+        action: isEn && en ? en.actionEn : r.actionRequired,
+        madhhab: r.madhhabNoteAr ? (isEn && r.madhhabNoteEn ? r.madhhabNoteEn : r.madhhabNoteAr) : '',
+        evidence: isEn && en ? en.evidenceEn : r.evidenceSummary,
+        references: r.references,
+      };
+    });
+
+  const womenCards = womenFiqhCatalog.getAllItems().map((item, idx) => {
+    const en = WOMEN_FIQH_EN[item.id];
+    return {
+      filterGroup: 'WOMEN',
+      badgeAr: 'فقه المرأة',
+      badgeEn: 'Women’s Fiqh',
+      isWomen: true,
+      title: `${idx + 1}. ${isEn && en ? en.titleEn : item.titleAr}`,
+      question: isEn && en ? en.questionEn : item.questionAr,
+      ruling: isEn && en ? en.rulingEn : item.rulingAr,
+      action: isEn && en ? en.guidanceEn : item.practicalGuidance,
+      madhhab: item.madhhabNoteAr ? (isEn && item.madhhabNoteEn ? item.madhhabNoteEn : item.madhhabNoteAr) : '',
+      evidence: item.sourceText ? (isEn && en?.sourceEn ? en.sourceEn : item.sourceText) : '',
+      references: item.references,
+    };
+  });
+
+  const allItems = [...generalCards, ...womenCards].filter((entry) => {
+    const matchesCategory =
+      currentFiqhFilter === 'ALL' ||
+      (currentFiqhFilter === 'WOMEN' && (entry.isWomen || entry.filterGroup === 'WOMEN')) ||
+      entry.filterGroup === currentFiqhFilter;
+    if (!matchesCategory) return false;
+    if (!q) return true;
+    const hay = `${entry.title} ${entry.question} ${entry.ruling} ${entry.action} ${entry.madhhab} ${entry.evidence}`.toLowerCase();
+    return hay.includes(q);
+  });
+
+  if (allItems.length === 0) {
+    list.innerHTML = `<div class="info-box-neutral">${isEn ? 'No matching fiqh rulings found. Clear filters to view all rulings.' : 'لا توجد مسائل مطابقة للبحث — يمكنك إزالة نص البحث أو اختيار "الكل".'}</div>`;
+    return;
+  }
+
+  list.innerHTML = allItems
+    .map(
+      (entry) => `
+    <details class="accordion-item ${entry.isWomen ? 'women-topic' : ''}">
+      <summary class="accordion-header" style="${entry.isWomen ? 'color:var(--women-accent);' : ''}">
+        <span>${escapeHtml(entry.title)}</span>
+        <span class="badge ${entry.isWomen ? 'badge-warning' : 'badge-primary'}" style="margin-inline-start:0.5rem;">${escapeHtml(isEn ? entry.badgeEn : entry.badgeAr)}</span>
+      </summary>
       <div class="accordion-body">
-        <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(isEn && en ? en.questionEn : r.questionAr)}</p>
-        <p style="margin:0.4rem 0;"><strong>${isEn ? 'Scholarly Ruling:' : 'الحكم الشرعي:'}</strong> ${escapeHtml(isEn && en ? en.rulingEn : r.rulingArabic)}</p>
-        <p style="margin:0.4rem 0;"><strong>${isEn ? 'Required Action:' : 'الإجراء المطلوب:'}</strong> ${escapeHtml(isEn && en ? en.actionEn : r.actionRequired)}</p>
-        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
-          <em>${isEn ? 'Evidence & Source:' : 'الدليل والمرجع:'}</em> ${escapeHtml(isEn && en ? en.evidenceEn : r.evidenceSummary)}
+        <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(entry.question)}</p>
+        <div class="${entry.isWomen ? 'women-fatwa-box' : 'info-box-neutral'}" style="margin:0.5rem 0;">
+          <strong>${isEn ? 'Primary Scholarly Ruling:' : 'الحكم المختار:'}</strong> ${escapeHtml(entry.ruling)}
         </div>
+        <p style="margin:0.4rem 0;"><strong>${isEn ? 'Practical Action:' : 'الإجراء العملي:'}</strong> ${escapeHtml(entry.action)}</p>
+        ${entry.madhhab ? `<div class="info-box-warn" style="margin:0.45rem 0;font-size:0.84rem;"><strong>⚖️ ${isEn ? 'Recognized Madhhab View:' : 'تنبيه الخلاف المعتبر:'}</strong> ${escapeHtml(entry.madhhab)}</div>` : ''}
+        ${entry.evidence ? `<div style="font-size:0.84rem;color:var(--text-muted);margin-top:0.4rem;"><em>${isEn ? 'Summary:' : 'ملخص الدليل:'}</em> ${escapeHtml(entry.evidence)}</div>` : ''}
+        ${renderReferencePillsHtml(entry.references, isEn)}
       </div>
     </details>
-  `;
-    })
+  `
+    )
     .join('');
 }
 
 function renderWomenFiqhSection(): void {
-  const isEn = getCurrentLanguage() === 'en';
-  const list = document.getElementById('women-fiqh-list');
-  if (!list) return;
-  list.innerHTML = womenFiqhCatalog
-    .getAllItems()
-    .map((item, idx) => {
-      const en = WOMEN_FIQH_EN[item.id];
-      const title = isEn && en ? en.titleEn : item.titleAr;
-      const question = isEn && en ? en.questionEn : item.questionAr;
-      const ruling = isEn && en ? en.rulingEn : item.rulingAr;
-      const guidance = isEn && en ? en.guidanceEn : item.practicalGuidance;
-      const source = item.sourceText ? (isEn && en?.sourceEn ? en.sourceEn : item.sourceText) : '';
-      return `
-    <details class="accordion-item women-topic" data-search="${escapeHtml(`${title} ${question} ${ruling} ${guidance}`)}">
-      <summary class="accordion-header" style="color:var(--women-accent);">${idx + 1}. ${escapeHtml(title)}</summary>
-      <div class="accordion-body">
-        <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(question)}</p>
-        <div class="women-fatwa-box">
-          <strong>${isEn ? 'Ruling:' : 'الفتوى والبيان:'}</strong> ${escapeHtml(ruling)}
-        </div>
-        <p><strong>${isEn ? 'Practical Guidance:' : 'الإرشاد العملي:'}</strong> ${escapeHtml(guidance)}</p>
-        ${source ? `<div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;"><em>${isEn ? 'Evidence:' : 'الدليل والمرجع:'}</em> ${escapeHtml(source)}</div>` : ''}
-      </div>
-    </details>
-  `;
-    })
-    .join('');
+  renderFiqhSection();
 }
 
 function renderPackingChecklist(): void {
@@ -1538,6 +1750,7 @@ function renderCurrencyAndTaxi(): void {
           <span style="color:var(--gold-dark);white-space:nowrap;">${r.fairPriceMinSAR}–${r.fairPriceMaxSAR} ${isEn ? 'SAR' : 'ريال'}</span>
         </div>
         <div style="font-size:0.84rem;color:var(--text-muted);margin-top:0.25rem;">${isEn ? `~${r.distanceKm} km` : `المسافة ~${r.distanceKm} كم`} • ${escapeHtml(isEn && en ? en.adviceEn : r.adviceAr)}</div>
+        ${renderReferencePillsHtml(r.references, isEn)}
       </div>
     `;
       })
@@ -1552,7 +1765,10 @@ function renderCurrencyAndTaxi(): void {
       return `
       <div class="info-box-neutral" style="display:flex;flex-direction:column;justify-content:space-between;gap:0.6rem;">
         <div>
-          <div style="font-weight:800;color:var(--primary-ink);margin-bottom:0.25rem;">${escapeHtml(isEn && en ? en.titleEn : res.titleAr)}</div>
+          <div style="display:flex;justify-content:space-between;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.25rem;">
+            <strong style="color:var(--primary-ink);">${escapeHtml(isEn && en ? en.titleEn : res.titleAr)}</strong>
+            <span class="badge badge-primary">${escapeHtml(res.lastVerified)}</span>
+          </div>
           <p style="font-size:0.86rem;color:var(--text-muted);line-height:1.6;">${escapeHtml(isEn && en ? en.summaryEn : res.summaryAr)}</p>
         </div>
         <a href="${escapeHtml(res.urlOrTel)}" ${res.urlOrTel.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} class="btn btn-secondary" style="text-decoration:none;font-size:0.86rem;">
@@ -1585,9 +1801,45 @@ function updateCurrencyCalculation(): void {
   if (usdEl) usdEl.textContent = `$${usd.toLocaleString('en-US')}`;
 }
 
-function switchTab(tab: string): void {
-  const tabs = ['rituals', 'ziyarat', 'fiqh', 'women-fiqh', 'packing', 'gates-taxi', 'haram-atlas'];
+function switchTab(rawTab: string): void {
+  // Support consolidated 4-pillar IA while preserving legacy deep links and contextual aliases
+  let tab = rawTab;
+  let atlasFilterOverride: string | null = null;
+  let fiqhFilterOverride: string | null = null;
+
+  if (rawTab === 'packing' || rawTab === 'gates-taxi') {
+    tab = rawTab === 'gates-taxi' ? 'wallet' : 'wallet';
+  } else if (rawTab === 'ziyarat') {
+    tab = 'haram-atlas';
+    atlasFilterOverride = 'ZIYARAT';
+  } else if (rawTab === 'services') {
+    tab = 'haram-atlas';
+    atlasFilterOverride = 'SERVICES';
+  } else if (rawTab === 'kaaba-core') {
+    tab = 'haram-atlas';
+    atlasFilterOverride = 'KAABA_CORE';
+  } else if (rawTab === 'women-fiqh') {
+    tab = 'fiqh';
+    fiqhFilterOverride = 'WOMEN';
+  }
+
+  const tabs = ['rituals', 'haram-atlas', 'fiqh', 'wallet'];
   if (!tabs.includes(tab)) return;
+
+  if (atlasFilterOverride) {
+    currentAtlasFilter = atlasFilterOverride;
+    document.querySelectorAll<HTMLButtonElement>('[data-atlas-filter]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.atlasFilter === atlasFilterOverride));
+    });
+    renderHaramAtlasSection(atlasFilterOverride);
+  }
+  if (fiqhFilterOverride) {
+    currentFiqhFilter = fiqhFilterOverride;
+    document.querySelectorAll<HTMLButtonElement>('[data-fiqh-filter]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.fiqhFilter === fiqhFilterOverride));
+    });
+    renderFiqhSection();
+  }
 
   document.querySelectorAll<HTMLElement>('.tab-view').forEach((view) => {
     const isTarget = view.id === `tab-${tab}`;
@@ -1680,6 +1932,10 @@ window.addEventListener('DOMContentLoaded', () => {
   updateWakeButtonLabel();
   updateTalbiyahButtonUi();
   window.setInterval(updatePrayerUI, 1000);
+  const prayerDisclosure = document.getElementById('prayer-cards-disclosure') as HTMLDetailsElement | null;
+  if (prayerDisclosure && window.innerWidth < 768) {
+    prayerDisclosure.open = false;
+  }
   if (initialTab) switchTab(initialTab);
 
   try {
@@ -1769,6 +2025,20 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-rukn-yamani')?.addEventListener('click', showRuknYamani);
   document.getElementById('btn-tawaf-doubt-jump')?.addEventListener('click', () => switchTab('fiqh'));
   document.getElementById('btn-focus-tawaf')?.addEventListener('click', () => openFocusRitual('tawaf'));
+  document.getElementById('btn-quick-lost')?.addEventListener('click', () => {
+    switchTab('haram-atlas');
+    detectNearestHaramGate({
+      hotelKey: profile.hotelKey,
+      hotelNameAr: profile.hotelNameAr,
+      hotelNameEn: profile.hotelNameEn,
+      hotelLat: profile.hotelLat,
+      hotelLng: profile.hotelLng,
+      city: activePrayerCity === CityLocation.MADINAH ? 'MADINAH' : 'MAKKAH',
+    });
+  });
+  document.getElementById('btn-quick-wudu')?.addEventListener('click', () => openQuickSituationModal('wudu'));
+  document.getElementById('btn-quick-miqat')?.addEventListener('click', () => openQuickSituationModal('miqat'));
+  document.getElementById('btn-quick-cart')?.addEventListener('click', () => openQuickSituationModal('cart'));
 
   document.getElementById('btn-sai-next')?.addEventListener('click', incrementSai);
   document.getElementById('btn-sai-undo')?.addEventListener('click', undoSai);
@@ -1811,12 +2081,20 @@ window.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  document.getElementById('women-search-input')?.addEventListener('input', (e) => {
-    const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
-    document.querySelectorAll<HTMLElement>('.women-topic').forEach((item) => {
-      const text = (item.textContent + ' ' + (item.dataset.search || '')).toLowerCase();
-      item.style.display = text.includes(query) ? 'block' : 'none';
+  document.querySelectorAll<HTMLButtonElement>('[data-fiqh-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.fiqhFilter || 'ALL';
+      currentFiqhFilter = f;
+      document.querySelectorAll<HTMLButtonElement>('[data-fiqh-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      renderFiqhSection();
     });
+  });
+
+  document.getElementById('fiqh-search-input')?.addEventListener('input', (e) => {
+    currentFiqhQuery = (e.target as HTMLInputElement).value;
+    renderFiqhSection();
   });
 
   document.getElementById('btn-reset-packing')?.addEventListener('click', () => {
@@ -1862,7 +2140,16 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('btn-find-nearest-gate')?.addEventListener('click', detectNearestHaramGate);
+  document.getElementById('btn-find-nearest-gate')?.addEventListener('click', () =>
+    detectNearestHaramGate({
+      hotelKey: profile.hotelKey,
+      hotelNameAr: profile.hotelNameAr,
+      hotelNameEn: profile.hotelNameEn,
+      hotelLat: profile.hotelLat,
+      hotelLng: profile.hotelLng,
+      city: activePrayerCity === CityLocation.MADINAH ? 'MADINAH' : 'MAKKAH',
+    })
+  );
   document.getElementById('hotel-gate-selector')?.addEventListener('change', renderGateWayfinder);
   document.getElementById('calc-sar')?.addEventListener('input', updateCurrencyCalculation);
   document.getElementById('rate-sar-egp')?.addEventListener('input', updateCurrencyCalculation);

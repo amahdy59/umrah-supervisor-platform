@@ -12,6 +12,8 @@ export interface PrayerTimes {
   asr: string;
   maghrib: string;
   isha: string;
+  isRamadan: boolean;
+  ishaOffsetMinutes: 90 | 120;
   source: string;
 }
 
@@ -152,10 +154,24 @@ function formatHours(hours: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
+export function isUmmAlQuraRamadan(date: Date = new Date()): boolean {
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+      timeZone: 'Asia/Riyadh',
+      month: 'numeric',
+    });
+    const monthNum = Number(fmt.format(date).replace(/[^\d]/g, ''));
+    return monthNum === 9;
+  } catch {
+    return false;
+  }
+}
+
 export class PrayerTimesEngine {
   /**
    * Computes seasonal prayer times for Makkah or Madinah in Asia/Riyadh (UTC+3)
-   * following Umm Al-Qura conventions (Fajr 18.5°, Isha +90 mins after Maghrib).
+   * following Umm Al-Qura conventions (Fajr 18.5°, Isha +90 mins after Maghrib,
+   * automatically expanding to +120 mins during Umm Al-Qura Ramadan month 9).
    */
   getPrayerTimes(city: CityLocation = CityLocation.MAKKAH, date: Date = new Date()): PrayerTimes {
     const coords = CITY_COORDS[city];
@@ -163,6 +179,8 @@ export class PrayerTimesEngine {
     const jd = julianDay(riyadh.year, riyadh.month, riyadh.day);
     const tzOffset = 3; // Asia/Riyadh UTC+3
     const baseOffset = tzOffset - coords.lng / 15;
+    const isRamadan = isUmmAlQuraRamadan(date);
+    const ishaOffsetMinutes: 90 | 120 = isRamadan ? 120 : 90;
 
     const { eqt } = sunPosition(jd);
     const dhuhrH = 12 - eqt + baseOffset;
@@ -170,7 +188,7 @@ export class PrayerTimesEngine {
     const sunriseH = sunAngleTime(jd, coords.lat, 0.833, true) + baseOffset;
     const asrH = asrTime(jd, coords.lat) + baseOffset;
     const maghribH = sunAngleTime(jd, coords.lat, 0.833, false) + baseOffset;
-    const ishaH = maghribH + 1.5; // Umm Al-Qura: 90 minutes after Maghrib (120 min in Ramadan)
+    const ishaH = maghribH + ishaOffsetMinutes / 60;
 
     return {
       fajr: formatHours(fajrH),
@@ -179,7 +197,11 @@ export class PrayerTimesEngine {
       asr: formatHours(asrH),
       maghrib: formatHours(maghribH),
       isha: formatHours(ishaH),
-      source: 'حساب فلكي بتوقيت مكة (تقويم أم القرى - UTC+3)',
+      isRamadan,
+      ishaOffsetMinutes,
+      source: isRamadan
+        ? 'حساب فلكي بتوقيت مكة (أم القرى — عشاء رمضان +120 د)'
+        : 'حساب فلكي بتوقيت مكة (تقويم أم القرى — فجر 18.5° / عشاء +90 د)',
     };
   }
 

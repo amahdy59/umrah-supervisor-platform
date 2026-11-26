@@ -258,6 +258,41 @@
       width: 0%;
     }
     .prayer-card.passed .prayer-card-progress-bar { background: #64748b; width: 100% !important; }
+    .prayer-cards-disclosure summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0.9rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.86rem;
+      color: var(--primary-ink);
+      margin-bottom: 0.55rem;
+    }
+    .prayer-cards-disclosure summary::after {
+      content: '▾';
+      transition: transform 0.2s ease;
+    }
+    .prayer-cards-disclosure[open] summary::after {
+      transform: rotate(180deg);
+    }
+    .quick-help-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr));
+      gap: 0.45rem;
+      margin-bottom: 1.1rem;
+    }
+    .quick-help-btn {
+      min-height: 44px;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.65rem;
+      justify-content: flex-start;
+      text-align: start;
+    }
     @media (prefers-reduced-motion: reduce) {
       progress.prayer-hero-progress::-webkit-progress-value { transition: none; }
       progress.prayer-hero-progress::-moz-progress-bar { transition: none; }
@@ -401,34 +436,29 @@
 
     <nav class="top-primary-nav" aria-label="التنقل الرئيسي">
       <div class="nav-list-inline">
-        <button type="button" class="mode-btn active" data-tab-target="rituals" data-i18n="nav.rituals" aria-current="page">🤲 مناسكي</button>
-        <button type="button" class="mode-btn" data-tab-target="fiqh" data-i18n="nav.fiqh">📖 الفقه</button>
-        <button type="button" class="mode-btn" data-tab-target="packing" data-i18n="nav.packing">🧳 الحقيبة ونُسك</button>
-        <button type="button" class="mode-btn" data-tab-target="gates-taxi" data-i18n="nav.gates">🧭 البوابات والطوارئ</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas" data-i18n="nav.atlas">⛩️ أبواب ومنافع الحرمين</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="ziyarat" data-i18n="nav.ziyarat">🕌 المزارات والميقات</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-fiqh" data-i18n="nav.women">🧕 فقه المرأة</button>
+        <button type="button" class="mode-btn active" data-tab-target="rituals" data-i18n="nav.rituals" aria-current="page">🤲 مناسكي والرحلة</button>
+        <button type="button" class="mode-btn" data-tab-target="haram-atlas" data-i18n="nav.atlas">⛩️ الحرمين والمزارات</button>
+        <button type="button" class="mode-btn" data-tab-target="fiqh" data-i18n="nav.fiqh">📖 الفقه والمصادر</button>
+        <button type="button" class="mode-btn" data-tab-target="wallet" data-i18n="nav.packing">🧳 حقيبتي والخدمات</button>
       </div>
       <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="pilgrim-more-popover" data-i18n="nav.more">
-        ☰ المزيد والأدوات
+        ⚙️ الأدوات
       </button>
     </nav>
   </header>
 
   <main id="main-content" tabindex="-1">
-    <!-- Dynamic Stage Relevance Strip -->
+    <!-- Dynamic Stage Relevance Strip & Adaptive Action Card -->
     <div class="stage-relevance-strip">
       <div style="font-size:0.88rem;">
         <span class="badge badge-warning" id="stage-banner-label" style="margin-inline-end:0.4rem;">في مكة المكرمة</span>
         <span id="stage-banner-hint"></span>
       </div>
-      <button type="button" id="stage-banner-cta" class="btn btn-secondary" style="min-height:38px;font-size:0.82rem;"></button>
+      <button type="button" id="stage-banner-cta" class="btn btn-secondary" style="min-height:44px;font-size:0.82rem;"></button>
     </div>
 
-    <!-- Prayer Timer Cards (wa-zaker style) -->
+    <!-- Prayer Timer Cards (Hero + Collapsible 6-Card Schedule) -->
     <section class="prayer-section-wrap" aria-label="مواقيت الصلاة">
-
-      <!-- Hero countdown card -->
       <div class="prayer-hero-card" id="prayer-hero">
         <div class="prayer-hero-top-row">
           <div class="prayer-hero-date-block">
@@ -450,22 +480,35 @@
         </div>
       </div>
 
-      <!-- 6 individual prayer cards -->
-      <div class="prayer-cards-grid" id="prayer-cards-grid" role="list" aria-label="مواقيت الصلوات والشروق">
-        <div class="prayer-card" role="listitem" data-prayer="fajr"   data-name-ar="الفجر"   data-icon="🌅"><div class="prayer-card-icon" aria-hidden="true">🌅</div><div class="prayer-card-name">الفجر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-        <div class="prayer-card" role="listitem" data-prayer="sunrise" data-name-ar="الشروق" data-icon="🌄"><div class="prayer-card-icon" aria-hidden="true">🌄</div><div class="prayer-card-name">الشروق</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-        <div class="prayer-card" role="listitem" data-prayer="dhuhr"  data-name-ar="الظهر"   data-icon="☀️"><div class="prayer-card-icon" aria-hidden="true">☀️</div><div class="prayer-card-name">الظهر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-        <div class="prayer-card" role="listitem" data-prayer="asr"    data-name-ar="العصر"   data-icon="🌤️"><div class="prayer-card-icon" aria-hidden="true">🌤️</div><div class="prayer-card-name">العصر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-        <div class="prayer-card" role="listitem" data-prayer="maghrib" data-name-ar="المغرب" data-icon="🌇"><div class="prayer-card-icon" aria-hidden="true">🌇</div><div class="prayer-card-name">المغرب</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-        <div class="prayer-card" role="listitem" data-prayer="isha"   data-name-ar="العشاء"  data-icon="🌙"><div class="prayer-card-icon" aria-hidden="true">🌙</div><div class="prayer-card-name">العشاء</div> <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
-      </div>
+      <details id="prayer-cards-disclosure" class="prayer-cards-disclosure" open>
+        <summary data-i18n="prayer.scheduleToggle">📅 جدول المواقيت الـ 6 لليوم</summary>
+        <div class="prayer-cards-grid" id="prayer-cards-grid" role="list" aria-label="مواقيت الصلوات والشروق">
+          <div class="prayer-card" role="listitem" data-prayer="fajr"   data-name-ar="الفجر"   data-icon="🌅"><div class="prayer-card-icon" aria-hidden="true">🌅</div><div class="prayer-card-name">الفجر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+          <div class="prayer-card" role="listitem" data-prayer="sunrise" data-name-ar="الشروق" data-icon="🌄"><div class="prayer-card-icon" aria-hidden="true">🌄</div><div class="prayer-card-name">الشروق</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+          <div class="prayer-card" role="listitem" data-prayer="dhuhr"  data-name-ar="الظهر"   data-icon="☀️"><div class="prayer-card-icon" aria-hidden="true">☀️</div><div class="prayer-card-name">الظهر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+          <div class="prayer-card" role="listitem" data-prayer="asr"    data-name-ar="العصر"   data-icon="🌤️"><div class="prayer-card-icon" aria-hidden="true">🌤️</div><div class="prayer-card-name">العصر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+          <div class="prayer-card" role="listitem" data-prayer="maghrib" data-name-ar="المغرب" data-icon="🌇"><div class="prayer-card-icon" aria-hidden="true">🌇</div><div class="prayer-card-name">المغرب</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+          <div class="prayer-card" role="listitem" data-prayer="isha"   data-name-ar="العشاء"  data-icon="🌙"><div class="prayer-card-icon" aria-hidden="true">🌙</div><div class="prayer-card-name">العشاء</div> <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        </div>
+      </details>
 
       <!-- Mataf crowd warning (kept) -->
       <div id="mataf-warning-banner" role="alert" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:0.7rem 1rem;border-radius:10px;font-size:0.86rem;font-weight:700;"></div>
     </section>
 
-    <!-- TAB 1: RITUALS & BADGE -->
+    <!-- TAB 1: MY UMRAH (RITUALS, STAGE HUB, QUICK SITUATIONS & BADGE) -->
     <section id="tab-rituals" class="tab-view active">
+      <div id="stage-priority-card" class="card" style="margin-bottom:1.1rem;border-inline-start:5px solid var(--primary);"></div>
+
+      <section aria-labelledby="quick-help-heading" style="margin-bottom:1rem;">
+        <h2 id="quick-help-heading" style="font-size:0.86rem;font-weight:800;color:var(--primary-ink);margin-bottom:0.45rem;" data-i18n="quick.title">⚡ مواقف فورية داخل الحرم</h2>
+        <div id="haram-quick-situations" class="quick-help-strip">
+          <button type="button" id="btn-quick-lost" class="btn btn-danger quick-help-btn" data-i18n="quick.lost">🆘 ضعت / أقرب بوابة</button>
+          <button type="button" id="btn-quick-wudu" class="btn btn-secondary quick-help-btn" data-i18n="quick.wudu">💧 انتقض وضوئي بالطواف</button>
+          <button type="button" id="btn-quick-miqat" class="btn btn-secondary quick-help-btn" data-i18n="quick.miqat">✈️ تجاوزت الميقات</button>
+          <button type="button" id="btn-quick-cart" class="btn btn-secondary quick-help-btn" data-i18n="quick.cart">♿ عربة / كرسي نُسك</button>
+        </div>
+      </section>
       <div class="grid-2">
         <div class="card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:white;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;">
@@ -602,32 +645,83 @@
       </div>
     </section>
 
-    <!-- TAB 2: ZIYARAT, MIQAT BY ROUTE & FIELD PROTOCOLS -->
-    <section id="tab-ziyarat" class="tab-view" hidden>
+    <!-- TAB 2: HARAMAIN ATLAS, GATES COMPASS & ZIYARAT -->
+    <section id="tab-haram-atlas" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="ziyarat.miqatTitle">🧭 دليل الميقات حسب مسار سفرك</h2>
-          <span class="badge badge-warning" data-i18n="ziyarat.miqatBadge">طيران / باص / قطار الحرمين</span>
+          <h2 class="card-title" data-i18n="gates.title">🧭 دليل بوابات الحرمين ومسار العودة لفندقك</h2>
+          <span class="badge badge-success" data-i18n="atlas.badge">مكة المكرمة + المدينة المنورة</span>
         </div>
-        <div id="miqat-routes-grid" class="grid-2" style="margin-bottom:0;"></div>
+        <button type="button" id="btn-find-nearest-gate" class="btn btn-gold" style="width:100%;margin-bottom:0.85rem;" data-i18n="compass.btn">🧭 حدد أقرب بوابة لي الآن + طريق الفندق (GPS)</button>
+        <div id="nearest-gate-compass-box" class="info-box-warn" role="status" hidden style="margin-bottom:0.85rem;"></div>
+        <div style="margin-bottom:0.85rem;">
+          <label for="hotel-gate-selector" class="field-label" data-i18n="gates.hotelLabel">اختر منطقة فندق إقامتك:</label>
+          <select id="hotel-gate-selector" class="field-input">
+            <option value="kiswah" selected>🏨 فندق أبراج الكسوة (جرول / التيسير)</option>
+            <option value="clock">🏨 وقف الملك عبد العزيز / أبراج البيت (أجياد)</option>
+            <option value="jabal-omar">🏨 فنادق جبل عمر / إبراهيم الخليل (الشبيكة)</option>
+            <option value="ghazza">🏨 فنادق الغزة وريع بخش (المروة)</option>
+          </select>
+        </div>
+        <div id="gate-result-box" class="info-box-neutral" style="border:2px solid var(--primary);"></div>
       </div>
 
-      <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin-bottom:0.85rem;" data-i18n="ziyarat.madinahHeading">🌴 مزارات المدينة المنورة</h2>
-      <div id="ziyarat-madinah-grid" class="grid-2"></div>
-
-      <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin:1.25rem 0 0.85rem;" data-i18n="ziyarat.makkahHeading">🕋 معالم مكة المكرمة</h2>
-      <div id="ziyarat-makkah-grid" class="grid-2"></div>
-
-      <div class="card">
+      <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="ziyarat.fieldTitle">🏛️ إرشادات ميدانية رسمية بالحرمين والمطار (العربات، زمزم، والضياع)</h2>
-          <span class="badge badge-success" data-i18n="ziyarat.fieldBadge">مصادر رسمية موثقة</span>
+          <h2 class="card-title" data-i18n="atlas.title">⛩️ أطلس أبواب الكعبة والحرمين والمزارات والمنافع</h2>
+          <span class="badge badge-primary" data-i18n="atlas.benefitsBadge">موثق بالصور والمراجع</span>
         </div>
-        <div id="haramain-field-guides" style="display:flex;flex-direction:column;gap:0.85rem;"></div>
+        <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;" data-i18n="atlas.intro">
+          تعرّف بالصور الواقعية على باب الكعبة المشرفة والملتزم وحِجر إسماعيل والمسعى، وبوابات مكة والمدينة، والمزارات التاريخية والميقات، مع الخدمات المجانية الموثقة رسمياً.
+        </p>
+        <div class="atlas-filter-bar" role="group" aria-label="تصفية أقسام الحرمين والمزارات">
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="ALL" aria-pressed="true" data-i18n="atlas.filter.all">🕌 الكل</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="KAABA_CORE" aria-pressed="false" data-i18n="atlas.filter.kaaba">🕋 الكعبة والمسعى</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MAKKAH_GATE" aria-pressed="false" data-i18n="atlas.filter.makkah">🚪 أبواب الحرم المكي</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MADINAH_ALL" aria-pressed="false" data-i18n="atlas.filter.madinah">🌴 المسجد النبوي والروضة</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="ZIYARAT" aria-pressed="false" data-i18n="atlas.filter.ziyarat">🕌 المزارات والميقات</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="SERVICES" aria-pressed="false" data-i18n="atlas.filter.services">🎁 المنافع والأنظمة الرسمية</button>
+        </div>
+      </div>
+
+      <div id="haram-atlas-cards" class="grid-2"></div>
+
+      <div id="atlas-ziyarat-wrap">
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h2 class="card-title" data-i18n="ziyarat.miqatTitle">🧭 دليل الميقات حسب مسار سفرك</h2>
+            <span class="badge badge-warning" data-i18n="ziyarat.miqatBadge">طيران / باص / قطار الحرمين</span>
+          </div>
+          <div id="miqat-routes-grid" class="grid-2" style="margin-bottom:0;"></div>
+        </div>
+
+        <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin-bottom:0.85rem;" data-i18n="ziyarat.madinahHeading">🌴 مزارات المدينة المنورة</h2>
+        <div id="ziyarat-madinah-grid" class="grid-2"></div>
+
+        <h2 style="color:var(--primary-ink);font-size:1.15rem;font-weight:800;margin:1.25rem 0 0.85rem;" data-i18n="ziyarat.makkahHeading">🕋 معالم مكة المكرمة</h2>
+        <div id="ziyarat-makkah-grid" class="grid-2"></div>
+      </div>
+
+      <div id="atlas-services-wrap">
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h2 class="card-title" data-i18n="atlas.benefitsTitle">🎁 الخدمات والمنافع المجانية وفضائل العبادة داخل الحرمين</h2>
+            <span class="badge badge-warning" data-i18n="atlas.benefitsBadge">اغتنمها في رحلتك</span>
+          </div>
+          <div id="haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title" data-i18n="ziyarat.fieldTitle">🏛️ إرشادات ميدانية رسمية بالحرمين والمطار (العربات، زمزم، والضياع)</h2>
+            <span class="badge badge-success" data-i18n="ziyarat.fieldBadge">مصادر رسمية موثقة</span>
+          </div>
+          <div id="haramain-field-guides" style="display:flex;flex-direction:column;gap:0.85rem;"></div>
+        </div>
       </div>
     </section>
 
-    <!-- TAB 3: FIQH ASSISTANT -->
+    <!-- TAB 3: UNIFIED FIQH, WOMEN'S FIQH & VERIFIED SOURCES -->
     <section id="tab-fiqh" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
@@ -658,12 +752,23 @@
 
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="fiqh.rulingsTitle">📖 مسائل فقهية شائعة وجبر النواقص (مع الأدلة)</h2>
+          <h2 class="card-title" data-i18n="fiqh.unifiedTitle">📖 موسوعة الفقه وأحكام المعتمرة (موثقة بالأدلة)</h2>
+          <span class="badge badge-success" data-i18n="women.badge">مع ذكر المذاهب والتخريج</span>
         </div>
+        <div class="atlas-filter-bar" role="group" aria-label="تصفية المسائل الفقهية">
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-fiqh-filter="ALL" aria-pressed="true" data-i18n="fiqh.filter.all">📚 الكل</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-fiqh-filter="IHRAM_MIQAT" aria-pressed="false" data-i18n="fiqh.filter.ihram">✈️ الإحرام والميقات</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-fiqh-filter="TAWAF_SAI" aria-pressed="false" data-i18n="fiqh.filter.tawaf">🕋 الطواف والسعي</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-fiqh-filter="WOMEN" aria-pressed="false" data-i18n="fiqh.filter.women">🧕 فقه المرأة</button>
+        </div>
+        <search style="display:block;margin-bottom:0.85rem;">
+          <label for="fiqh-search-input" class="field-label" data-i18n="fiqh.searchLabel">ابحث في المسائل الفقهية وأحكام المرأة:</label>
+          <input type="search" id="fiqh-search-input" name="fiqhSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="مثال: وضوء، طواف، حيض، استحاضة، ميقات، نقاب، عطر...">
+        </search>
         <div id="fiqh-rulings-list"></div>
       </div>
 
-      <div class="card">
+      <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
           <h2 class="card-title" data-i18n="fiqh.roommateTitle">🤝 ميثاق السكن المشترك وأخلاق رفقاء الغرفة</h2>
           <span class="badge badge-primary" data-i18n="fiqh.roommateBadge">آداب الصحبة في العمرة</span>
@@ -675,28 +780,12 @@
           <div class="info-box-neutral"><strong>🤐 الستر والعفو:</strong> حفظ خصوصيات الرفيق وكظم الغيظ والابتسامة؛ فالعمرة مدرسة الأخلاق.</div>
         </div>
       </div>
+
+      <div id="editorial-methodology-box"></div>
     </section>
 
-    <!-- TAB 4: WOMEN'S FIQH -->
-    <section id="tab-women-fiqh" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
-        <div class="card-header" style="border-bottom-color:var(--women-border);">
-          <h2 class="card-title" style="color:var(--women-accent);" data-i18n="women.title">🧕 دليل فقه وأحكام المرأة في العمرة والزيارة</h2>
-          <span class="badge" style="background:var(--women-border);color:var(--women-accent);" data-i18n="women.badge">مستخلص من «دليل المعتمر»</span>
-        </div>
-        <p style="font-size:0.92rem;line-height:1.75;margin-bottom:0.85rem;" data-i18n="women.intro">
-          أحكام موثقة للمرأة المعتمرة (الحيض عند الميقات، الاستحاضة، النقاب والسدل، وتخصيص الألوان)، وفق فتاوى كبار العلماء مع الإشارة للمعتبر من الخلاف في مسائل الزيارة.
-        </p>
-        <search style="display:block;">
-          <label for="women-search-input" class="field-label" data-i18n="women.searchLabel">ابحثي في أحكام المرأة:</label>
-          <input type="search" id="women-search-input" name="womenSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="مثال: حيض، استحاضة، نقاب، سدل، تقصير، روضة...">
-        </search>
-      </div>
-      <div id="women-fiqh-list"></div>
-    </section>
-
-    <!-- TAB 5: PACKING & OFFLINE NUSUK WALLET -->
-    <section id="tab-packing" class="tab-view" hidden>
+    <!-- TAB 4: TRIP WALLET (PACKING, NUSUK WALLET, TAXI, CURRENCY & HOTLINES) -->
+    <section id="tab-wallet" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#064e3b 0%,#022c22 100%);color:white;">
         <div class="card-header" style="border-bottom-color:rgba(255,255,255,0.18);">
           <h2 class="card-title" style="color:#fef08a;" data-i18n="packing.title">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</h2>
@@ -759,30 +848,8 @@
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- TAB 6: GATES, CURRENCY, TAXI & OFFICIAL RESOURCES -->
-    <section id="tab-gates-taxi" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="gates.title">🧭 دليل بوابات الحرم المكي المصحح ومسار الفندق</h2>
-          <button type="button" id="btn-jump-haram-atlas" class="btn btn-primary" style="font-size:0.84rem;" data-tab-target="haram-atlas" data-i18n="gates.atlasBtn">⛩️ أطلس كل الأبواب والمنافع بالصور</button>
-        </div>
-        <button type="button" id="btn-find-nearest-gate" class="btn btn-gold" style="width:100%;margin-bottom:0.85rem;" data-i18n="compass.btn">🧭 حدد أقرب بوابة لي الآن (GPS)</button>
-        <div id="nearest-gate-compass-box" class="info-box-warn" role="status" hidden style="margin-bottom:0.85rem;"></div>
-        <div style="margin-bottom:1rem;">
-          <label for="hotel-gate-selector" class="field-label" data-i18n="gates.hotelLabel">اختر منطقة فندق إقامتك:</label>
-          <select id="hotel-gate-selector" class="field-input">
-            <option value="kiswah" selected>🏨 فندق أبراج الكسوة (جرول / التيسير)</option>
-            <option value="clock">🏨 وقف الملك عبد العزيز / أبراج البيت (أجياد)</option>
-            <option value="jabal-omar">🏨 فنادق جبل عمر / إبراهيم الخليل (الشبيكة)</option>
-            <option value="ghazza">🏨 فنادق الغزة وريع بخش (المروة)</option>
-          </select>
-        </div>
-        <div id="gate-result-box" class="info-box-neutral" style="border:2px solid var(--primary);"></div>
-      </div>
-
-      <div class="grid-2">
+      <div class="grid-2" style="margin-top:1.25rem;">
         <div class="card">
           <div class="card-header">
             <h2 class="card-title" data-i18n="gates.currencyTitle">💱 محول العملات (بسعر قابل للتعديل)</h2>
@@ -826,57 +893,26 @@
         <div id="official-resources-grid" class="grid-2" style="margin-bottom:0;"></div>
       </div>
     </section>
-
-    <!-- TAB 7: HARAMAIN GATES, KAABA DOORS & SERVICES ATLAS -->
-    <section id="tab-haram-atlas" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="atlas.title">⛩️ أطلس أبواب الكعبة والحرمين الشريفين ومنافعهما (بالصور الحقيقية)</h2>
-          <span class="badge badge-success" data-i18n="atlas.badge">مكة المكرمة + المدينة المنورة</span>
-        </div>
-        <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;" data-i18n="atlas.intro">
-          تعرّف بالصور الواقعية على باب الكعبة المشرفة والملتزم وحِجر إسماعيل والمسعى، وأهم بوابات المسجد الحرام والمسجد النبوي، مع شرح كل الخدمات والمنافع المجانية المتاحة لخدمة المعتمر وكبار السن.
-        </p>
-        <div class="atlas-filter-bar" role="group" aria-label="تصفية أبواب ومعالم الحرمين">
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="ALL" aria-pressed="true" data-i18n="atlas.filter.all">🕌 الكل</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="KAABA_CORE" aria-pressed="false" data-i18n="atlas.filter.kaaba">🕋 الكعبة والمسعى</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MAKKAH_GATE" aria-pressed="false" data-i18n="atlas.filter.makkah">🚪 أبواب الحرم المكي</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-atlas-filter="MADINAH_ALL" aria-pressed="false" data-i18n="atlas.filter.madinah">🌴 المسجد النبوي والروضة</button>
-        </div>
-      </div>
-
-      <div id="haram-atlas-cards" class="grid-2"></div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="atlas.benefitsTitle">🎁 الخدمات والمنافع المجانية وفضائل العبادة داخل الحرمين</h2>
-          <span class="badge badge-warning" data-i18n="atlas.benefitsBadge">اغتنمها في رحلتك</span>
-        </div>
-        <div id="haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
-      </div>
-    </section>
   </main>
 
-  <!-- Sticky Mobile Bottom Bar (5 clean spacious slots) -->
+  <!-- Sticky Mobile Bottom Bar (4 core pillars + Tools popover — zero buried tabs!) -->
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع للجوال">
     <button type="button" class="mobile-nav-btn active" data-tab-target="rituals" aria-current="page"><span aria-hidden="true">🤲</span><span data-i18n="nav.mobile.rituals">مناسكي</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="haram-atlas"><span aria-hidden="true">⛩️</span><span data-i18n="nav.mobile.gates">الحرمين</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="fiqh"><span aria-hidden="true">📖</span><span data-i18n="nav.mobile.fiqh">الفقه</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="packing"><span aria-hidden="true">🧳</span><span data-i18n="nav.mobile.packing">نُسك</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="gates-taxi"><span aria-hidden="true">🧭</span><span data-i18n="nav.mobile.gates">البوابات</span></button>
-    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="pilgrim-more-popover"><span aria-hidden="true">☰</span><span data-i18n="nav.mobile.more">المزيد</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="wallet"><span aria-hidden="true">🧳</span><span data-i18n="nav.mobile.packing">حقيبتي</span></button>
+    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="pilgrim-more-popover"><span aria-hidden="true">⚙️</span><span data-i18n="nav.mobile.more">الأدوات</span></button>
   </nav>
 
-  <!-- Shared Mobile & Tablet "More" Popover -->
+  <!-- Shared Mobile & Tablet Tools Popover -->
   <div id="pilgrim-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="nav.popoverTitle">أقسام وأدوات إضافية</div>
-    <nav class="more-popover-grid" aria-label="أقسام إضافية">
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="haram-atlas" data-i18n="nav.atlas">⛩️ أبواب ومنافع الحرمين</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="ziyarat" data-i18n="nav.ziyarat">🕌 المزارات والميقات</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-fiqh" data-i18n="nav.women">🧕 فقه المرأة المعتمرة</button>
+    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="nav.popoverTitle">إعدادات العرض واللغة والوصول</div>
+    <nav class="more-popover-grid" aria-label="إعدادات وأدوات">
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-wake-toggle aria-pressed="false">🔆 منع إغلاق الشاشة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
+      <button type="button" id="btn-jump-sources" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="fiqh">📚 المراجع ومنهجية التوثيق</button>
     </nav>
   </div>
 
@@ -956,6 +992,13 @@
         <div><label for="edit-bus" class="field-label">رقم الباص:</label><input id="edit-bus" class="field-input"></div>
         <div><label for="edit-sup-name" class="field-label">اسم المشرف:</label><input id="edit-sup-name" class="field-input"></div>
         <div><label for="edit-sup-phone" class="field-label">واتساب المشرف:</label><input id="edit-sup-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
+        <div>
+          <label for="edit-gender" class="field-label">النوع (لتخصيص الإرشاد):</label>
+          <select id="edit-gender" class="field-input">
+            <option value="MALE">رجل</option>
+            <option value="FEMALE">امرأة (فقه المعتمرة وبوابة 25)</option>
+          </select>
+        </div>
         <div><label for="edit-med" class="field-label">حالة صحية / حساسية:</label><input id="edit-med" class="field-input"></div>
       </div>
       <div style="margin-bottom:1rem;">
@@ -1038,6 +1081,15 @@
     </div>
     <div id="my-installments-body" style="margin-bottom:1rem;"></div>
     <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="my-installments-modal">إغلاق</button>
+  </dialog>
+
+  <dialog id="quick-ruling-modal" closedby="any" aria-labelledby="quick-ruling-title">
+    <div class="dialog-header">
+      <h2 id="quick-ruling-title" style="font-size:1.15rem;color:var(--primary-ink);">⚖️ فتوى وإرشاد فوري</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="quick-ruling-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div id="quick-ruling-body" style="margin-bottom:1rem;"></div>
+    <button type="button" class="btn btn-primary" style="width:100%;" data-close-dialog="quick-ruling-modal">فهمت — العودة للمنسك</button>
   </dialog>
 
   <div id="a11y-polite-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>

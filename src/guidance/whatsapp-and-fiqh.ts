@@ -1,3 +1,5 @@
+import { KnowledgeReference, REF_CATALOG } from './references.js';
+
 export enum BroadcastPhase {
   PRE_DEPARTURE = 'PRE_DEPARTURE', // قبل السفر وحقيبة المعتمر
   MIQAT_APPROACH = 'MIQAT_APPROACH', // اقتراب الميقات في الطائرة أو الحافلة
@@ -10,8 +12,12 @@ export enum BroadcastPhase {
 
 export interface BroadcastTemplate {
   phase: BroadcastPhase;
+  recommendedStages: string[];
   title: string;
+  titleEn: string;
   badge: string;
+  badgeEn: string;
+  references: KnowledgeReference[];
   template: (params?: Record<string, string>) => string;
 }
 
@@ -24,8 +30,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.PRE_DEPARTURE,
         {
           phase: BroadcastPhase.PRE_DEPARTURE,
+          recommendedStages: ['DRAFT', 'REGISTRATION_OPEN', 'PRE_DEPARTURE'],
           title: '🎒 قبل السفر: قائمة الحقيبة وتجهيزات الإحرام',
+          titleEn: '🎒 Pre-Departure: Packing & Ihram Checklist',
           badge: 'قبل السفر',
+          badgeEn: 'Pre-Departure',
+          references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR, REF_CATALOG.NUSUK_MINISTRY_HAJJ],
           template: (params: Record<string, string> = {}) => `*بسم الله الرحمن الرحيم* 🕋
 *ضيوف الرحمن أعزاءنا في فوج (${params.tripTitle || 'رحلة العمرة المباركة'})*
 السلام عليكم ورحمة الله وبركاته، تقبل الله منكم وجعلها عمرة مقبولة مبرورة.
@@ -44,8 +54,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.MIQAT_APPROACH,
         {
           phase: BroadcastPhase.MIQAT_APPROACH,
+          recommendedStages: ['IN_TRANSIT'],
           title: '✈️ تنبيه اقتراب الميقات وعقد نية الإحرام',
+          titleEn: '✈️ Approaching Miqat & Making Ihram Intention',
           badge: 'في الطريق',
+          badgeEn: 'En Route',
+          references: [REF_CATALOG.LAJNAH_MIQAT_CROSSING, REF_CATALOG.BUKHARI_1838_WOMEN_IHRAM],
           template: () => `📢 *تنبيه هام وعاجل لجميع معتمري الفوج* 🕋
 
 نحن نقترب الآن من *محاذاة الميقات* بحمد الله وتوفيقه.
@@ -68,8 +82,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.ROOMMATE_ETIQUETTE,
         {
           phase: BroadcastPhase.ROOMMATE_ETIQUETTE,
+          recommendedStages: ['IN_MAKKAH', 'IN_MADINAH'],
           title: '🤝 ميثاق رفقاء الغرفة وآداب السكن بالفندق',
+          titleEn: '🤝 Roommate Charter & Hotel Etiquette',
           badge: 'في الفندق',
+          badgeEn: 'Hotel Living',
+          references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR],
           template: (params: Record<string, string> = {}) => `*ميثاق الأخوة والسكن المبارك في فندق (${params.hotelName || 'مقر الإقامة'})* 🏨🌿
 
 أخي المعتمر الكريم، أختي المعتمرة الفاضلة:
@@ -100,8 +118,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.TAWAF_PREPARATION,
         {
           phase: BroadcastPhase.TAWAF_PREPARATION,
+          recommendedStages: ['IN_MAKKAH'],
           title: '🕋 الاستعداد للنزول لأداء طواف وسعي العمرة',
+          titleEn: '🕋 Preparing for Tawaf & Sa’i Departure',
           badge: 'أداء المناسك',
+          badgeEn: 'Rituals Prep',
+          references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY, REF_CATALOG.NUSUK_MINISTRY_HAJJ],
           template: (params: Record<string, string> = {}) => `📣 *نداء الانطلاق لأداء مناسك العمرة (طواف وسعي)* 🕋
 
 إخواني وأخواتي ضيوف الرحمن:
@@ -123,8 +145,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.HARAMAIN_MORALS,
         {
           phase: BroadcastPhase.HARAMAIN_MORALS,
+          recommendedStages: ['IN_MAKKAH', 'IN_MADINAH'],
           title: '💎 أخلاق المعتمر في رحاب الحرمين الشريفين',
+          titleEn: '💎 Pilgrim Manners Inside Al-Haramain',
           badge: 'آداب الحرم',
+          badgeEn: 'Haram Manners',
+          references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
           template: () => `🌿 *وقفة إيمانية: أخلاق زائر بيت الله الحرام* 🕋✨
 
 قال الله تعالى: ﴿فَمَنْ فَرَضَ فِيهِنَّ الْحَجَّ فَلَا رَفَثَ وَلَا فُسُوقَ وَلَا جِدَالَ فِي الْحَجِّ﴾.
@@ -143,8 +169,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.RAWDAH_PERMIT,
         {
           phase: BroadcastPhase.RAWDAH_PERMIT,
+          recommendedStages: ['IN_MADINAH'],
           title: '🕌 موعد زيارة الروضة الشريفة بالمسجد النبوي',
+          titleEn: '🕌 Rawdah Permit Schedule at Al-Masjid an-Nabawi',
           badge: 'المدينة المنورة',
+          badgeEn: 'Madinah',
+          references: [REF_CATALOG.AGREED_RAWDAH, REF_CATALOG.NUSUK_MINISTRY_HAJJ],
           template: (params: Record<string, string> = {}) => `🌸 *إشعار هام: موعد زيارة الروضة الشريفة والسلام على رسول الله ﷺ* 🕌
 
 إلى معتمرينا الكرام في المدينة المنورة:
@@ -168,8 +198,12 @@ export class WhatsAppBroadcastManager {
         BroadcastPhase.DEPARTURE_WADA,
         {
           phase: BroadcastPhase.DEPARTURE_WADA,
+          recommendedStages: ['RETURN_TRANSIT', 'COMPLETED'],
           title: '🛫 التجهيز للمغادرة وطواف الوداع وماء زمزم',
+          titleEn: '🛫 Departure, Farewell Tawaf & Zamzam Rules',
           badge: 'ختام الرحلة',
+          badgeEn: 'Departure',
+          references: [REF_CATALOG.GACA_ZAMZAM_CIRCULAR, REF_CATALOG.UTAYR_DALIL_MUTAMIR],
           template: (params: Record<string, string> = {}) => `🕋 *تقبل الله عمرتكم وكتب لكم الأجر العظيم* 🤲
 
 إخواني وأخواتي الكرام:
@@ -194,17 +228,44 @@ export class WhatsAppBroadcastManager {
   getFormattedPost(
     phase: BroadcastPhase,
     params?: Record<string, string>
-  ): { title: string; badge: string; messageBody: string } {
+  ): {
+    phase: BroadcastPhase;
+    recommendedStages: string[];
+    title: string;
+    titleEn: string;
+    badge: string;
+    badgeEn: string;
+    references: KnowledgeReference[];
+    messageBody: string;
+  } {
     const item = this.templates.get(phase);
     if (!item) {
       throw new Error(`Broadcast phase ${phase} not found`);
     }
 
     return {
+      phase: item.phase,
+      recommendedStages: item.recommendedStages,
       title: item.title,
+      titleEn: item.titleEn,
       badge: item.badge,
+      badgeEn: item.badgeEn,
+      references: item.references,
       messageBody: item.template(params),
     };
+  }
+
+  getOrderedPhasesForStage(stage: string): BroadcastPhase[] {
+    const all = this.getAllPhases();
+    const match = all
+      .filter((p) => this.templates.get(p)?.recommendedStages.includes(stage))
+      .sort((a, b) => {
+        const lenA = this.templates.get(a)?.recommendedStages.length ?? 99;
+        const lenB = this.templates.get(b)?.recommendedStages.length ?? 99;
+        return lenA - lenB;
+      });
+    const rest = all.filter((p) => !this.templates.get(p)?.recommendedStages.includes(stage));
+    return [...match, ...rest];
   }
 }
 
@@ -219,11 +280,15 @@ export enum FiqhRulingCategory {
 
 export interface FiqhRuling {
   id: FiqhRulingCategory;
+  category: 'IHRAM_MIQAT' | 'TAWAF_SAI' | 'WOMEN_HARDSHIP';
   titleAr: string;
   questionAr: string;
   rulingArabic: string;
   actionRequired: string;
   evidenceSummary: string;
+  madhhabNoteAr?: string;
+  madhhabNoteEn?: string;
+  references: KnowledgeReference[];
 }
 
 export class FiqhAssistant {
@@ -232,6 +297,7 @@ export class FiqhAssistant {
       FiqhRulingCategory.ACCIDENTAL_SCENT,
       {
         id: FiqhRulingCategory.ACCIDENTAL_SCENT,
+        category: 'IHRAM_MIQAT',
         titleAr: 'استخدام العطر أو الصابون المعطر ناسياً أثناء الإحرام',
         questionAr: 'توضأت بصابون معطر أو تعطرت ناسياً أنني محرم، فماذا يلزمني؟',
         rulingArabic:
@@ -240,24 +306,28 @@ export class FiqhAssistant {
           'غسله بالماء فور تذكره ولا فدية عليه، لقوله تعالى: ﴿رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا﴾ (البقرة: 286).',
         evidenceSummary:
           'فتاوى الشيخ ابن باز والشيخ ابن عثيمين: محظورات الإحرام من باب التروك، فإذا وقعت نسياناً أو جهلاً سقط الإثم والفدية وزالت بالغسل فور التذكر.',
+        references: [REF_CATALOG.IBN_MAJAH_2043_FORGETTING, REF_CATALOG.UTAYR_DALIL_MUTAMIR],
       },
     ],
     [
       FiqhRulingCategory.FORGETFUL_HAIR_NAIL_CLIP,
       {
         id: FiqhRulingCategory.FORGETFUL_HAIR_NAIL_CLIP,
+        category: 'IHRAM_MIQAT',
         titleAr: 'تقليم الأظافر أو تساقط الشعر ناسياً للمحرم',
         questionAr: 'قصصت ظفراً أو سقط شعر من لحيتي أو رأسي دون قصد، فهل بطل إحرامي؟',
         rulingArabic:
           'الإحرام صحيح تماماً، وما سقط بغير قصد أو قُص ناسياً لا شيء فيه.',
         actionRequired: 'لا فدية عليه عند جمهور العلماء للنسيان، ويستمر في إحرامه بشكل طبيعي (ولا يمس بقية أظافره أو شعره بعد التذكر حتى يتحلل).',
         evidenceSummary: 'لقوله ﷺ: «إِنَّ اللَّهَ تَجَاوَزَ عَنْ أُمَّتِي الْخَطَأَ وَالنِّسْيَانَ وَمَا اسْتُكْرِهُوا عَلَيْهِ» (رواه ابن ماجه وصححه الألباني).',
+        references: [REF_CATALOG.IBN_MAJAH_2043_FORGETTING],
       },
     ],
     [
       FiqhRulingCategory.PASSING_MIQAT_WITHOUT_IHRAM,
       {
         id: FiqhRulingCategory.PASSING_MIQAT_WITHOUT_IHRAM,
+        category: 'IHRAM_MIQAT',
         titleAr: 'تجاوز الميقات في الطائرة دون إحرام',
         questionAr: 'نمت في الطائرة ولم أستيقظ إلا بعد الهبوط في جدة، ماذا أفعل؟',
         rulingArabic:
@@ -265,12 +335,18 @@ export class FiqhAssistant {
         actionRequired:
           'الواجب أن يخرج إلى أقرب ميقات بري (مثل ميقات الجحفة برابغ أو السيل الكبير) ويحرم منه ولا دم عليه. فإن تعذر وأحرم من جدة لزمه عند جمهور الفقهاء ذبح شاة (دم) يوزع على فقراء الحرم بمكة.',
         evidenceSummary: 'لأثر ابن عباس رضي الله عنهما: «من نسي من نسكه شيئاً أو تركه فليهرق دماً» (الموطأ)، وفتوى اللجنة الدائمة للإفتاء.',
+        madhhabNoteAr:
+          'يُستثنى من الدم من خرج بسيارته من جدة للميقات قبل التلبس بالعمرة عند الأئمة الأربعة.',
+        madhhabNoteEn:
+          'Across all four Sunni madhhabs, returning to a land Miqat before initiating rituals waives any compensatory sacrifice (dam).',
+        references: [REF_CATALOG.LAJNAH_MIQAT_CROSSING],
       },
     ],
     [
       FiqhRulingCategory.WUDU_BREAK_DURING_TAWAF,
       {
         id: FiqhRulingCategory.WUDU_BREAK_DURING_TAWAF,
+        category: 'TAWAF_SAI',
         titleAr: 'انتقاض الوضوء أثناء أشواط الطواف',
         questionAr: 'انتقض وضوئي في الشوط الرابع من الطواف، هل أعيد الطواف من البداية؟',
         rulingArabic:
@@ -278,12 +354,18 @@ export class FiqhAssistant {
         actionRequired:
           'الأحوط والأكثر عملاً عند كثير من المعاصرين والجمهور مع التيسير (كما اختاره الشيخ ابن عثيمين في غير الفاصل الطويل، ومذهب الحنفية في أصل الطهارة) أن يتوضأ ويبني على ما مضى من أشواط دون إعادة من البداية إذا لم يطل الفصل؛ واختار بعض الفقهاء استئناف الطواف إن أمكن بيسر.',
         evidenceSummary: 'قاعدة «المشقة تجلب التيسير»، والبناء على ما مضى أيسر للمعتمر في الزحام الشديد.',
+        madhhabNoteAr:
+          'الخلاف المعتبر: يرى الحنفية وابن تيمية أن الوضوء واجب لا شرط أو يبنى عند الحاجة؛ ويرى الشافعية والحنابلة اشتراط الطهارة فيبني (عند الحنابلة في رواية/تيسير ابن عثيمين) أو يعيد عند طول الفاصل.',
+        madhhabNoteEn:
+          'Recognized school view: Shafi’i & Hanbali schools treat wudu as a condition; Ibn Uthaymeen and Hanafi jurists allow resuming from the same lap after renewing wudu cleanly without heavy hardship.',
+        references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR, REF_CATALOG.BUKHARI_1613_BLACK_STONE_SIGN],
       },
     ],
     [
       FiqhRulingCategory.BLACK_STONE_CROWD_PUSHING,
       {
         id: FiqhRulingCategory.BLACK_STONE_CROWD_PUSHING,
+        category: 'TAWAF_SAI',
         titleAr: 'حكم التزاحم العنيف لتقبيل الحجر الأسود',
         questionAr: 'هل يكتمل الطواف دون لمس أو تقبيل الحجر الأسود؟',
         rulingArabic:
@@ -291,12 +373,14 @@ export class FiqhAssistant {
         actionRequired:
           'تقبيل الحجر أو استلامه سنة، بينما إيذاء المسلمين والتدافع محرم. يكفي تماماً الإشارة إليه باليد اليمنى من بعيد مع التكبير (الله أكبر) عند محاذاته دون توقف يعطل السير.',
         evidenceSummary: 'ثبت في صحيح البخاري (1613) أن النبي ﷺ طاف على بعيره كلما أتى على الركن أشار إليه بشيء في يده وكبّر.',
+        references: [REF_CATALOG.BUKHARI_1613_BLACK_STONE_SIGN],
       },
     ],
     [
       FiqhRulingCategory.ISTIHADAH_NON_MENSTRUAL_BLEEDING,
       {
         id: FiqhRulingCategory.ISTIHADAH_NON_MENSTRUAL_BLEEDING,
+        category: 'WOMEN_HARDSHIP',
         titleAr: 'الاستحاضة والنزيف غير المعتاد أثناء العمرة',
         questionAr: 'رأت المرأة دماً خفيفاً أو متقطعاً في غير وقت عادتها أو زاد عن مدتها المعتادة، فهل يمنعها من الطواف؟',
         rulingArabic:
@@ -304,6 +388,7 @@ export class FiqhAssistant {
         actionRequired:
           'إذا تحقق أن الدم دم استحاضة (وليس حيضاً معتاداً) فإنها تتحفظ وتغسل أثر الدم وتتوضأ لكل صلاة أو عند إرادة الطواف، وتؤدي عمرتها كاملة دون انتظار.',
         evidenceSummary: 'لقوله ﷺ للمستحاضة: «إنما ذلك عرق وليس بالحيضة... توضئي لكل صلاة» (متفق عليه)، وفتوى اللجنة الدائمة وابن باز.',
+        references: [REF_CATALOG.AGREED_ISTIHADAH, REF_CATALOG.UTAYR_DALIL_MUTAMIR],
       },
     ],
   ]);

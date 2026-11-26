@@ -1,9 +1,12 @@
+import { KnowledgeReference, REF_CATALOG } from './references.js';
+
 /**
  * Haram Gates & Hotel Wayfinder Guide
- * Directs pilgrims through verified Masjid al-Haram gates to return safely to their hotel area.
+ * Directs pilgrims through verified Masjid al-Haram & Masjid an-Nabawi gates to return safely to their hotel area.
  */
 
 export interface HaramGate {
+  city: 'MAKKAH' | 'MADINAH';
   gateNumber: number;
   nameAr: string;
   nameEn: string;
@@ -17,6 +20,7 @@ export interface HaramGate {
   longitude: number;
   imageUrl?: string;
   imageAltAr?: string;
+  references: KnowledgeReference[];
 }
 
 export interface NearestGateMatch {
@@ -24,6 +28,14 @@ export interface NearestGateMatch {
   distanceMeters: number;
   bearingDegrees: number;
   directionAr: string;
+}
+
+export interface HotelReturnRoute {
+  nearestNow: NearestGateMatch;
+  recommendedExits: HaramGate[];
+  distanceToHotelMeters: number;
+  bearingToHotelDegrees: number;
+  directionToHotelAr: string;
 }
 
 function toRad(deg: number): number {
@@ -58,6 +70,7 @@ export function bearingToArabicDirection(deg: number): string {
 export class HaramGatesGuide {
   private gates: HaramGate[] = [
     {
+      city: 'MAKKAH',
       gateNumber: 79,
       nameAr: 'باب الملك فهد',
       nameEn: 'King Fahd Gate',
@@ -73,8 +86,10 @@ export class HaramGatesGuide {
       longitude: 39.8235,
       imageUrl: '/images/makkah/gate-fahd.webp',
       imageAltAr: 'صورة باب الملك فهد (بوابة 79) بالمسجد الحرام',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
     {
+      city: 'MAKKAH',
       gateNumber: 100,
       nameAr: 'بوابة الملك عبد الله (التوسعة الشمالية)',
       nameEn: 'King Abdullah Expansion Gate',
@@ -88,8 +103,10 @@ export class HaramGatesGuide {
       longitude: 39.8256,
       imageUrl: '/images/makkah/king-abdullah-gate.webp',
       imageAltAr: 'صورة حقيقية للوحة وأقواس بوابة الملك عبد الله التوسعة الشمالية (بوابة 100)',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
     {
+      city: 'MAKKAH',
       gateNumber: 1,
       nameAr: 'باب الملك عبد العزيز',
       nameEn: 'King Abdulaziz Gate',
@@ -103,8 +120,10 @@ export class HaramGatesGuide {
       longitude: 39.8257,
       imageUrl: '/images/makkah/gate-abdulaziz.webp',
       imageAltAr: 'صورة باب الملك عبد العزيز (بوابة 1) بالمسجد الحرام',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
     {
+      city: 'MAKKAH',
       gateNumber: 45,
       nameAr: 'باب الفتح',
       nameEn: 'Bab Al-Fath Gate',
@@ -118,8 +137,10 @@ export class HaramGatesGuide {
       longitude: 39.828,
       imageUrl: '/images/makkah/gate-main-entrance.webp',
       imageAltAr: 'صورة حقيقية لأروقة المسجد الحرام جهة المروة وباب الفتح (بوابة 45)',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
     {
+      city: 'MAKKAH',
       gateNumber: 62,
       nameAr: 'باب العمرة',
       nameEn: 'Bab Al-Umrah Gate',
@@ -133,15 +154,52 @@ export class HaramGatesGuide {
       longitude: 39.824,
       imageUrl: '/images/makkah/bab-al-umrah.webp',
       imageAltAr: 'صورة حقيقية لمدخل ومآذن الجهة الشمالية الغربية باتجاه باب العمرة (بوابة 62)',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
+    },
+    {
+      city: 'MADINAH',
+      gateNumber: 1,
+      nameAr: 'باب السلام (المسجد النبوي)',
+      nameEn: 'Bab Al-Salam (Al-Masjid an-Nabawi)',
+      direction: 'SOUTH',
+      nearestAreaAr: 'الجهة الجنوبية الغربية / مسار السلام للرجال',
+      recommendedForHotels: ['المنطقة المركزية الجنوبية', 'الروضة'],
+      descriptionAr: 'المدخل التاريخي الرئيسي لدخول الرجال للسلام على النبي ﷺ وصاحبيه رضي الله عنهما.',
+      howToReachHotelAr: 'يخرج المسار باتجاه البقيع شرقاً أو الساحات الجنوبية نحو فنادق المنطقة المركزية.',
+      latitude: 24.467,
+      longitude: 39.6104,
+      imageUrl: '/images/madinah/nabawi-bab-salam.webp',
+      imageAltAr: 'صورة باب السلام بالمسجد النبوي (بوابة 1)',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY, REF_CATALOG.NUSUK_MINISTRY_HAJJ],
+    },
+    {
+      city: 'MADINAH',
+      gateNumber: 25,
+      nameAr: 'باب عثمان بن عفان (بوابات النساء 25)',
+      nameEn: 'Bab Uthman ibn Affan (Women Gate 25)',
+      direction: 'NORTH',
+      nearestAreaAr: 'الساحة الشمالية / مصليات النساء ومداخل الروضة للنساء',
+      recommendedForHotels: ['المنطقة المركزية الشمالية', 'أنوار المدينة'],
+      descriptionAr: 'بوابة رئيسية لتنظيم دخول الأخوات لمصليات النساء ومواعيد تصاريح الروضة الشريفة (بوابات 24–26 / 32 / 37).',
+      howToReachHotelAr: 'يفتح مباشرة على الساحات الشمالية المظللة باتجاه فنادق المنطقة المركزية الشمالية.',
+      latitude: 24.4694,
+      longitude: 39.6113,
+      imageUrl: '/images/madinah/nabawi-bab-uthman-25.webp',
+      imageAltAr: 'صورة بوابات الساحة الشمالية بالمسجد النبوي (بوابة 25)',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY, REF_CATALOG.NUSUK_MINISTRY_HAJJ],
     },
   ];
 
-  getAllGates(): HaramGate[] {
+  getAllGates(city: 'MAKKAH' | 'MADINAH' = 'MAKKAH'): HaramGate[] {
+    return this.gates.filter((g) => g.city === city);
+  }
+
+  getAllCitiesGates(): HaramGate[] {
     return [...this.gates];
   }
 
-  getGateByNumber(gateNumber: number): HaramGate | undefined {
-    return this.gates.find((g) => g.gateNumber === gateNumber);
+  getGateByNumber(gateNumber: number, city: 'MAKKAH' | 'MADINAH' = 'MAKKAH'): HaramGate | undefined {
+    return this.gates.find((g) => g.city === city && g.gateNumber === gateNumber);
   }
 
   getBestGatesForHotel(hotelOrAreaName: string): HaramGate[] {
@@ -153,9 +211,11 @@ export class HaramGatesGuide {
     );
   }
 
-  findNearestGate(lat: number, lng: number): NearestGateMatch {
+  findNearestGate(lat: number, lng: number, city?: 'MAKKAH' | 'MADINAH'): NearestGateMatch {
+    const inferredCity: 'MAKKAH' | 'MADINAH' = city || (lat >= 23.0 ? 'MADINAH' : 'MAKKAH');
+    const pool = this.gates.filter((g) => g.city === inferredCity);
     let best: NearestGateMatch | null = null;
-    for (const gate of this.gates) {
+    for (const gate of pool) {
       const dist = Math.round(haversineDistanceMeters(lat, lng, gate.latitude, gate.longitude));
       const bearing = Math.round(calculateBearingDegrees(lat, lng, gate.latitude, gate.longitude));
       if (!best || dist < best.distanceMeters) {
@@ -168,5 +228,35 @@ export class HaramGatesGuide {
       }
     }
     return best!;
+  }
+
+  findHotelReturnRoute(
+    currentLat: number,
+    currentLng: number,
+    hotelLat: number,
+    hotelLng: number,
+    hotelKey: string,
+    city?: 'MAKKAH' | 'MADINAH'
+  ): HotelReturnRoute {
+    const nearestNow = this.findNearestGate(currentLat, currentLng, city);
+    const keyMap: Record<string, number[]> = {
+      kiswah: [79, 100],
+      clock: [1],
+      'jabal-omar': [62],
+      ghazza: [45, 100],
+    };
+    const recNums = keyMap[hotelKey] || [79];
+    const recommendedExits = recNums
+      .map((n) => this.getGateByNumber(n, nearestNow.gate.city === 'MADINAH' ? 'MADINAH' : 'MAKKAH'))
+      .filter(Boolean) as HaramGate[];
+    const distanceToHotelMeters = Math.round(haversineDistanceMeters(currentLat, currentLng, hotelLat, hotelLng));
+    const bearingToHotelDegrees = Math.round(calculateBearingDegrees(currentLat, currentLng, hotelLat, hotelLng));
+    return {
+      nearestNow,
+      recommendedExits: recommendedExits.length > 0 ? recommendedExits : [nearestNow.gate],
+      distanceToHotelMeters,
+      bearingToHotelDegrees,
+      directionToHotelAr: bearingToArabicDirection(bearingToHotelDegrees),
+    };
   }
 }

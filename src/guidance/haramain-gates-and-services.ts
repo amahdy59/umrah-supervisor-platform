@@ -1,3 +1,5 @@
+import { KnowledgeReference, REF_CATALOG } from './references.js';
+
 /**
  * Comprehensive Makkah & Madinah Haramain Atlas:
  * - Sacred Kaaba core zones (Door, Multazam, Maqam Ibrahim, Hijr Ismail, Black Stone, Safa-Marwah)
@@ -34,6 +36,7 @@ export interface HaramLandmarkGateItem {
   summaryAr: string;
   benefitsAndServicesAr: string[];
   hotelAccessNoteAr?: string;
+  references?: KnowledgeReference[];
 }
 
 export interface HaramServiceBenefit {
@@ -45,6 +48,7 @@ export interface HaramServiceBenefit {
   howToBenefitAr: string;
   imageUrl?: string;
   imageAltAr?: string;
+  references?: KnowledgeReference[];
 }
 
 export class HaramainAtlasCatalog {
@@ -346,23 +350,42 @@ export class HaramainAtlasCatalog {
   ];
 
   getAllLandmarksAndGates(): HaramLandmarkGateItem[] {
-    return [...this.items];
+    return this.items.map((item) => ({
+      ...item,
+      references:
+        item.references ||
+        (item.id === 'NABAWI_RAWDAH_GREEN_DOME'
+          ? [REF_CATALOG.AGREED_RAWDAH, REF_CATALOG.NUSUK_MINISTRY_HAJJ]
+          : item.id === 'KAABA_DOOR_MULTAZAM' || item.id === 'KAABA_COURTYARD_HIJR'
+            ? [REF_CATALOG.BUKHARI_1613_BLACK_STONE_SIGN, REF_CATALOG.HARAMAIN_CARE_AUTHORITY]
+            : [REF_CATALOG.HARAMAIN_CARE_AUTHORITY]),
+    }));
   }
 
   getByCity(city: HaramCity): HaramLandmarkGateItem[] {
-    return this.items.filter((i) => i.city === city);
+    return this.getAllLandmarksAndGates().filter((i) => i.city === city);
   }
 
   getByCategory(category: HaramFeatureCategory): HaramLandmarkGateItem[] {
-    return this.items.filter((i) => i.category === category);
+    return this.getAllLandmarksAndGates().filter((i) => i.category === category);
   }
 
   getById(id: string): HaramLandmarkGateItem | undefined {
-    return this.items.find((i) => i.id === id);
+    return this.getAllLandmarksAndGates().find((i) => i.id === id);
   }
 
   getAllBenefits(city?: HaramCity): HaramServiceBenefit[] {
-    if (!city) return [...this.benefits];
-    return this.benefits.filter((b) => b.city === 'BOTH' || b.city === city);
+    const withRefs = this.benefits.map((b) => ({
+      ...b,
+      references:
+        b.references ||
+        (b.id === 'PRAYER_MULTIPLICATION'
+          ? [REF_CATALOG.AGREED_HARAM_MULTIPLIER]
+          : b.id === 'WHEELCHAIRS_AND_CARTS'
+            ? [REF_CATALOG.NUSUK_MINISTRY_HAJJ, REF_CATALOG.HARAMAIN_CARE_AUTHORITY]
+            : [REF_CATALOG.HARAMAIN_CARE_AUTHORITY]),
+    }));
+    if (!city) return withRefs;
+    return withRefs.filter((b) => b.city === 'BOTH' || b.city === city);
   }
 }

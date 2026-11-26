@@ -147,15 +147,12 @@
         <button type="button" class="mode-btn active" data-tab-target="manifest" data-i18n="sup.nav.manifest" aria-current="page">🚌 الأفواج والتسكين</button>
         <button type="button" class="mode-btn" data-tab-target="people" data-i18n="sup.nav.people">👥 سجل الأشخاص</button>
         <button type="button" class="mode-btn" data-tab-target="gameya" data-i18n="sup.nav.gameya">💰 الأقساط والجمعية</button>
-        <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 منشورات الواتساب</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="print" data-i18n="sup.nav.print">🖨️ الطباعة و QR</button>
+        <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 التواصل والأدلة</button>
+        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="women-guide" data-i18n="sup.nav.women">🧕 فقه النساء</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="haram-atlas" data-i18n="sup.nav.atlas">⛩️ أطلس الحرمين</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب</button>
       </div>
       <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="sup-more-popover" data-i18n="nav.more">
-        ☰ المزيد والأدوات
+        ⚙️ الأدوات
       </button>
     </nav>
   </header>
@@ -185,6 +182,9 @@
         <span style="font-size:0.8rem;" id="sup-sos-sub"></span>
       </div>
     </section>
+
+    <!-- Actionable Needs-Attention Queue Strip -->
+    <div id="sup-attention-strip" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.15rem;" aria-label="مهام تحتاج متابعة"></div>
 
     <!-- TAB 1: MULTI-GROUP BOARD, MANIFEST & ROOMING -->
     <section id="tab-manifest" class="tab-view active">
@@ -393,46 +393,113 @@
       </div>
     </section>
 
-    <!-- TAB 4: WHATSAPP BROADCAST HUB -->
+    <!-- TAB 4: COMMUNICATIONS & REFERENCED FIELD GUIDES (Merges Broadcasts + Women's Rawdah + Haram Atlas) -->
     <section id="tab-whatsapp" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title">💬 منشورات الواتساب المحدثة (7 مراحل)</h2>
-          <span class="badge badge-success">تتحدث تلقائياً ببيانات الفوج النشط</span>
+          <h2 class="card-title" data-i18n="sup.whatsapp.title">💬 منشورات الواتساب والأدلة الموثقة</h2>
+          <span class="badge badge-success">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
         </div>
-        <p style="font-size:0.9rem;color:var(--text-muted);">
-          رسائل منسقة للمشرف تتحدث آلياً باسم الفوج والفندق واسم المشرف ونقطة التجمع، مع ضوابط عبوات زمزم الرسمية بالمطار وبوابة 25 للروضة.
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
+          رسائل منسقة بالبيانات الحية للفوج النشط، متصلة بإرشاد الأخوات للروضة الشريفة وأطلس البوابات والمزارات ومراجعها الشرعية والرسمية.
         </p>
-      </div>
-      <div id="whatsapp-posts-container"></div>
-    </section>
-
-    <!-- TAB 5: PRINT CENTER -->
-    <section id="tab-print" class="tab-view" hidden>
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">🖨️ مركز الطباعة النظيفة وأكواد QR الحقيقية</h2>
-          <span class="badge badge-success">طباعة بدون قوائم أو أزرار</span>
-        </div>
-        <div class="grid-2" style="margin-bottom:0;">
-          <div class="info-box-neutral">
-            <h3 style="font-size:1rem;margin-bottom:0.5rem;">🪪 معصم وبطاقة المعتمر الذكية (QR حقيقي)</h3>
-            <label for="print-wristband-pilgrim" class="field-label">اختر المعتمر:</label>
-            <select id="print-wristband-pilgrim" class="field-input" style="margin-bottom:0.75rem;"></select>
-            <button type="button" id="btn-open-wristband" class="btn btn-primary" style="width:100%;">معاينة وطباعة البطاقة</button>
-          </div>
-
-          <div class="info-box-neutral">
-            <h3 style="font-size:1rem;margin-bottom:0.5rem;">📄 إقرار سداد والتزام خطة الرحلة</h3>
-            <label for="print-agreement-member" class="field-label">اختر المشترك:</label>
-            <select id="print-agreement-member" class="field-input" style="margin-bottom:0.75rem;"></select>
-            <button type="button" id="btn-open-agreement" class="btn btn-primary" style="width:100%;">معاينة وطباعة الإقرار</button>
-          </div>
+        <div class="atlas-filter-bar" role="group" aria-label="أقسام التواصل والأدلة" style="margin-bottom:0;">
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="BROADCASTS" aria-pressed="true" data-i18n="sup.whatsapp.subTabs.posts">💬 منشورات الواتساب (موجهة بالمرحلة)</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="WOMEN" aria-pressed="false" data-i18n="sup.whatsapp.subTabs.women">🧕 إرشاد الأخوات والروضة</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="ATLAS" aria-pressed="false" data-i18n="sup.whatsapp.subTabs.atlas">⛩️ مرجع البوابات والمزارات</button>
         </div>
       </div>
+
+      <div id="sup-comms-broadcasts-panel">
+        <div id="whatsapp-posts-container"></div>
+        <div id="sup-editorial-methodology-box" style="margin-top:1rem;"></div>
+      </div>
+
+      <div id="sup-comms-women-panel" hidden>
+        <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
+          <div class="card-header" style="border-bottom-color:var(--women-border);">
+            <h3 class="card-title" style="color:var(--women-accent);" data-i18n="sup.women.title">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</h3>
+            <span class="badge" style="background:var(--women-border);color:var(--women-accent);">دليل المعتمر وتنظيم نُسك</span>
+          </div>
+          <p style="font-size:0.92rem;line-height:1.75;">
+            توجيهات المشرفة المرافقة للرد على طوارئ فقه المعتمرة وتنسيق دخول الروضة الشريفة وفق المواعيد المتاحة فعلياً في تطبيق «نُسك».
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🕌 تنظيم دخول الروضة الشريفة للنساء (نُسك)</h3>
+              <span class="badge badge-success">حسب تصريح التطبيق</span>
+            </div>
+            <div class="info-box-neutral" style="margin-bottom:0.75rem;">
+              <strong>⏰ المواعيد والبوابات:</strong><br>
+              تُحدد فترات دخول النساء بدقة داخل تطبيق <strong>«نُسك»</strong> وقد تتغير بين المواسم؛ غالباً ما يتم التوجيه عبر <strong>باب عثمان بن عفان (رقم 25)</strong> وممرات الساحات الشمالية/الشرقية (24–26 أو نقاط 32/37 حسب تنظيم الحشود).
+            </div>
+            <div class="info-box-warn">
+              <strong>توجيهات المشرفة:</strong><br>
+              1. الحضور قبل موعد التصريح بـ 15–30 دقيقة والتقيد باللوحات الإرشادية.<br>
+              2. حفظ لقطة شاشة واضحة للـ QR كاحتياط لضعف الشبكة، مع إبقاء التطبيق مفتوحاً.<br>
+              3. تجربة خيار <strong>«المسار الفوري»</strong> في نُسك عند التواجد داخل المدينة وتفعيل GPS.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</h3></div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;font-size:0.88rem;">
+              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى (البخاري 1650 / مسلم 1211).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة («دليل المعتمر» ص 44).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف (البخاري 306).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له (أبو داود 1833).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
+          <div class="grid-2" style="margin-bottom:0;">
+            <div>
+              <div class="whatsapp-box" id="post-women-ihram"></div>
+              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-ihram">📋 نسخ المنشور</button>
+            </div>
+            <div>
+              <div class="whatsapp-box" id="post-women-rawdah"></div>
+              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-rawdah">📋 نسخ المنشور</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sup-comms-atlas-panel" hidden>
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h3 class="card-title" data-i18n="sup.atlas.title">⛩️ الدليل المصوّر لأبواب الحرمين ومنافعهما والمعالم (مرجع المشرف)</h3>
+            <span class="badge badge-success" data-i18n="sup.atlas.badge">صور حقيقية لمكة والمدينة</span>
+          </div>
+          <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;">
+            مرجع ميداني للمشرف لتوجيه المعتمرين عند البوابات، شرح منافع الحرمين الشريفين الموثقة رسمياً، وتحضير جولات المزارات بالصور.
+          </p>
+          <div class="atlas-filter-bar" role="group" aria-label="تصفية مرجع المعالم والأبواب" style="margin-bottom:0;">
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ALL" aria-pressed="true" data-i18n="sup.atlas.filter.all">🕌 الكل</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MAKKAH" aria-pressed="false" data-i18n="sup.atlas.filter.makkah">🕋 مكة وأبوابها</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MADINAH" aria-pressed="false" data-i18n="sup.atlas.filter.madinah">🌴 المدينة والروضة</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ZIYARAT" aria-pressed="false" data-i18n="sup.atlas.filter.ziyarat">⛰️ المزارات والمشاعر</button>
+          </div>
+        </div>
+
+        <div id="sup-haram-atlas-cards" class="grid-2"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" data-i18n="sup.atlas.benefitsTitle">🎁 منافع وخدمات الحرمين الشريفين للمعتمرين</h3>
+            <span class="badge badge-primary">توجيه ميداني للفوج</span>
+          </div>
+          <div id="sup-haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- TAB 6: SOS & OFFICIAL RESOURCES -->
+    <!-- TAB 5: SOS & OFFICIAL RESOURCES -->
     <section id="tab-sos" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
@@ -464,64 +531,29 @@
       </div>
     </section>
 
-    <!-- TAB 7: WOMEN'S GUIDANCE & RAWDAH -->
-    <section id="tab-women-guide" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
-        <div class="card-header" style="border-bottom-color:var(--women-border);">
-          <h2 class="card-title" style="color:var(--women-accent);">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</h2>
-          <span class="badge" style="background:var(--women-border);color:var(--women-accent);">دليل المعتمر وتنظيم نُسك</span>
-        </div>
-        <p style="font-size:0.92rem;line-height:1.75;">
-          توجيهات المشرفة المرافقة للرد على طوارئ فقه المعتمرة وتنسيق دخول الروضة الشريفة وفق المواعيد المتاحة فعلياً في تطبيق «نُسك».
-        </p>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">🕌 تنظيم دخول الروضة الشريفة للنساء (نُسك)</h3>
-            <span class="badge badge-success">حسب تصريح التطبيق</span>
-          </div>
-          <div class="info-box-neutral" style="margin-bottom:0.75rem;">
-            <strong>⏰ المواعيد والبوابات:</strong><br>
-            تُحدد فترات دخول النساء بدقة داخل تطبيق <strong>«نُسك»</strong> وقد تتغير بين المواسم؛ غالباً ما يتم التوجيه عبر <strong>باب عثمان بن عفان (رقم 25)</strong> وممرات الساحات الشمالية/الشرقية (24–26 أو نقاط 32/37 حسب تنظيم الحشود).
-          </div>
-          <div class="info-box-warn">
-            <strong>توجيهات المشرفة:</strong><br>
-            1. الحضور قبل موعد التصريح بـ 15–30 دقيقة والتقيد باللوحات الإرشادية.<br>
-            2. حفظ لقطة شاشة واضحة للـ QR كاحتياط لضعف الشبكة، مع إبقاء التطبيق مفتوحاً.<br>
-            3. تجربة خيار <strong>«المسار الفوري»</strong> في نُسك عند التواجد داخل المدينة وتفعيل GPS.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</h3></div>
-          <div style="display:flex;flex-direction:column;gap:0.65rem;font-size:0.88rem;">
-            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى.</div>
-            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة.</div>
-            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف.</div>
-            <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
-        <div class="grid-2" style="margin-bottom:0;">
-          <div>
-            <div class="whatsapp-box" id="post-women-ihram"></div>
-            <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-ihram">📋 نسخ المنشور</button>
-          </div>
-          <div>
-            <div class="whatsapp-box" id="post-women-rawdah"></div>
-            <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-rawdah">📋 نسخ المنشور</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 8: LUGGAGE & MEDICAL REGISTRY -->
+    <!-- TAB 6: LUGGAGE, MEDICAL REGISTRY & PRINT CENTER -->
     <section id="tab-logistics-health" class="tab-view" hidden>
+      <div class="card" style="margin-bottom:1.5rem;" id="sup-print-center-card">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="sup.print.title">🖨️ مركز الطباعة النظيفة وأكواد QR الحقيقية</h2>
+          <span class="badge badge-success">طباعة بدون قوائم أو أزرار</span>
+        </div>
+        <div class="grid-2" style="margin-bottom:0;">
+          <div class="info-box-neutral">
+            <h3 style="font-size:1rem;margin-bottom:0.5rem;">🪪 معصم وبطاقة المعتمر الذكية (QR حقيقي)</h3>
+            <label for="print-wristband-pilgrim" class="field-label">اختر المعتمر:</label>
+            <select id="print-wristband-pilgrim" class="field-input" style="margin-bottom:0.75rem;"></select>
+            <button type="button" id="btn-open-wristband" class="btn btn-primary" style="width:100%;">معاينة وطباعة البطاقة</button>
+          </div>
+
+          <div class="info-box-neutral">
+            <h3 style="font-size:1rem;margin-bottom:0.5rem;">📄 إقرار سداد والتزام خطة الرحلة</h3>
+            <label for="print-agreement-member" class="field-label">اختر المشترك:</label>
+            <select id="print-agreement-member" class="field-input" style="margin-bottom:0.75rem;"></select>
+            <button type="button" id="btn-open-agreement" class="btn btn-primary" style="width:100%;">معاينة وطباعة الإقرار</button>
+          </div>
+        </div>
+      </div>
       <div class="card" style="margin-bottom:1.5rem;">
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.luggage.title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
@@ -590,34 +622,6 @@
       </div>
     </section>
 
-    <!-- TAB 9: HARAMAIN GATES, BENEFITS & LANDMARKS PHOTO ATLAS -->
-    <section id="tab-haram-atlas" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="sup.atlas.title">⛩️ الدليل المصوّر لأبواب الحرمين ومنافعهما والمعالم (مرجع المشرف)</h2>
-          <span class="badge badge-success" data-i18n="sup.atlas.badge">صور حقيقية لمكة والمدينة</span>
-        </div>
-        <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;">
-          مرجع ميداني للمشرف لتوجيه المعتمرين عند البوابات، شرح منافع الحرمين الشريفين (زمزم، العربات، أمانات الحقائب، الإفتاء، العيادات)، وتحضير جولات المزارات بالصور (قباء، أحد، القبلتين، البقيع، حراء، وعرفات).
-        </p>
-        <div class="atlas-filter-bar" role="group" aria-label="تصفية مرجع المعالم والأبواب">
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ALL" aria-pressed="true" data-i18n="sup.atlas.filter.all">🕌 الكل</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MAKKAH" aria-pressed="false" data-i18n="sup.atlas.filter.makkah">🕋 مكة وأبوابها</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MADINAH" aria-pressed="false" data-i18n="sup.atlas.filter.madinah">🌴 المدينة والروضة</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ZIYARAT" aria-pressed="false" data-i18n="sup.atlas.filter.ziyarat">⛰️ المزارات والمشاعر</button>
-        </div>
-      </div>
-
-      <div id="sup-haram-atlas-cards" class="grid-2"></div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="sup.atlas.benefitsTitle">🎁 منافع وخدمات الحرمين الشريفين للمعتمرين</h2>
-          <span class="badge badge-primary">توجيه ميداني للفوج</span>
-        </div>
-        <div id="sup-haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
-      </div>
-    </section>
   </main>
 
   <!-- Mobile Bottom Bar (5 spacious slots) -->
@@ -625,19 +629,16 @@
     <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span data-i18n="sup.nav.mobile.manifest">الأفواج</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span data-i18n="sup.nav.mobile.people">الأشخاص</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span data-i18n="sup.nav.mobile.gameya">الأقساط</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">الواتساب</span></button>
-    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">☰</span><span data-i18n="nav.mobile.more">المزيد</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">التواصل</span></button>
+    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">⚙️</span><span data-i18n="nav.mobile.more">الأدوات</span></button>
   </nav>
 
-  <!-- Shared Mobile & Tablet "More" Popover -->
+  <!-- Shared Mobile & Tablet Operations & Tools Popover -->
   <div id="sup-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">أقسام وأدوات المشرف</div>
-    <nav class="more-popover-grid" aria-label="أقسام إضافية للمشرف">
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="print" data-i18n="sup.nav.print">🖨️ مركز الطباعة و QR</button>
+    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">عمليات وإعدادات المشرف</div>
+    <nav class="more-popover-grid" aria-label="أقسام وأدوات إضافية للمشرف">
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ والموارد الرسمية</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="women-guide" data-i18n="sup.nav.women">🧕 فقه النساء والروضة</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="haram-atlas" data-i18n="sup.nav.atlas">⛩️ أطلس الحرمين والمزارات</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والسجل الطبي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج النشط</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>

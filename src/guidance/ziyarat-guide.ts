@@ -1,3 +1,5 @@
+import { KnowledgeReference, REF_CATALOG } from './references.js';
+
 export enum ZiyaratCity {
   MAKKAH = 'MAKKAH',
   MADINAH = 'MADINAH',
@@ -14,6 +16,7 @@ export interface ZiyaratSite {
   recommendedTimes?: string;
   imageUrl?: string;
   imageAltAr?: string;
+  references: KnowledgeReference[];
 }
 
 export class ZiyaratGuideCatalog {
@@ -31,6 +34,7 @@ export class ZiyaratGuideCatalog {
       sunnahEtiquette:
         'يُسن التطهر والوضوء في الفندق قبل الخروج إليه، ثم صلاة ركعتين تحية المسجد أو نافلة، والإكثار من الدعاء. ويمكن المشي إليه عبر ممشى درب السنة (~3 كم) من المسجد النبوي.',
       recommendedTimes: 'كان النبي ﷺ يزوره كل سبت راكباً وماشياً، وأفضل أوقاته في الضحى.',
+      references: [REF_CATALOG.QUBA_IBN_MAJAH_1412],
     },
     {
       id: 'MOUNT_UHUD',
@@ -46,6 +50,7 @@ export class ZiyaratGuideCatalog {
       bidahWarnings:
         'يجب الحذر من المخالفات: عدم التمسح بالأحجار أو تراب المقبرة، عدم الطواف حول القبور، وعدم دعاء الأموات أو رمي النقود في الشباك.',
       recommendedTimes: 'في الصباح الباكر أو قبل الغروب لتجنب أشعة الشمس الحارقة.',
+      references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR],
     },
     {
       id: 'MASJID_QIBLATAYN',
@@ -57,6 +62,7 @@ export class ZiyaratGuideCatalog {
       virtueAr:
         'المسجد التاريخي الذي نزل فيه الوحي بتحويل القبلة أثناء الصلاة من بيت المقدس إلى الكعبة المشرفة بمكة المكرمة استجابة لرغبة النبي ﷺ: ﴿قَدْ نَرَى تَقَلُّبَ وَجْهِكَ فِي السَّمَاءِ فَلَنُوَلِّيَنَّكَ قِبْلَةً تَرْضَاهَا﴾ (البقرة: 144).',
       sunnahEtiquette: 'صلاة ركعتين تحية المسجد، وتأمل هذا الحدث التاريخي العظيم في ترسيخ هوية الأمة والسمع والطاعة.',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
     {
       id: 'AL_BAQI_CEMETERY',
@@ -71,6 +77,7 @@ export class ZiyaratGuideCatalog {
         'الوقوف خارج الأسوار أو عند الدخول للرجال السلام بالسنة: «السَّلَامُ عَلَيْكُمْ دَارَ قَوْمٍ مُؤْمِنِينَ وَإِنَّا إِنْ شَاءَ اللَّهُ بِكُمْ لَاحِقُونَ» والدعاء لهم بالمغفرة والرحمة.',
       bidahWarnings: 'عدم التمسح بالأسوار أو الدعاء عند القبور بطلب الحاجات من أهلها، فالزيارة للاتعاظ والدعاء للأموات.',
       recommendedTimes: 'يُفتح للرجال غالباً بعد صلاتي الفجر والعصر.',
+      references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR, REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
 
     // Makkah Sites
@@ -86,6 +93,7 @@ export class ZiyaratGuideCatalog {
       sunnahEtiquette:
         'مشاهدة الجبل وزيارة حي حراء الثقافي للتعرف على قصة الوحي. الصعود للغار ليس نسكاً ولا سنة واجبة، ويُحذّر كبار السن وأصحاب أمراض القلب من صعوده لشدة وعورته.',
       bidahWarnings: 'تجنب الكتابة على صخور الجبل أو ترك القمامة أو الاعتقاد ببركة مادية في حجارة الغار أو الصلاة بقصد التبرك بالمكان.',
+      references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR],
     },
     {
       id: 'JABAL_THAWR',
@@ -99,6 +107,7 @@ export class ZiyaratGuideCatalog {
       sunnahEtiquette:
         'استحضار دروس الهجرة والتوكل على الله وبذل الأسباب وحب الصحابة للنبي ﷺ.',
       bidahWarnings: 'الصعود للغار شاق جداً وليس من مناسك العمرة، ويجب تجنب التبرك بالحجارة أو الصلاة بقصد الغار نفسه.',
+      references: [REF_CATALOG.UTAYR_DALIL_MUTAMIR],
     },
     {
       id: 'HOLY_SITES_MINA_ARAFAT',
@@ -111,6 +120,7 @@ export class ZiyaratGuideCatalog {
         'أرض المناسك الكبرى، وفيها جبل الرحمة ومسجد نمرة بعرفات، ومسجد الخيف بمنى، وجمرات العقبة.',
       sunnahEtiquette:
         'المرور بها للعبرة والاطلاع على أماكن الحج، والتضرع بالدعاء أن يرزق الله المعتمر حجاً مبروراً.',
+      references: [REF_CATALOG.HARAMAIN_CARE_AUTHORITY],
     },
   ];
 

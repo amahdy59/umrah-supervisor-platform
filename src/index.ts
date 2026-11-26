@@ -20,3 +20,4 @@ export * from './guidance/packing-checklist.js';
 export * from './guidance/haram-gates-guide.js';
 export * from './guidance/haramain-gates-and-services.js';
 export * from './guidance/official-resources.js';
+export * from './guidance/references.js';
