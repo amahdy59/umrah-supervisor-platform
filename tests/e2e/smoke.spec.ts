@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v14');
+    expect(swText).toContain('umrah-companion-v15');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -141,9 +141,16 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.goto('/supervisor.html');
     await expect(page.locator('#active-group-switcher')).toBeVisible();
 
-    // Progressive disclosure, live preview, filters, & modals in enhanced Installments tab
+    // Clean modal-based forms & Installments hub UX
+    await page.click('#btn-open-add-pilgrim');
+    await expect(page.locator('#add-pilgrim-modal')).toBeVisible();
+    await page.click('#add-pilgrim-modal [data-close-dialog="add-pilgrim-modal"] >> nth=0');
+    await expect(page.locator('#add-pilgrim-modal')).toBeHidden();
+
     await page.click('.top-primary-nav [data-tab-target="gameya"]');
     await expect(page.locator('#gameya-summary-strip')).toBeVisible();
+    await page.click('#btn-open-add-gameya');
+    await expect(page.locator('#add-gameya-modal')).toBeVisible();
     await expect(page.locator('#gameya-plan-preview')).toContainText('مقدم');
     await page.selectOption('#new-gam-plan', 'FULL_CASH');
     await expect(page.locator('#gam-down-wrap')).toBeHidden();
@@ -151,6 +158,8 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#gameya-plan-preview')).toContainText('دفعة واحدة كاملة');
     await page.selectOption('#new-gam-plan', 'ROTATING_ROSCA');
     await expect(page.locator('#gam-turn-wrap')).toBeVisible();
+    await page.click('#add-gameya-modal [data-close-dialog="add-gameya-modal"] >> nth=0');
+    await expect(page.locator('#add-gameya-modal')).toBeHidden();
 
     // Filter pills & quick payment modal projection
     await page.click('[data-gameya-filter="OVERDUE"]');
@@ -192,13 +201,14 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(pullModal).toBeHidden();
     await expect(page.locator('#metric-trip-title')).toHaveText('Cloud Synced Group X');
 
-    // Verify Proactive Attention Queue Strip & Consolidated Comms Hub (Broadcasts / Women / Haram Atlas)
+    // Verify Proactive Attention Queue Strip & Separated WhatsApp Messaging Hub (Visitor Atlas stays in Visitor App /)
     await expect(page.locator('#sup-attention-strip')).toBeVisible();
     await page.click('.top-primary-nav [data-tab-target="whatsapp"]');
     await expect(page.locator('#tab-whatsapp')).toBeVisible();
-    await page.click('[data-comms-subtab="ATLAS"]');
-    await expect(page.locator('#sup-comms-atlas-panel')).toBeVisible();
-    await expect(page.locator('#sup-haram-atlas-cards')).toContainText('باب الملك');
+    await expect(page.locator('#tab-whatsapp a[href="/?tab=haram-atlas"]')).toBeVisible();
+    await page.click('[data-comms-subtab="WOMEN"]');
+    await expect(page.locator('#sup-comms-women-panel')).toBeVisible();
+    await expect(page.locator('#post-women-rawdah')).toContainText('بوابة 25');
 
     // Reset confirmation modal guard from popover (open via evaluate or trigger)
     await page.evaluate(() => {

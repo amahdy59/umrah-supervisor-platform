@@ -37,7 +37,7 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.nav.manifest': { ar: '🚌 الأفواج والتسكين', en: '🚌 Groups & Rooming' },
   'sup.nav.people': { ar: '👥 سجل الأشخاص', en: '👥 People CRM' },
   'sup.nav.gameya': { ar: '💰 الأقساط والجمعية', en: '💰 Installments' },
-  'sup.nav.whatsapp': { ar: '💬 التواصل والأدلة', en: '💬 Comms & Guides' },
+  'sup.nav.whatsapp': { ar: '💬 رسائل الواتساب', en: '💬 WhatsApp Messages' },
   'sup.nav.print': { ar: '🖨️ الطباعة و QR', en: '🖨️ Print & QR' },
   'sup.nav.sos': { ar: '🚨 الطوارئ', en: '🚨 SOS Center' },
   'sup.nav.women': { ar: '🧕 فقه النساء', en: '🧕 Women Guide' },
@@ -46,7 +46,7 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.nav.mobile.manifest': { ar: 'الأفواج', en: 'Groups' },
   'sup.nav.mobile.people': { ar: 'الأشخاص', en: 'People' },
   'sup.nav.mobile.gameya': { ar: 'الأقساط', en: 'Payments' },
-  'sup.nav.mobile.whatsapp': { ar: 'التواصل', en: 'Comms' },
+  'sup.nav.mobile.whatsapp': { ar: 'الواتساب', en: 'WhatsApp' },
   'sup.popoverTitle': { ar: 'عمليات وإعدادات المشرف', en: 'Supervisor Operations & Tools' },
 
   // Shared Header Tools

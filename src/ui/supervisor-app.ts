@@ -54,7 +54,6 @@ import {
   resolveCloudSosEvent,
 } from './cloud-sync.js';
 import { OFFICIAL_RESOURCES_EN } from './guidance-en.js';
-import { renderSupervisorHaramAtlas } from './supervisor/atlas-view.js';
 import { enforcePrivacyLockIfConfigured, wirePrivacyLockHandlers } from './supervisor/privacy-lock.js';
 import type {
   PilgrimRecord,
@@ -499,7 +498,6 @@ function renderAll(): void {
   renderWomenGuidanceSynced();
   renderLuggageSection();
   renderMedicalSection();
-  renderSupervisorHaramAtlas();
 }
 
 function renderAttentionQueueStrip(): void {
@@ -1020,6 +1018,7 @@ function handleAssignRoom(): void {
     pilgrimRec.roomNumber = roomRec.roomNumber;
     saveState();
     renderAll();
+    closeDialogById('assign-room-modal');
     showToast(`✅ تم تسكين ${pilgrimRec.fullName} في غرفة ${roomRec.roomNumber}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
@@ -1206,13 +1205,11 @@ function renderWhatsAppHub(): void {
   });
 }
 
-function setCommsSubTab(sub: 'BROADCASTS' | 'WOMEN' | 'ATLAS'): void {
+function setCommsSubTab(sub: 'BROADCASTS' | 'WOMEN'): void {
   const bPanel = document.getElementById('sup-comms-broadcasts-panel');
   const wPanel = document.getElementById('sup-comms-women-panel');
-  const aPanel = document.getElementById('sup-comms-atlas-panel');
   if (bPanel) bPanel.hidden = sub !== 'BROADCASTS';
   if (wPanel) wPanel.hidden = sub !== 'WOMEN';
-  if (aPanel) aPanel.hidden = sub !== 'ATLAS';
 
   document.querySelectorAll<HTMLButtonElement>('[data-comms-subtab]').forEach((btn) => {
     btn.setAttribute('aria-pressed', String(btn.dataset.commsSubtab === sub));
@@ -2100,13 +2097,13 @@ function renderMedicalSection(): void {
 // =========================================================================
 function switchTab(rawTab: string): void {
   let tab = rawTab;
-  let commsSub: 'BROADCASTS' | 'WOMEN' | 'ATLAS' | null = null;
+  let commsSub: 'BROADCASTS' | 'WOMEN' | null = null;
   if (rawTab === 'women-guide') {
     tab = 'whatsapp';
     commsSub = 'WOMEN';
   } else if (rawTab === 'haram-atlas') {
-    tab = 'whatsapp';
-    commsSub = 'ATLAS';
+    window.open('/?tab=haram-atlas', '_blank', 'noopener');
+    return;
   } else if (rawTab === 'print') {
     tab = 'logistics-health';
   }
@@ -2555,6 +2552,25 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Add Pilgrim Form (also upserts into persistent People Directory!)
+  // Modal Triggers for Clean Form Separation
+  const bindModalOpen = (btnId: string, modalId: string, focusId?: string, beforeOpen?: () => void) => {
+    document.getElementById(btnId)?.addEventListener('click', () => {
+      beforeOpen?.();
+      openDialogById(modalId);
+      if (focusId) {
+        window.requestAnimationFrame(() => (document.getElementById(focusId) as HTMLElement | null)?.focus());
+      }
+    });
+  };
+  bindModalOpen('btn-open-add-pilgrim', 'add-pilgrim-modal', 'new-pilgrim-name');
+  bindModalOpen('btn-open-add-room', 'add-room-modal', 'new-room-num');
+  bindModalOpen('btn-open-assign-room', 'assign-room-modal', 'assign-pilgrim-select', renderRoomsBoard);
+  bindModalOpen('btn-open-add-person', 'add-person-modal', 'crm-name');
+  bindModalOpen('btn-open-add-gameya', 'add-gameya-modal', 'new-gam-name', updateGameyaFormFields);
+  bindModalOpen('btn-open-add-sos', 'add-sos-modal', 'sos-pilgrim-name');
+  bindModalOpen('btn-open-add-bag', 'add-bag-modal', 'new-bag-name');
+  bindModalOpen('btn-open-add-med', 'add-med-modal', 'new-med-name');
+
   document.getElementById('add-pilgrim-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const active = getActiveGroup();
@@ -2600,6 +2616,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderAll();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-pilgrim-modal');
     showToast(`✅ تمت إضافة ${fullName} للفوج وحفظه في سجل الأشخاص الدائم`);
   });
 
@@ -2652,6 +2669,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderPeopleDirectory();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-person-modal');
     showToast(`✅ تم حفظ سجل "${fullName}" في قاعدة الأشخاص الدائمة`);
   });
 
@@ -2685,6 +2703,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderRoomsBoard();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-room-modal');
     showToast(`✅ تمت إضافة غرفة ${num}`);
   });
   document.getElementById('btn-assign-room')?.addEventListener('click', handleAssignRoom);
@@ -2801,6 +2820,7 @@ window.addEventListener('DOMContentLoaded', () => {
       downEl.setAttribute('aria-invalid', 'false');
     }
     updateGameyaFormFields();
+    closeDialogById('add-gameya-modal');
     showToast(
       initialPaid > 0
         ? `✅ تم تسجيل ${name} وتحصيل ${initialPaid.toLocaleString('ar-EG')} ج.م`
@@ -2912,6 +2932,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderAll();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-sos-modal');
     showToast(`🚨 تم تسجيل بلاغ ${alert.pilgrimName} وحساب المسافة للفندق`, true);
   });
 
@@ -2943,6 +2964,7 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderLuggageSection();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-bag-modal');
     showToast('✅ تمت إضافة الحقيبة وتوليد الكود');
   });
 
@@ -2975,23 +2997,14 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
     renderMedicalSection();
     (e.target as HTMLFormElement).reset();
+    closeDialogById('add-med-modal');
     showToast(`✅ تمت إضافة الملف الصحي لـ ${name}`);
   });
 
   document.querySelectorAll<HTMLButtonElement>('[data-comms-subtab]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const sub = (btn.dataset.commsSubtab || 'BROADCASTS') as 'BROADCASTS' | 'WOMEN' | 'ATLAS';
+      const sub = (btn.dataset.commsSubtab === 'WOMEN' ? 'WOMEN' : 'BROADCASTS') as 'BROADCASTS' | 'WOMEN';
       setCommsSubTab(sub);
-    });
-  });
-
-  document.querySelectorAll<HTMLButtonElement>('[data-sup-atlas-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const f = btn.dataset.supAtlasFilter || 'ALL';
-      document.querySelectorAll<HTMLButtonElement>('[data-sup-atlas-filter]').forEach((b) => {
-        b.setAttribute('aria-pressed', String(b === btn));
-      });
-      renderSupervisorHaramAtlas(f);
     });
   });
 

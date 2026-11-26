@@ -147,7 +147,7 @@
         <button type="button" class="mode-btn active" data-tab-target="manifest" data-i18n="sup.nav.manifest" aria-current="page">🚌 الأفواج والتسكين</button>
         <button type="button" class="mode-btn" data-tab-target="people" data-i18n="sup.nav.people">👥 سجل الأشخاص</button>
         <button type="button" class="mode-btn" data-tab-target="gameya" data-i18n="sup.nav.gameya">💰 الأقساط والجمعية</button>
-        <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 التواصل والأدلة</button>
+        <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 رسائل الواتساب</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
         <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ</button>
       </div>
@@ -204,24 +204,11 @@
           <h2 class="card-title" data-i18n="sup.manifest.title">🚌 كشف حضور باص الفوج النشط + روابط QR</h2>
           <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary" id="manifest-count-badge"></span>
+            <button type="button" id="btn-open-add-pilgrim" class="btn btn-primary" style="font-size:0.84rem;">➕ إضافة معتمر</button>
             <button type="button" id="btn-board-all" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.boardAll">✅ تأكيد ركوب الجميع</button>
             <button type="button" id="btn-export-csv" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.exportCsv">📥 تصدير CSV</button>
           </div>
         </div>
-
-        <form id="add-pilgrim-form" class="form-inline-grid" name="addPilgrim">
-          <div><label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label><input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" placeholder="الاسم الثلاثي" required></div>
-          <div><label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label><input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" class="field-input" placeholder="A98765432" required></div>
-          <div><label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label><input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
-          <div>
-            <label for="new-pilgrim-gender" class="field-label">النوع:</label>
-            <select id="new-pilgrim-gender" name="gender" class="field-input">
-              <option value="MALE">رجل</option>
-              <option value="FEMALE">امرأة</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary">➕ إضافة للفوج والسجل</button>
-        </form>
 
         <search style="display:block;margin-bottom:0.85rem;">
           <label for="manifest-search" class="field-label">بحث سريع في الكشف:</label>
@@ -249,38 +236,10 @@
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)</h2>
-          <span class="badge badge-success">يمنع الخلط غير العائلي وتجاوز السعة</span>
-        </div>
-
-        <div class="grid-2" style="margin-bottom:1rem;">
-          <form id="add-room-form" class="info-box-neutral">
-            <strong style="display:block;margin-bottom:0.5rem;">1. إضافة غرفة جديدة</strong>
-            <div class="form-inline-grid" style="margin-bottom:0.5rem;">
-              <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" class="field-input" placeholder="508" required></div>
-              <div>
-                <label for="new-room-type" class="field-label">نوع الغرفة:</label>
-                <select id="new-room-type" class="field-input">
-                  <option value="DOUBLE">ثنائية (2)</option>
-                  <option value="TRIPLE">ثلاثية (3)</option>
-                  <option value="QUAD">رباعية (4)</option>
-                  <option value="SUITE">جناح (4)</option>
-                </select>
-              </div>
-            </div>
-            <label for="new-room-family" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.65rem;cursor:pointer;min-height:44px;">
-              <input type="checkbox" id="new-room-family" style="width:20px;height:20px;">
-              <span>غرفة عائلية (يُسمح بسكن المحارم معاً)</span>
-            </label>
-            <button type="submit" class="btn btn-secondary" style="width:100%;">➕ فتح غرفة</button>
-          </form>
-
-          <div class="info-box-neutral">
-            <strong style="display:block;margin-bottom:0.5rem;">2. تسكين معتمر في غرفة</strong>
-            <div class="form-inline-grid" style="margin-bottom:0.65rem;">
-              <div><label for="assign-pilgrim-select" class="field-label">المعتمر:</label><select id="assign-pilgrim-select" class="field-input"></select></div>
-              <div><label for="assign-room-select" class="field-label">الغرفة:</label><select id="assign-room-select" class="field-input"></select></div>
-            </div>
-            <button type="button" id="btn-assign-room" class="btn btn-primary" style="width:100%;">🏨 تأكيد التسكين بالضوابط الشرعية</button>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-success">يمنع الخلط غير العائلي وتجاوز السعة</span>
+            <button type="button" id="btn-open-add-room" class="btn btn-secondary" style="font-size:0.84rem;">➕ فتح غرفة</button>
+            <button type="button" id="btn-open-assign-room" class="btn btn-primary" style="font-size:0.84rem;">🏨 تسكين معتمر</button>
           </div>
         </div>
 
@@ -293,32 +252,14 @@
       <div class="card">
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.people.title">👥 سجل الأشخاص الدائم عبر الرحلات (CRM)</h2>
-          <span class="badge badge-warning" id="people-count-badge"></span>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-warning" id="people-count-badge"></span>
+            <button type="button" id="btn-open-add-person" class="btn btn-primary" style="font-size:0.84rem;">➕ إضافة شخص للسجل</button>
+          </div>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">
           احتفظ بملفات الأشخاص الدائمة (الجواز وتاريخ انتهائه، المرافق، الاحتياجات الطبية، وتاريخ عمراتهم السابقة)، وأدرجهم في أي فوج جديد بنقرة واحدة مع فحص تلقائي لصلاحية الجواز (6 أشهر).
         </p>
-
-        <form id="add-person-form" class="form-inline-grid">
-          <div><label for="crm-name" class="field-label">الاسم الكامل:</label><input id="crm-name" autocomplete="name" class="field-input" required></div>
-          <div><label for="crm-passport" class="field-label">رقم الجواز:</label><input id="crm-passport" class="field-input" required></div>
-          <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" type="date" class="field-input"></div>
-          <div><label for="crm-phone" class="field-label">الهاتف / واتساب:</label><input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
-          <div>
-            <label for="crm-gender" class="field-label">النوع:</label>
-            <select id="crm-gender" class="field-input">
-              <option value="MALE">رجل</option>
-              <option value="FEMALE">امرأة</option>
-            </select>
-          </div>
-          <div><label for="crm-ec-phone" class="field-label">هاتف طوارئ قريب:</label><input id="crm-ec-phone" type="tel" dir="ltr" class="field-input"></div>
-          <div><label for="crm-notes" class="field-label">ملاحظات طبية / سكنية:</label><input id="crm-notes" class="field-input"></div>
-          <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.84rem;">
-            <label for="crm-wheelchair"><input type="checkbox" id="crm-wheelchair"> كرسي متحرك</label>
-            <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
-          </div>
-          <button type="submit" class="btn btn-primary">💾 حفظ بالسجل الدائم</button>
-        </form>
 
         <search style="display:block;margin-bottom:0.85rem;">
           <label for="people-search" class="field-label">بحث في سجل الأشخاص:</label>
@@ -351,43 +292,12 @@
           <h2 class="card-title" data-i18n="sup.gameya.title">💰 خطط الأقساط المرنة والجمعية</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
+            <button type="button" id="btn-open-add-gameya" class="btn btn-primary" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;">➕ إضافة مشترك</button>
             <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;">📥 تصدير كشف الأقساط CSV</button>
           </div>
         </div>
 
         <div id="gameya-summary-strip" class="metrics-grid" style="margin-bottom:1.1rem;" aria-label="ملخص التحصيل والمتأخرات"></div>
-
-        <form id="add-gameya-form" class="form-inline-grid" name="addInstallmentMember" style="margin-bottom:0.65rem;">
-          <div><label for="new-gam-name" class="field-label">اسم المشترك:</label><input id="new-gam-name" name="memberName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" required></div>
-          <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" name="memberPhone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
-          <div class="field-span-wide">
-            <label for="new-gam-plan" class="field-label">نظام السداد:</label>
-            <select id="new-gam-plan" name="planType" class="field-input">
-              <option value="DEPOSIT_PLUS_MONTHLY">مقدم حجز + أقساط شهرية</option>
-              <option value="DIRECT_INSTALLMENT">تقسيط شهري متساوٍ</option>
-              <option value="ROTATING_ROSCA">جمعية دورية بالأدوار</option>
-              <option value="DEPOSIT_PLUS_FINAL">مقدم + الباقي قبل السفر</option>
-              <option value="BIWEEKLY_INSTALLMENT">تقسيط كل أسبوعين</option>
-              <option value="FULL_CASH">سداد نقدي كامل</option>
-            </select>
-          </div>
-          <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" value="40000" min="100" class="field-input" required></div>
-          <div id="gam-down-wrap">
-            <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
-            <input id="new-gam-down" name="downPayment" type="number" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
-            <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
-          </div>
-          <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" value="6" min="1" max="48" class="field-input"></div>
-          <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" value="1" min="1" max="48" class="field-input" disabled></div>
-          <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
-          <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
-            <input type="checkbox" id="new-gam-mark-paid" style="width:20px;height:20px;">
-            <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
-          </div>
-          <button type="submit" class="btn btn-primary">➕ إضافة مشترك</button>
-        </form>
-
-        <div id="gameya-plan-preview" class="info-box-neutral" role="status" style="margin-bottom:1rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.85rem;">
           <div class="atlas-filter-bar" role="group" aria-label="تصفية المشتركين حسب الحالة" style="margin-bottom:0;">
@@ -425,26 +335,27 @@
       </div>
     </section>
 
-    <!-- TAB 4: COMMUNICATIONS & REFERENCED FIELD GUIDES (Merges Broadcasts + Women's Rawdah + Haram Atlas) -->
+    <!-- TAB 4: WHATSAPP BROADCASTS & SISTERS COORDINATION -->
     <section id="tab-whatsapp" class="tab-view" hidden>
       <div class="card" style="margin-bottom:1.25rem;">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="sup.whatsapp.title">💬 منشورات الواتساب والأدلة الموثقة</h2>
-          <span class="badge badge-success">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
+          <h2 class="card-title" data-i18n="sup.whatsapp.title">💬 رسائل الواتساب الموجهة للفوج</h2>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-success">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
+            <a href="/?tab=haram-atlas" target="_blank" rel="noopener" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;text-decoration:none;">⛩️ دليل الحرمين والزوار (تطبيق المعتمر) ↗</a>
+          </div>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
-          رسائل منسقة بالبيانات الحية للفوج النشط، متصلة بإرشاد الأخوات للروضة الشريفة وأطلس البوابات والمزارات ومراجعها الشرعية والرسمية.
+          إرسال وتعديل رسائل الواتساب الجاهزة للفوج ومجموعة الأخوات بالبيانات الحية. (المعالم والأبواب والمناسك مخصصة في تطبيق المعتمر/الزائر).
         </p>
-        <div class="atlas-filter-bar" role="group" aria-label="أقسام التواصل والأدلة" style="margin-bottom:0;">
+        <div class="atlas-filter-bar" role="group" aria-label="أقسام رسائل الواتساب" style="margin-bottom:0;">
           <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="BROADCASTS" aria-pressed="true" data-i18n="sup.whatsapp.subTabs.posts">💬 منشورات الواتساب (موجهة بالمرحلة)</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="WOMEN" aria-pressed="false" data-i18n="sup.whatsapp.subTabs.women">🧕 إرشاد الأخوات والروضة</button>
-          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="ATLAS" aria-pressed="false" data-i18n="sup.whatsapp.subTabs.atlas">⛩️ مرجع البوابات والمزارات</button>
+          <button type="button" class="btn btn-secondary atlas-filter-btn" data-comms-subtab="WOMEN" aria-pressed="false" data-i18n="sup.whatsapp.subTabs.women">🧕 رسائل وتوجيه الأخوات</button>
         </div>
       </div>
 
       <div id="sup-comms-broadcasts-panel">
         <div id="whatsapp-posts-container"></div>
-        <div id="sup-editorial-methodology-box" style="margin-top:1rem;"></div>
       </div>
 
       <div id="sup-comms-women-panel" hidden>
@@ -456,6 +367,20 @@
           <p style="font-size:0.92rem;line-height:1.75;">
             توجيهات المشرفة المرافقة للرد على طوارئ فقه المعتمرة وتنسيق دخول الروضة الشريفة وفق المواعيد المتاحة فعلياً في تطبيق «نُسك».
           </p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
+          <div class="grid-2" style="margin-bottom:0;">
+            <div>
+              <div class="whatsapp-box" id="post-women-ihram"></div>
+              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-ihram">📋 نسخ المنشور</button>
+            </div>
+            <div>
+              <div class="whatsapp-box" id="post-women-rawdah"></div>
+              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-rawdah">📋 نسخ المنشور</button>
+            </div>
+          </div>
         </div>
 
         <div class="grid-2">
@@ -486,48 +411,6 @@
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
-          <div class="grid-2" style="margin-bottom:0;">
-            <div>
-              <div class="whatsapp-box" id="post-women-ihram"></div>
-              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-ihram">📋 نسخ المنشور</button>
-            </div>
-            <div>
-              <div class="whatsapp-box" id="post-women-rawdah"></div>
-              <button type="button" class="btn btn-secondary" style="margin-top:0.6rem;" data-copy-box="post-women-rawdah">📋 نسخ المنشور</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="sup-comms-atlas-panel" hidden>
-        <div class="card" style="margin-bottom:1.25rem;">
-          <div class="card-header">
-            <h3 class="card-title" data-i18n="sup.atlas.title">⛩️ الدليل المصوّر لأبواب الحرمين ومنافعهما والمعالم (مرجع المشرف)</h3>
-            <span class="badge badge-success" data-i18n="sup.atlas.badge">صور حقيقية لمكة والمدينة</span>
-          </div>
-          <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.85rem;">
-            مرجع ميداني للمشرف لتوجيه المعتمرين عند البوابات، شرح منافع الحرمين الشريفين الموثقة رسمياً، وتحضير جولات المزارات بالصور.
-          </p>
-          <div class="atlas-filter-bar" role="group" aria-label="تصفية مرجع المعالم والأبواب" style="margin-bottom:0;">
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ALL" aria-pressed="true" data-i18n="sup.atlas.filter.all">🕌 الكل</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MAKKAH" aria-pressed="false" data-i18n="sup.atlas.filter.makkah">🕋 مكة وأبوابها</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="MADINAH" aria-pressed="false" data-i18n="sup.atlas.filter.madinah">🌴 المدينة والروضة</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-sup-atlas-filter="ZIYARAT" aria-pressed="false" data-i18n="sup.atlas.filter.ziyarat">⛰️ المزارات والمشاعر</button>
-          </div>
-        </div>
-
-        <div id="sup-haram-atlas-cards" class="grid-2"></div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title" data-i18n="sup.atlas.benefitsTitle">🎁 منافع وخدمات الحرمين الشريفين للمعتمرين</h3>
-            <span class="badge badge-primary">توجيه ميداني للفوج</span>
-          </div>
-          <div id="sup-haram-benefits-grid" class="grid-2" style="margin-bottom:0;"></div>
-        </div>
       </div>
     </section>
 
@@ -538,16 +421,10 @@
           <h2 class="card-title" data-i18n="sup.sos.title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-danger">حساب المسافة للفندق</span>
+            <button type="button" id="btn-open-add-sos" class="btn btn-danger" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;">🆘 تسجيل بلاغ نشط</button>
             <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;" data-i18n="sup.sos.pullBtn">☁️ تحديث من D1</button>
           </div>
         </div>
-
-        <form id="add-sos-form" class="form-inline-grid">
-          <div><label for="sos-pilgrim-name" class="field-label">اسم المعتمر التائه:</label><input id="sos-pilgrim-name" list="pilgrims-directory-datalist" class="field-input" placeholder="مثال: سعيد إبراهيم" required></div>
-          <div><label for="sos-coords" class="field-label">الإحداثيات (lat, lng):</label><input id="sos-coords" dir="ltr" class="field-input" placeholder="21.4195, 39.8236"></div>
-          <div><label for="sos-notes" class="field-label">رقم البوابة / وصف المكان:</label><input id="sos-notes" class="field-input" placeholder="بجوار باب الملك فهد 79"></div>
-          <button type="submit" class="btn btn-danger">🆘 تسجيل بلاغ نشط</button>
-        </form>
 
         <div id="sos-alerts-list"></div>
 
@@ -589,7 +466,10 @@
       <div class="card" style="margin-bottom:1.5rem;">
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.luggage.title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
-          <button type="button" id="btn-open-luggage-print" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <button type="button" id="btn-open-add-bag" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">➕ إضافة حقيبة</button>
+            <button type="button" id="btn-open-luggage-print" class="btn btn-secondary" style="min-height:40px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
+          </div>
         </div>
 
         <div class="metrics-grid" style="margin-bottom:1rem;">
@@ -598,20 +478,6 @@
           <div class="info-box-neutral" style="text-align:center;"><div>ببهو الاستقبال</div><strong id="count-lug-lobby" style="font-size:1.3rem;">0</strong></div>
           <div class="info-box-neutral" style="text-align:center;border-color:var(--success);"><div>سُلّمت للغرف</div><strong id="count-lug-room" style="font-size:1.3rem;color:var(--success);">0</strong></div>
         </div>
-
-        <form id="add-bag-form" class="form-inline-grid">
-          <div><label for="new-bag-name" class="field-label">اسم المعتمر:</label><input id="new-bag-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-          <div><label for="new-bag-room" class="field-label">رقم الغرفة:</label><input id="new-bag-room" class="field-input" placeholder="502" required></div>
-          <div>
-            <label for="new-bag-type" class="field-label">النوع:</label>
-            <select id="new-bag-type" class="field-input">
-              <option value="SUITCASE">حقيبة سفر كبيرة</option>
-              <option value="HANDBAG">حقيبة يد</option>
-              <option value="ZAMZAM">عبوة زمزم</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary">➕ إضافة حقيبة</button>
-        </form>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="luggage-caption">
           <table class="luggage-table">
@@ -633,22 +499,11 @@
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">♿ السجل الطبي ورعاية كبار السن</h2>
-          <span class="badge badge-warning" id="medical-count-badge">0 حالات</span>
-        </div>
-
-        <form id="add-med-form" class="form-inline-grid">
-          <div><label for="new-med-name" class="field-label">اسم المعتمر:</label><input id="new-med-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-          <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" class="field-input" placeholder="504"></div>
-          <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" class="field-input"></div>
-          <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" type="tel" dir="ltr" class="field-input"></div>
-          <div><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" class="field-input" placeholder="ضغط / سكري / عربة"></div>
-          <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.84rem;">
-            <label for="new-med-wheelchair"><input type="checkbox" id="new-med-wheelchair"> كرسي متحرك</label>
-            <label for="new-med-cart"><input type="checkbox" id="new-med-cart"> عربة غولف (نُسك)</label>
-            <label for="new-med-insulin"><input type="checkbox" id="new-med-insulin"> ثلاجة إنسولين</label>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-warning" id="medical-count-badge">0 حالات</span>
+            <button type="button" id="btn-open-add-med" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">➕ إضافة حالة طبية</button>
           </div>
-          <button type="submit" class="btn btn-primary">➕ إضافة حالة</button>
-        </form>
+        </div>
 
         <div id="medical-cards-list" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
       </div>
@@ -661,7 +516,7 @@
     <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span data-i18n="sup.nav.mobile.manifest">الأفواج</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span data-i18n="sup.nav.mobile.people">الأشخاص</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span data-i18n="sup.nav.mobile.gameya">الأقساط</span></button>
-    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">التواصل</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">الواتساب</span></button>
     <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">⚙️</span><span data-i18n="nav.mobile.more">الأدوات</span></button>
   </nav>
 
@@ -872,6 +727,217 @@
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
         <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ وتفعيل القفل</button>
         <button type="button" id="btn-pin-remove" class="btn btn-danger" hidden>🗑️ إلغاء القفل</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-pilgrim-modal" closedby="any" aria-labelledby="add-pilgrim-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-pilgrim-modal-title" style="font-size:1.15rem;">➕ إضافة معتمر للفوج النشط</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-pilgrim-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-pilgrim-form" name="addPilgrim">
+      <div class="form-inline-grid">
+        <div><label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label><input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" placeholder="الاسم الثلاثي" required></div>
+        <div><label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label><input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" class="field-input" placeholder="A98765432" required></div>
+        <div><label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label><input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
+        <div>
+          <label for="new-pilgrim-gender" class="field-label">النوع:</label>
+          <select id="new-pilgrim-gender" name="gender" class="field-input">
+            <option value="MALE">رجل</option>
+            <option value="FEMALE">امرأة</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة للفوج والسجل</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-pilgrim-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-room-modal" closedby="any" aria-labelledby="add-room-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-room-modal-title" style="font-size:1.15rem;">➕ فتح غرفة فندقية جديدة</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-room-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-room-form">
+      <div class="form-inline-grid">
+        <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" class="field-input" placeholder="508" required></div>
+        <div>
+          <label for="new-room-type" class="field-label">نوع الغرفة:</label>
+          <select id="new-room-type" class="field-input">
+            <option value="DOUBLE">ثنائية (2)</option>
+            <option value="TRIPLE">ثلاثية (3)</option>
+            <option value="QUAD">رباعية (4)</option>
+            <option value="SUITE">جناح (4)</option>
+          </select>
+        </div>
+      </div>
+      <label for="new-room-family" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;cursor:pointer;min-height:44px;">
+        <input type="checkbox" id="new-room-family" style="width:20px;height:20px;">
+        <span>غرفة عائلية (يُسمح بسكن المحارم معاً)</span>
+      </label>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وفتح الغرفة</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-room-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="assign-room-modal" closedby="any" aria-labelledby="assign-room-modal-title">
+    <div class="dialog-header">
+      <h2 id="assign-room-modal-title" style="font-size:1.15rem;">🏨 تسكين معتمر في غرفة (بالضوابط)</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="assign-room-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <div class="form-inline-grid" style="margin-bottom:1rem;">
+      <div><label for="assign-pilgrim-select" class="field-label">المعتمر:</label><select id="assign-pilgrim-select" class="field-input"></select></div>
+      <div><label for="assign-room-select" class="field-label">الغرفة:</label><select id="assign-room-select" class="field-input"></select></div>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button type="button" id="btn-assign-room" class="btn btn-primary" style="flex:1;">🏨 تأكيد التسكين بالضوابط الشرعية</button>
+      <button type="button" class="btn btn-secondary" data-close-dialog="assign-room-modal">إلغاء</button>
+    </div>
+  </dialog>
+
+  <dialog id="add-person-modal" closedby="any" aria-labelledby="add-person-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-person-modal-title" style="font-size:1.15rem;">👥 إضافة سجل شخص دائم (CRM)</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-person-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-person-form">
+      <div class="form-inline-grid">
+        <div><label for="crm-name" class="field-label">الاسم الكامل:</label><input id="crm-name" autocomplete="name" class="field-input" required></div>
+        <div><label for="crm-passport" class="field-label">رقم الجواز:</label><input id="crm-passport" class="field-input" required></div>
+        <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" type="date" class="field-input"></div>
+        <div><label for="crm-phone" class="field-label">الهاتف / واتساب:</label><input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
+        <div>
+          <label for="crm-gender" class="field-label">النوع:</label>
+          <select id="crm-gender" class="field-input">
+            <option value="MALE">رجل</option>
+            <option value="FEMALE">امرأة</option>
+          </select>
+        </div>
+        <div><label for="crm-ec-phone" class="field-label">هاتف طوارئ قريب:</label><input id="crm-ec-phone" type="tel" dir="ltr" class="field-input"></div>
+        <div class="field-span-wide"><label for="crm-notes" class="field-label">ملاحظات طبية / سكنية:</label><input id="crm-notes" class="field-input"></div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
+          <label for="crm-wheelchair"><input type="checkbox" id="crm-wheelchair"> كرسي متحرك</label>
+          <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ بالسجل الدائم</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-person-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-gameya-modal" closedby="any" aria-labelledby="add-gameya-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-gameya-modal-title" style="font-size:1.15rem;">💰 إضافة مشترك لخطة سداد / جمعية</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-gameya-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-gameya-form" name="addInstallmentMember">
+      <div class="form-inline-grid">
+        <div><label for="new-gam-name" class="field-label">اسم المشترك:</label><input id="new-gam-name" name="memberName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" required></div>
+        <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" name="memberPhone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
+        <div class="field-span-wide">
+          <label for="new-gam-plan" class="field-label">نظام السداد:</label>
+          <select id="new-gam-plan" name="planType" class="field-input">
+            <option value="DEPOSIT_PLUS_MONTHLY">مقدم حجز + أقساط شهرية</option>
+            <option value="DIRECT_INSTALLMENT">تقسيط شهري متساوٍ</option>
+            <option value="ROTATING_ROSCA">جمعية دورية بالأدوار</option>
+            <option value="DEPOSIT_PLUS_FINAL">مقدم + الباقي قبل السفر</option>
+            <option value="BIWEEKLY_INSTALLMENT">تقسيط كل أسبوعين</option>
+            <option value="FULL_CASH">سداد نقدي كامل</option>
+          </select>
+        </div>
+        <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" value="40000" min="100" class="field-input" required></div>
+        <div id="gam-down-wrap">
+          <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
+          <input id="new-gam-down" name="downPayment" type="number" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
+          <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
+        </div>
+        <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" value="6" min="1" max="48" class="field-input"></div>
+        <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" value="1" min="1" max="48" class="field-input" disabled></div>
+        <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
+        <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
+          <input type="checkbox" id="new-gam-mark-paid" style="width:20px;height:20px;">
+          <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
+        </div>
+      </div>
+      <div id="gameya-plan-preview" class="info-box-neutral" role="status" style="margin-bottom:0.9rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة المشترك</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-gameya-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-sos-modal" closedby="any" aria-labelledby="add-sos-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-sos-modal-title" style="font-size:1.15rem;color:var(--danger);">🆘 تسجيل بلاغ معتمر تائه</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-sos-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-sos-form">
+      <div class="form-inline-grid">
+        <div><label for="sos-pilgrim-name" class="field-label">اسم المعتمر التائه:</label><input id="sos-pilgrim-name" list="pilgrims-directory-datalist" class="field-input" placeholder="مثال: سعيد إبراهيم" required></div>
+        <div><label for="sos-coords" class="field-label">الإحداثيات (lat, lng):</label><input id="sos-coords" dir="ltr" class="field-input" placeholder="21.4195, 39.8236"></div>
+        <div class="field-span-wide"><label for="sos-notes" class="field-label">رقم البوابة / وصف المكان:</label><input id="sos-notes" class="field-input" placeholder="بجوار باب الملك فهد 79"></div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-danger" style="flex:1;">🆘 تسجيل وحساب المسافة للفندق</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-sos-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-bag-modal" closedby="any" aria-labelledby="add-bag-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-bag-modal-title" style="font-size:1.15rem;">🧳 إضافة حقيبة لنظام الفرز</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-bag-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-bag-form">
+      <div class="form-inline-grid">
+        <div><label for="new-bag-name" class="field-label">اسم المعتمر:</label><input id="new-bag-name" list="pilgrims-directory-datalist" class="field-input" required></div>
+        <div><label for="new-bag-room" class="field-label">رقم الغرفة:</label><input id="new-bag-room" class="field-input" placeholder="502" required></div>
+        <div>
+          <label for="new-bag-type" class="field-label">النوع:</label>
+          <select id="new-bag-type" class="field-input">
+            <option value="SUITCASE">حقيبة سفر كبيرة</option>
+            <option value="HANDBAG">حقيبة يد</option>
+            <option value="ZAMZAM">عبوة زمزم</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">✅ إضافة وتوليد كود الحقيبة</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-bag-modal">إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-med-modal" closedby="any" aria-labelledby="add-med-modal-title">
+    <div class="dialog-header">
+      <h2 id="add-med-modal-title" style="font-size:1.15rem;">♿ إضافة حالة للسجل الطبي</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="add-med-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <form id="add-med-form">
+      <div class="form-inline-grid">
+        <div><label for="new-med-name" class="field-label">اسم المعتمر:</label><input id="new-med-name" list="pilgrims-directory-datalist" class="field-input" required></div>
+        <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" class="field-input" placeholder="504"></div>
+        <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" class="field-input"></div>
+        <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" type="tel" dir="ltr" class="field-input"></div>
+        <div class="field-span-wide"><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" class="field-input" placeholder="ضغط / سكري / عربة"></div>
+        <div class="field-span-wide" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
+          <label for="new-med-wheelchair"><input type="checkbox" id="new-med-wheelchair"> كرسي متحرك</label>
+          <label for="new-med-cart"><input type="checkbox" id="new-med-cart"> عربة غولف (نُسك)</label>
+          <label for="new-med-insulin"><input type="checkbox" id="new-med-insulin"> ثلاجة إنسولين</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ الحالة الطبية</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="add-med-modal">إلغاء</button>
       </div>
     </form>
   </dialog>

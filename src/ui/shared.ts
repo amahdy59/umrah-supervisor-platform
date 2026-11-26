@@ -120,11 +120,18 @@ export async function copyToClipboard(text: string, successMessage: string): Pro
  * Sets up native <dialog> elements with returnValue cleanup and
  * closedby="any" light-dismiss fallback for Safari / older browsers.
  */
+const dialogOpeners = new WeakMap<HTMLDialogElement, HTMLElement>();
+
 export function setupDialogs(): void {
   const dialogs = document.querySelectorAll<HTMLDialogElement>('dialog');
   dialogs.forEach((dialog) => {
     dialog.addEventListener('close', () => {
       dialog.returnValue = '';
+      const opener = dialogOpeners.get(dialog);
+      dialogOpeners.delete(dialog);
+      if (opener && opener.isConnected && typeof opener.focus === 'function') {
+        window.requestAnimationFrame(() => opener.focus({ preventScroll: true }));
+      }
     });
   });
 
@@ -155,6 +162,10 @@ export function openDialogById(id: string): void {
   const dialog = document.getElementById(id) as HTMLDialogElement | null;
   if (!dialog) return;
   if (!dialog.open) {
+    const activeEl = document.activeElement as HTMLElement | null;
+    if (activeEl && activeEl !== document.body) {
+      dialogOpeners.set(dialog, activeEl);
+    }
     dialog.showModal();
   }
 }
