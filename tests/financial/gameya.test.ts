@@ -5,6 +5,7 @@ import {
   GameyaType,
   PaymentMethod,
   InstallmentStatus,
+  previewInstallmentPlan,
 } from '../../src/financial/gameya.js';
 
 describe('Money Value Object', () => {
@@ -240,5 +241,41 @@ describe('Gam\'eya & Installment System', () => {
     expect(message).toContain('3,000.00 EGP');
     expect(message).toContain('جمعية عمرة رجب');
     expect(message).toContain('المشرف');
+  });
+
+  it('computes live installment plan breakdowns and safely handles edge-case full deposits', () => {
+    const monthlyPreview = previewInstallmentPlan({
+      planType: GameyaType.DEPOSIT_PLUS_MONTHLY,
+      totalTarget: 40000,
+      downPayment: 10000,
+      installmentCount: 6,
+    });
+    expect(monthlyPreview.valid).toBe(true);
+    expect(monthlyPreview.regularInstallmentAmount).toBe(5000);
+    expect(monthlyPreview.totalScheduledItems).toBe(7);
+
+    const invalidPreview = previewInstallmentPlan({
+      planType: GameyaType.DEPOSIT_PLUS_MONTHLY,
+      totalTarget: 40000,
+      downPayment: 42000,
+      installmentCount: 6,
+    });
+    expect(invalidPreview.valid).toBe(false);
+    expect(invalidPreview.errorAr).toContain('أقل من إجمالي الباقة');
+
+    const group = new GameyaGroup({
+      id: 'grp-edge',
+      name: 'اختبار المقدم الكامل',
+      type: GameyaType.DEPOSIT_PLUS_MONTHLY,
+      targetAmountPerMember: Money.fromDecimal(20000, 'EGP'),
+      downPayment: Money.fromDecimal(25000, 'EGP'),
+      durationMonths: 4,
+      startDate: new Date('2026-04-01'),
+      currency: 'EGP',
+    });
+    const m = group.registerMember({ id: 'm-edge', pilgrimId: 'p-edge', fullName: 'عمر خالد', phone: '+2010' });
+    const sched = group.generateMemberSchedule(m.id);
+    expect(sched.length).toBe(1);
+    expect(sched[0].amountDue.toDecimal()).toBe(20000);
   });
 });

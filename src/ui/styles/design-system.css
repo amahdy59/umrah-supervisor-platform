@@ -895,6 +895,81 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
   border-color: var(--danger);
 }
 
+.field-error-msg {
+  display: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--danger);
+  margin-top: 0.25rem;
+}
+:is(.field-input:user-invalid, .field-input[aria-invalid="true"]) + .field-error-msg {
+  display: block;
+}
+
+/* Progress Meters, Quick Chips & Installment Ledger UX */
+progress.umrah-progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+progress.umrah-progress::-webkit-progress-bar {
+  background: var(--surface-muted);
+  border-radius: 999px;
+}
+progress.umrah-progress::-webkit-progress-value {
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+progress.umrah-progress::-moz-progress-bar {
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+.quick-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.quick-preset-chip {
+  min-height: 36px;
+  padding: 0.28rem 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  cursor: pointer;
+}
+.quick-preset-chip:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.gam-metric-tile {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+}
+.gam-metric-tile-btn {
+  text-align: start;
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+.gam-metric-tile-btn:hover {
+  border-color: var(--control-border);
+}
+
 .form-grid, .form-inline-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

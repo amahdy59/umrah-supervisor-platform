@@ -100,9 +100,9 @@
       .people-table td:nth-child(4)::before { content: "الصحة: "; font-weight: 700; color: var(--text-muted); }
       .people-table td:nth-child(5)::before { content: "السجل: "; font-weight: 700; color: var(--text-muted); }
       .gameya-table td:nth-child(2)::before { content: "الخطة: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(3)::before { content: "الإجمالي: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(4)::before { content: "المسدد: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(5)::before { content: "القادم: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(3)::before { content: "الإجمالي والتقدم: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(4)::before { content: "المسدد / المتبقي: "; font-weight: 700; color: var(--text-muted); }
+      .gameya-table td:nth-child(5)::before { content: "القادم والاستحقاق: "; font-weight: 700; color: var(--text-muted); }
       .gameya-table td:nth-child(6)::before { content: "الحالة: "; font-weight: 700; color: var(--text-muted); }
       .luggage-table td:nth-child(2)::before { content: "المعتمر: "; font-weight: 700; color: var(--text-muted); }
       .luggage-table td:nth-child(3)::before { content: "الغرفة: "; font-weight: 700; color: var(--text-muted); }
@@ -349,10 +349,15 @@
       <div class="card">
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.gameya.title">💰 خطط الأقساط المرنة والجمعية</h2>
-          <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
+          <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+            <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
+            <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;">📥 تصدير كشف الأقساط CSV</button>
+          </div>
         </div>
 
-        <form id="add-gameya-form" class="form-inline-grid" name="addInstallmentMember">
+        <div id="gameya-summary-strip" class="metrics-grid" style="margin-bottom:1.1rem;" aria-label="ملخص التحصيل والمتأخرات"></div>
+
+        <form id="add-gameya-form" class="form-inline-grid" name="addInstallmentMember" style="margin-bottom:0.65rem;">
           <div><label for="new-gam-name" class="field-label">اسم المشترك:</label><input id="new-gam-name" name="memberName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" required></div>
           <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" name="memberPhone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
           <div class="field-span-wide">
@@ -366,12 +371,37 @@
               <option value="FULL_CASH">سداد نقدي كامل</option>
             </select>
           </div>
-          <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" value="40000" min="100" class="field-input"></div>
-          <div id="gam-down-wrap"><label for="new-gam-down" class="field-label">المقدم (إن وجد):</label><input id="new-gam-down" name="downPayment" type="number" value="10000" min="0" class="field-input"></div>
-          <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" value="6" min="1" max="24" class="field-input"></div>
-          <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" value="1" min="1" max="24" class="field-input" disabled></div>
+          <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" value="40000" min="100" class="field-input" required></div>
+          <div id="gam-down-wrap">
+            <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
+            <input id="new-gam-down" name="downPayment" type="number" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
+            <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
+          </div>
+          <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" value="6" min="1" max="48" class="field-input"></div>
+          <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" value="1" min="1" max="48" class="field-input" disabled></div>
+          <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
+          <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
+            <input type="checkbox" id="new-gam-mark-paid" style="width:20px;height:20px;">
+            <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
+          </div>
           <button type="submit" class="btn btn-primary">➕ إضافة مشترك</button>
         </form>
+
+        <div id="gameya-plan-preview" class="info-box-neutral" role="status" style="margin-bottom:1rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.85rem;">
+          <div class="atlas-filter-bar" role="group" aria-label="تصفية المشتركين حسب الحالة" style="margin-bottom:0;">
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ALL" aria-pressed="true">الكل</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="OVERDUE" aria-pressed="false">⚠️ متأخر</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ACTIVE" aria-pressed="false">⏳ قيد السداد</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="PAID" aria-pressed="false">✅ مكتمل</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ROSCA" aria-pressed="false">🔄 جمعية بالأدوار</button>
+          </div>
+          <search style="flex:1;min-width:210px;max-width:340px;">
+            <label for="gameya-search" class="sr-only">بحث في المشتركين</label>
+            <input type="search" id="gameya-search" name="gameyaSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف...">
+          </search>
+        </div>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="gameya-caption">
           <table class="gameya-table">
@@ -380,8 +410,8 @@
               <tr>
                 <th scope="col">المشترك</th>
                 <th scope="col">نظام السداد</th>
-                <th scope="col">الإجمالي</th>
-                <th scope="col">المسدد</th>
+                <th scope="col">الإجمالي والتقدم</th>
+                <th scope="col">المسدد / المتبقي</th>
                 <th scope="col">الدفعة القادمة</th>
                 <th scope="col">الحالة</th>
                 <th scope="col">إجراءات</th>
@@ -390,6 +420,8 @@
             <tbody id="gameya-tbody"></tbody>
           </table>
         </div>
+
+        <div id="gameya-rosca-board" style="margin-top:1.15rem;" hidden></div>
       </div>
     </section>
 
@@ -736,7 +768,8 @@
       <h2 id="pay-modal-title" style="font-size:1.15rem;">💳 تسجيل دفعة مالية مرنة</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="payment-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <div id="pay-modal-member" class="info-box-neutral" style="margin-bottom:0.85rem;font-weight:700;"></div>
+    <div id="pay-modal-member" class="info-box-neutral" style="margin-bottom:0.75rem;font-weight:700;"></div>
+    <div id="pay-quick-presets" class="quick-preset-row" aria-label="مبالغ سريعة مقترحة"></div>
     <form id="payment-form">
       <div class="form-inline-grid">
         <div><label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label><input id="pay-amount" type="number" min="1" step="0.01" class="field-input" required></div>
@@ -750,8 +783,10 @@
             <option value="CARD">بطاقة بنكية</option>
           </select>
         </div>
+        <div><label for="pay-date" class="field-label">تاريخ السداد:</label><input id="pay-date" type="date" class="field-input"></div>
         <div><label for="pay-ref" class="field-label">رقم المرجع (اختياري):</label><input id="pay-ref" class="field-input" placeholder="IPN-12345"></div>
       </div>
+      <div id="pay-projection-preview" class="info-box-neutral" role="status" style="margin-bottom:0.85rem;font-size:0.86rem;padding:0.6rem 0.85rem;"></div>
       <button type="submit" class="btn btn-primary" style="width:100%;">✅ تأكيد استلام الدفعة</button>
     </form>
   </dialog>

@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v13');
+    expect(swText).toContain('umrah-companion-v14');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -141,13 +141,34 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.goto('/supervisor.html');
     await expect(page.locator('#active-group-switcher')).toBeVisible();
 
-    // Progressive disclosure in installments form
+    // Progressive disclosure, live preview, filters, & modals in enhanced Installments tab
     await page.click('.top-primary-nav [data-tab-target="gameya"]');
+    await expect(page.locator('#gameya-summary-strip')).toBeVisible();
+    await expect(page.locator('#gameya-plan-preview')).toContainText('مقدم');
     await page.selectOption('#new-gam-plan', 'FULL_CASH');
     await expect(page.locator('#gam-down-wrap')).toBeHidden();
     await expect(page.locator('#gam-count-wrap')).toBeHidden();
+    await expect(page.locator('#gameya-plan-preview')).toContainText('دفعة واحدة كاملة');
     await page.selectOption('#new-gam-plan', 'ROTATING_ROSCA');
     await expect(page.locator('#gam-turn-wrap')).toBeVisible();
+
+    // Filter pills & quick payment modal projection
+    await page.click('[data-gameya-filter="OVERDUE"]');
+    await expect(page.locator('[data-gameya-filter="OVERDUE"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.click('[data-gameya-filter="ALL"]');
+    await page.locator('#gameya-tbody [data-open-pay]').first().click();
+    await expect(page.locator('#payment-modal')).toBeVisible();
+    await expect(page.locator('#pay-quick-presets .quick-preset-chip').first()).toBeVisible();
+    await expect(page.locator('#pay-projection-preview')).toContainText('المتبقي');
+    await page.click('#payment-modal [data-close-dialog="payment-modal"]');
+    await expect(page.locator('#payment-modal')).toBeHidden();
+
+    // Schedule modal ledger & edit disclosure
+    await page.locator('#gameya-tbody [data-view-schedule]').first().click();
+    await expect(page.locator('#schedule-modal')).toBeVisible();
+    await expect(page.locator('#schedule-modal [data-copy-receipt]').first()).toBeVisible();
+    await page.click('#schedule-modal [data-close-dialog="schedule-modal"] >> nth=0');
+    await expect(page.locator('#schedule-modal')).toBeHidden();
 
     // Two-way Cloud Pull confirmation dialog against mocked /api/sync
     await page.route(/\/api\/sync(\?|$)/, async (route) => {

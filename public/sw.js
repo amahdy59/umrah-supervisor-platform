@@ -1,4 +1,4 @@
-const CACHE_NAME = 'umrah-companion-v13';
+const CACHE_NAME = 'umrah-companion-v14';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

@@ -196,6 +196,22 @@ export class GameyaGroup {
     }
 
     if (planType === GameyaType.DEPOSIT_PLUS_MONTHLY && downPayment && downPayment.minorAmount > 0) {
+      if (downPayment.minorAmount >= this.targetAmountPerMember.minorAmount) {
+        scheduleItems.push({
+          id: `inst-${memberId}-1`,
+          memberId,
+          installmentNumber: 1,
+          labelAr: 'سداد كامل عند التعاقد',
+          dueDate: new Date(startDate),
+          amountDue: this.targetAmountPerMember,
+          amountPaid: Money.zero(this.currency),
+          remainingBalance: this.targetAmountPerMember,
+          status: InstallmentStatus.PENDING,
+        });
+        this.schedules.set(memberId, scheduleItems);
+        return scheduleItems;
+      }
+
       const count = Math.max(1, options.installmentCount || this.durationMonths);
       const remainingToAllocate = this.targetAmountPerMember.subtract(downPayment);
       const portions = remainingToAllocate.allocate(count);
@@ -431,4 +447,115 @@ export class GameyaGroup {
       `للسداد أو الاستفسار، يرجى التواصل مع المشرف. تقبل الله طاعتكم ويسر أمركم.`,
     ].join('\n');
   }
+}
+
+export interface InstallmentPlanPreview {
+  valid: boolean;
+  errorAr?: string;
+  downPayment: number;
+  regularInstallmentAmount: number;
+  regularCount: number;
+  finalBalance?: number;
+  totalScheduledItems: number;
+  summaryAr: string;
+}
+
+/**
+ * Pure Money-safe calculator used for live enrollment previews and form validation.
+ */
+export function previewInstallmentPlan(params: {
+  planType: GameyaType;
+  totalTarget: number;
+  downPayment?: number;
+  installmentCount?: number;
+  currency?: string;
+}): InstallmentPlanPreview {
+  const currency = (params.currency || 'EGP').toUpperCase();
+  const total = Number.isFinite(params.totalTarget) ? params.totalTarget : 0;
+  const down = Number.isFinite(params.downPayment) ? params.downPayment! : 0;
+  const count = Math.max(1, Math.min(48, Math.round(params.installmentCount || 6)));
+
+  if (total <= 0) {
+    return {
+      valid: false,
+      errorAr: 'يجب أن يكون إجمالي الباقة أكبر من صفر.',
+      downPayment: 0,
+      regularInstallmentAmount: 0,
+      regularCount: 0,
+      totalScheduledItems: 0,
+      summaryAr: 'أدخل إجمالي المبلغ لحساب الأقساط.',
+    };
+  }
+
+  if (params.planType === GameyaType.FULL_CASH) {
+    return {
+      valid: true,
+      downPayment: total,
+      regularInstallmentAmount: total,
+      regularCount: 1,
+      totalScheduledItems: 1,
+      summaryAr: `دفعة واحدة كاملة: ${total.toLocaleString('ar-EG')} ج.م عند التعاقد.`,
+    };
+  }
+
+  if (
+    (params.planType === GameyaType.DEPOSIT_PLUS_MONTHLY ||
+      params.planType === GameyaType.DEPOSIT_PLUS_FINAL) &&
+    (down < 0 || down >= total)
+  ) {
+    return {
+      valid: false,
+      errorAr: 'يجب أن يكون المقدم أقل من إجمالي الباقة (أو اختر سداد نقدي كامل).',
+      downPayment: down,
+      regularInstallmentAmount: 0,
+      regularCount: 0,
+      totalScheduledItems: 0,
+      summaryAr: 'تحقق من قيمة المقدم مقارنة بإجمالي الباقة.',
+    };
+  }
+
+  const totalMoney = Money.fromDecimal(total, currency);
+
+  if (params.planType === GameyaType.DEPOSIT_PLUS_FINAL) {
+    const depMoney = down > 0 ? Money.fromDecimal(down, currency) : totalMoney.allocate(3)[0];
+    const balMoney = totalMoney.subtract(depMoney);
+    const depDec = depMoney.toDecimal();
+    const balDec = balMoney.toDecimal();
+    return {
+      valid: true,
+      downPayment: depDec,
+      regularInstallmentAmount: balDec,
+      regularCount: 1,
+      finalBalance: balDec,
+      totalScheduledItems: 2,
+      summaryAr: `مقدم حجز ${depDec.toLocaleString('ar-EG')} ج.م + الدفعة الختامية ${balDec.toLocaleString('ar-EG')} ج.م قبل السفر بأسبوعين.`,
+    };
+  }
+
+  if (params.planType === GameyaType.DEPOSIT_PLUS_MONTHLY && down > 0) {
+    const depMoney = Money.fromDecimal(down, currency);
+    const remMoney = totalMoney.subtract(depMoney);
+    const parts = remMoney.allocate(count);
+    const perDec = parts[0].toDecimal();
+    return {
+      valid: true,
+      downPayment: depMoney.toDecimal(),
+      regularInstallmentAmount: perDec,
+      regularCount: count,
+      totalScheduledItems: count + 1,
+      summaryAr: `مقدم ${depMoney.toDecimal().toLocaleString('ar-EG')} ج.م + ${count} أقساط شهرية (~${perDec.toLocaleString('ar-EG')} ج.م/شهر).`,
+    };
+  }
+
+  const parts = totalMoney.allocate(count);
+  const perDec = parts[0].toDecimal();
+  const unitLabel = params.planType === GameyaType.BIWEEKLY_INSTALLMENT ? 'دفعة كل أسبوعين' : 'أقساط شهرية';
+  return {
+    valid: true,
+    downPayment: 0,
+    regularInstallmentAmount: perDec,
+    regularCount: count,
+    totalScheduledItems: count,
+    summaryAr: `${count} ${unitLabel} بقيمة ~${perDec.toLocaleString('ar-EG')} ج.م لكل دفعة.`,
+  };
 }

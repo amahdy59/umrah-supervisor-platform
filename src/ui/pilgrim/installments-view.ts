@@ -1,6 +1,6 @@
 import { Money } from '../../financial/money.js';
 import { GameyaGroup, GameyaType, InstallmentStatus, PaymentMethod } from '../../financial/gameya.js';
-import { escapeHtml, openDialogById } from '../shared.js';
+import { buildWhatsAppUrl, escapeHtml, openDialogById } from '../shared.js';
 import { getCurrentLanguage } from '../i18n.js';
 
 export interface PilgrimInstallmentSummary {
@@ -12,6 +12,8 @@ export interface PilgrimInstallmentSummary {
   totalPaid: number;
   installmentCount: number;
   startDateIso: string;
+  supervisorName?: string;
+  supervisorPhone?: string;
 }
 
 const STORAGE_PAY_KEY = 'umrah_pilgrim_installment_v1';
@@ -72,8 +74,11 @@ export function inspectPersonalInstallmentsFromStorageAndParams(params: URLSearc
   const paid = Number(params.get('payPaid'));
   const down = Number(params.get('payDown'));
   const count = Number(params.get('payCount'));
+  const startParam = params.get('payStart');
   const name = params.get('name');
   const trip = params.get('trip');
+  const supName = params.get('supName');
+  const supPhone = params.get('supPhone');
 
   if (!plan || !Object.values(GameyaType).includes(plan) || !Number.isFinite(target) || target <= 0) {
     return { candidate: null, wouldOverwriteSavedPlan: false };
@@ -87,7 +92,12 @@ export function inspectPersonalInstallmentsFromStorageAndParams(params: URLSearc
     downPayment: Number.isFinite(down) && down >= 0 ? down : 0,
     totalPaid: Number.isFinite(paid) && paid >= 0 ? paid : 0,
     installmentCount: Number.isFinite(count) && count >= 1 ? Math.min(48, Math.round(count)) : 6,
-    startDateIso: existingSaved?.startDateIso || new Date().toISOString().slice(0, 10),
+    startDateIso:
+      startParam && /^\d{4}-\d{2}-\d{2}$/.test(startParam)
+        ? startParam
+        : existingSaved?.startDateIso || new Date().toISOString().slice(0, 10),
+    supervisorName: supName?.trim() || personalPlan.supervisorName,
+    supervisorPhone: supPhone?.trim() || personalPlan.supervisorPhone,
   };
 
   const hasSavedCustomPlan =
@@ -105,7 +115,8 @@ export function inspectPersonalInstallmentsFromStorageAndParams(params: URLSearc
       existingSaved.totalTarget !== candidate.totalTarget ||
       existingSaved.downPayment !== candidate.downPayment ||
       existingSaved.totalPaid !== candidate.totalPaid ||
-      existingSaved.installmentCount !== candidate.installmentCount);
+      existingSaved.installmentCount !== candidate.installmentCount ||
+      existingSaved.startDateIso !== candidate.startDateIso);
 
   if (!hasSavedCustomPlan || !differsFromSaved) {
     setPersonalInstallmentData(candidate);
@@ -167,13 +178,45 @@ export function openMyInstallmentsModal(): void {
     });
   }
   const summary = group.getMemberSummary('self');
-  const pct = Math.min(100, Math.round((summary.totalPaid.toDecimal() / Math.max(1, summary.totalTarget.toDecimal())) * 100));
+  const pct = Math.min(
+    100,
+    Math.round((summary.totalPaid.toDecimal() / Math.max(1, summary.totalTarget.toDecimal())) * 100)
+  );
   const locale = isEn ? 'en-US' : 'ar-EG';
   const curSuffix = isEn ? ' EGP' : ' ج.م';
   const planLabel = (isEn ? PLAN_LABELS_EN : PLAN_LABELS_AR)[personalPlan.planType];
+  const remainingDec = summary.totalRemaining.toDecimal();
+
+  const nextDue = summary.nextDueItem;
+  const nextDueBanner =
+    remainingDec === 0
+      ? `<div class="info-box-neutral" style="border-inline-start:4px solid var(--success);margin-bottom:0.85rem;">
+           <strong style="color:var(--success);">🎉 ${isEn ? 'All installments settled in full!' : 'تم سداد قيمة الباقة بالكامل بحمد الله!'}</strong>
+         </div>`
+      : nextDue
+        ? `<div class="${summary.overdueCount > 0 ? 'info-box-danger' : 'info-box-warn'}" style="margin-bottom:0.85rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+             <div>
+               <strong>${summary.overdueCount > 0 ? (isEn ? '⚠️ Overdue / Next Payment:' : '⚠️ دفعة مستحقة / متأخرة:') : isEn ? '📅 Next Upcoming Installment:' : '📅 الدفعة القادمة المستحقة:'}</strong>
+               <div style="font-size:0.86rem;margin-top:0.15rem;">
+                 ${escapeHtml(isEn ? `Installment #${nextDue.installmentNumber}` : nextDue.labelAr || `قسط ${nextDue.installmentNumber}`)} —
+                 <strong>${nextDue.remainingBalance.toDecimal().toLocaleString(locale)}${curSuffix}</strong>
+                 (${isEn ? 'Due' : 'يستحق في'} ${nextDue.dueDate.toLocaleDateString(locale)})
+               </div>
+             </div>
+             <a href="${buildWhatsAppUrl(
+               isEn
+                 ? `Assalamu Alaykum, ${personalPlan.memberName} here regarding (${personalPlan.tripTitle}). Inquiring about / confirming payment of ${nextDue.remainingBalance.toDecimal()} EGP.`
+                 : `السلام عليكم مشرفنا الفاضل، معكم ${personalPlan.memberName} بخصوص أقساط (${personalPlan.tripTitle}) — الاستفسار أو إرسال تحويل بمبلغ ${nextDue.remainingBalance.toDecimal().toLocaleString('ar-EG')} ج.م.`,
+               personalPlan.supervisorPhone
+             )}" target="_blank" rel="noopener" class="btn btn-gold" style="min-height:40px;font-size:0.8rem;text-decoration:none;">
+               📲 ${isEn ? 'Notify Supervisor' : 'إشعار سداد للمشرف'}
+             </a>
+           </div>`
+        : '';
 
   const rowsHtml = items
     .map((it) => {
+      const isOverdue = it.status !== InstallmentStatus.PAID && it.dueDate.getTime() < Date.now();
       const statusText =
         it.status === InstallmentStatus.PAID
           ? isEn
@@ -183,9 +226,21 @@ export function openMyInstallmentsModal(): void {
             ? isEn
               ? 'Partial'
               : 'جزئي'
-            : isEn
-              ? 'Due'
-              : 'مستحق';
+            : isOverdue
+              ? isEn
+                ? 'Overdue ⚠️'
+                : 'متأخر ⚠️'
+              : isEn
+                ? 'Due'
+                : 'مستحق';
+      const badgeCls =
+        it.status === InstallmentStatus.PAID
+          ? 'badge-success'
+          : isOverdue
+            ? 'badge-danger'
+            : it.status === InstallmentStatus.PARTIALLY_PAID
+              ? 'badge-warning'
+              : 'badge-primary';
       const label = isEn ? `Installment ${it.installmentNumber}` : it.labelAr || `قسط ${it.installmentNumber}`;
       return `
     <tr>
@@ -193,7 +248,7 @@ export function openMyInstallmentsModal(): void {
       <td>${it.dueDate.toLocaleDateString(locale)}</td>
       <td>${it.amountDue.toDecimal().toLocaleString(locale)}${curSuffix}</td>
       <td>${it.amountPaid.toDecimal().toLocaleString(locale)}${curSuffix}</td>
-      <td><span class="badge ${it.status === InstallmentStatus.PAID ? 'badge-success' : it.status === InstallmentStatus.PARTIALLY_PAID ? 'badge-warning' : 'badge-primary'}">${statusText}</span></td>
+      <td><span class="badge ${badgeCls}">${statusText}</span></td>
     </tr>
   `;
     })
@@ -201,18 +256,24 @@ export function openMyInstallmentsModal(): void {
 
   body.innerHTML = `
     <div class="info-box-neutral" style="margin-bottom:0.85rem;">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.4rem;">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.55rem;">
         <strong>${escapeHtml(personalPlan.memberName)}</strong>
         <span class="badge badge-primary">${escapeHtml(planLabel)}</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.5rem;margin-top:0.65rem;text-align:center;">
+      <progress class="umrah-progress" max="100" value="${pct}" aria-label="${isEn ? `Payment progress ${pct}%` : `نسبة السداد ${pct}%`}" style="margin-bottom:0.55rem;"></progress>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.5rem;text-align:center;">
         <div style="background:var(--card-bg);padding:0.5rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.75rem;color:var(--text-muted);">${isEn ? 'Total' : 'الإجمالي'}</div><strong>${summary.totalTarget.toDecimal().toLocaleString(locale)}</strong></div>
         <div style="background:var(--card-bg);padding:0.5rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.75rem;color:var(--text-muted);">${isEn ? `Paid (${pct}%)` : `المسدد (${pct}%)`}</div><strong style="color:var(--success);">${summary.totalPaid.toDecimal().toLocaleString(locale)}</strong></div>
-        <div style="background:var(--card-bg);padding:0.5rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.75rem;color:var(--text-muted);">${isEn ? 'Remaining' : 'المتبقي'}</div><strong style="color:var(--gold-dark);">${summary.totalRemaining.toDecimal().toLocaleString(locale)}</strong></div>
+        <div style="background:var(--card-bg);padding:0.5rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.75rem;color:var(--text-muted);">${isEn ? 'Remaining' : 'المتبقي'}</div><strong style="color:var(--gold-dark);">${remainingDec.toLocaleString(locale)}</strong></div>
       </div>
     </div>
+    ${nextDueBanner}
     <div class="table-wrapper" tabindex="0" role="region" aria-label="${isEn ? 'My payment schedule' : 'جدول أقساطي'}">
-      <table class="schedule-table"><thead><tr><th>${isEn ? 'Item' : 'البند'}</th><th>${isEn ? 'Due Date' : 'الاستحقاق'}</th><th>${isEn ? 'Amount' : 'المطلوب'}</th><th>${isEn ? 'Paid' : 'المسدد'}</th><th>${isEn ? 'Status' : 'الحالة'}</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+      <table class="schedule-table">
+        <caption class="sr-only">${isEn ? 'Personal Umrah installment schedule' : 'جدول أقساط المعتمر التفصيلي'}</caption>
+        <thead><tr><th scope="col">${isEn ? 'Item' : 'البند'}</th><th scope="col">${isEn ? 'Due Date' : 'الاستحقاق'}</th><th scope="col">${isEn ? 'Amount' : 'المطلوب'}</th><th scope="col">${isEn ? 'Paid' : 'المسدد'}</th><th scope="col">${isEn ? 'Status' : 'الحالة'}</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
     </div>
   `;
 

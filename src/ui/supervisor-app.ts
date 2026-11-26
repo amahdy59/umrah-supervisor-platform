@@ -12,7 +12,13 @@ import { ChronicCondition } from '../operations/medical-profile.js';
 import { PeopleDirectory, PersonRecord } from '../operations/people-directory.js';
 import { UmrahGroupRegistry } from '../operations/multi-group-manager.js';
 import { Money } from '../financial/money.js';
-import { GameyaGroup, GameyaType, PaymentMethod, InstallmentStatus } from '../financial/gameya.js';
+import {
+  GameyaGroup,
+  GameyaType,
+  PaymentMethod,
+  InstallmentStatus,
+  previewInstallmentPlan,
+} from '../financial/gameya.js';
 import { WhatsAppBroadcastManager, BroadcastPhase } from '../guidance/whatsapp-and-fiqh.js';
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
 import {
@@ -368,6 +374,8 @@ function createInitialState(): MultiGroupRootState {
 let rootState: MultiGroupRootState = createInitialState();
 let manifestFilter = '';
 let peopleFilter = '';
+let gameyaFilter: 'ALL' | 'OVERDUE' | 'ACTIVE' | 'PAID' | 'ROSCA' = 'ALL';
+let gameyaSearch = '';
 let activePaymentMemberId = '';
 
 function getActiveGroup(): GroupWorkspace {
@@ -760,6 +768,7 @@ function buildPilgrimShareUrl(p: PilgrimRecord, badgeToken?: string): string {
     qs.set('payPaid', String(matchGameya.totalPaid));
     qs.set('payDown', String(matchGameya.downPayment));
     qs.set('payCount', String(matchGameya.installmentCount));
+    qs.set('payStart', matchGameya.startDateIso);
   }
   return `${base}?${qs.toString()}`;
 }
@@ -1262,56 +1271,491 @@ function buildScheduleSummaryForMember(m: GameyaRecord, departureDateStr: string
   return { group, items, summary };
 }
 
+function buildReceiptMessage(tripTitle: string, supervisorName: string, m: GameyaRecord, amountPaid?: number): string {
+  const remaining = Math.max(0, m.totalTarget - m.totalPaid);
+  return [
+    `📋 *إيصال سداد معتمد - ${tripTitle}* 🕋`,
+    `التاريخ: ${new Date().toLocaleDateString('ar-EG')}`,
+    `المشترك: *${m.name}*`,
+    `خطة السداد: *${PLAN_LABELS[m.planType]}*`,
+    ...(amountPaid ? [`قيمة الدفعة المستلمة: *${amountPaid.toLocaleString('ar-EG')} ج.م*`] : []),
+    `إجمالي المسدد: *${m.totalPaid.toLocaleString('ar-EG')} ج.م*`,
+    `المتبقي: *${remaining.toLocaleString('ar-EG')} ج.م*`,
+    `الحالة: *${remaining === 0 ? 'مكتمل السداد 🎉' : 'قيد السداد المنتظم ✅'}*`,
+    `_${supervisorName}_`,
+  ].join('\n');
+}
+
+function updatePaymentProjectionPreview(m: GameyaRecord, amountVal: number): void {
+  const box = document.getElementById('pay-projection-preview');
+  if (!box) return;
+  const currentRemaining = Math.max(0, m.totalTarget - m.totalPaid);
+  const clamped = Math.max(0, Math.min(amountVal || 0, currentRemaining));
+  const projectedRemaining = Math.max(0, currentRemaining - clamped);
+  const pct = Math.min(100, Math.round(((m.totalPaid + clamped) / Math.max(1, m.totalTarget)) * 100));
+  box.innerHTML =
+    clamped <= 0
+      ? 'أدخل قيمة الدفعة لمعاينة الرصيد المتبقي بعد التحصيل.'
+      : `💡 بعد تسجيل <strong>${clamped.toLocaleString('ar-EG')} ج.م</strong> يصبح إجمالي السداد <strong>${pct}%</strong> والمتبقي <strong>${projectedRemaining.toLocaleString('ar-EG')} ج.م</strong>${projectedRemaining === 0 ? ' 🎉 (إغلاق كامل)' : ''}.`;
+}
+
+function openPaymentModalForMember(m: GameyaRecord): void {
+  const active = getActiveGroup();
+  activePaymentMemberId = m.id;
+  const { items, summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
+  const rem = Math.max(0, m.totalTarget - m.totalPaid);
+  const nextDue = summary.nextDueItem ? summary.nextDueItem.remainingBalance.toDecimal() : rem;
+  const nowMs = Date.now();
+  const overdueSum = items
+    .filter((it) => it.status !== InstallmentStatus.PAID && it.dueDate.getTime() < nowMs)
+    .reduce((acc, it) => acc + it.remainingBalance.toDecimal(), 0);
+
+  const memberBox = document.getElementById('pay-modal-member');
+  if (memberBox) {
+    memberBox.textContent = `${m.name} — الإجمالي: ${m.totalTarget.toLocaleString('ar-EG')} ج.م • المسدد: ${m.totalPaid.toLocaleString('ar-EG')} ج.م • المتبقي: ${rem.toLocaleString('ar-EG')} ج.م`;
+  }
+
+  const amountEl = document.getElementById('pay-amount') as HTMLInputElement | null;
+  const dateEl = document.getElementById('pay-date') as HTMLInputElement | null;
+  const refEl = document.getElementById('pay-ref') as HTMLInputElement | null;
+  if (amountEl) {
+    amountEl.value = String(nextDue);
+    amountEl.max = String(rem);
+  }
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+  if (refEl) refEl.value = '';
+
+  const presetsEl = document.getElementById('pay-quick-presets');
+  if (presetsEl) {
+    const presets: Array<{ label: string; value: number }> = [];
+    if (nextDue > 0 && nextDue < rem) {
+      presets.push({ label: `القسط القادم (${nextDue.toLocaleString('ar-EG')})`, value: nextDue });
+    }
+    if (overdueSum > 0 && overdueSum !== nextDue && overdueSum <= rem) {
+      presets.push({ label: `تصفية المتأخرات (${overdueSum.toLocaleString('ar-EG')})`, value: overdueSum });
+    }
+    const halfRem = Math.round(rem / 2);
+    if (halfRem > 0 && halfRem !== nextDue && halfRem !== overdueSum) {
+      presets.push({ label: `نصف المتبقي (${halfRem.toLocaleString('ar-EG')})`, value: halfRem });
+    }
+    presets.push({ label: `كامل المتبقي (${rem.toLocaleString('ar-EG')})`, value: rem });
+
+    presetsEl.innerHTML = presets
+      .map(
+        (p) =>
+          `<button type="button" class="quick-preset-chip" data-pay-preset="${p.value}">${escapeHtml(p.label)}</button>`
+      )
+      .join('');
+    presetsEl.querySelectorAll<HTMLElement>('[data-pay-preset]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const val = Number(chip.dataset.payPreset) || 0;
+        if (amountEl) amountEl.value = String(val);
+        updatePaymentProjectionPreview(m, val);
+      });
+    });
+  }
+
+  updatePaymentProjectionPreview(m, nextDue);
+  openDialogById('payment-modal');
+}
+
+function openScheduleModalForMember(m: GameyaRecord): void {
+  const active = getActiveGroup();
+  const { items, summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
+  const title = document.getElementById('schedule-modal-title');
+  const body = document.getElementById('schedule-modal-body');
+  if (title) title.textContent = `📅 جدول ودفعات: ${m.name} (${PLAN_LABELS[m.planType]})`;
+  if (!body) return;
+
+  const pct = Math.min(100, Math.round((m.totalPaid / Math.max(1, m.totalTarget)) * 100));
+  const rem = Math.max(0, m.totalTarget - m.totalPaid);
+  const nowMs = Date.now();
+
+  const rowsHtml = items
+    .map((it) => {
+      const isOverdue = it.status !== InstallmentStatus.PAID && it.dueDate.getTime() < nowMs;
+      const badgeCls =
+        it.status === InstallmentStatus.PAID
+          ? 'badge-success'
+          : isOverdue
+            ? 'badge-danger'
+            : it.status === InstallmentStatus.PARTIALLY_PAID
+              ? 'badge-warning'
+              : 'badge-primary';
+      const badgeText =
+        it.status === InstallmentStatus.PAID
+          ? 'مسدد ✅'
+          : isOverdue
+            ? 'متأخر ⚠️'
+            : it.status === InstallmentStatus.PARTIALLY_PAID
+              ? 'جزئي'
+              : 'مستحق';
+      return `
+      <tr>
+        <th scope="row">${escapeHtml(it.labelAr || `قسط ${it.installmentNumber}`)}</th>
+        <td>${it.dueDate.toLocaleDateString('ar-EG')}</td>
+        <td>${it.amountDue.toDecimal().toLocaleString('ar-EG')} ج.م</td>
+        <td>${it.amountPaid.toDecimal().toLocaleString('ar-EG')} ج.م</td>
+        <td><span class="badge ${badgeCls}">${badgeText}</span></td>
+      </tr>
+    `;
+    })
+    .join('');
+
+  const logHtml =
+    m.payments.length > 0
+      ? `<h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;color:var(--primary-ink);">سجل المدفوعات الموثق (${m.payments.length})</h3>
+         <div style="display:flex;flex-direction:column;gap:0.45rem;">
+           ${m.payments
+             .map(
+               (p) => `
+             <div class="info-box-neutral" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.45rem;padding:0.55rem 0.75rem;font-size:0.84rem;">
+               <div>
+                 <strong>${p.amount.toLocaleString('ar-EG')} ج.م</strong> — ${escapeHtml(PAYMENT_METHOD_LABELS[p.method])}
+                 ${p.ref ? ` (مرجع: ${escapeHtml(p.ref)})` : ''}
+                 <span style="color:var(--text-muted);"> • ${escapeHtml(p.dateIso)}</span>
+               </div>
+               <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
+                 <button type="button" class="btn btn-secondary" style="min-height:34px;padding:0.2rem 0.55rem;font-size:0.76rem;" data-copy-receipt="${escapeHtml(p.id)}">📋 نسخ إيصال</button>
+                 <button type="button" class="btn btn-secondary" style="min-height:34px;padding:0.2rem 0.55rem;font-size:0.76rem;color:var(--danger);" data-void-payment="${escapeHtml(p.id)}">↩️ تراجع</button>
+               </div>
+             </div>
+           `
+             )
+             .join('')}
+         </div>`
+      : `<div class="info-box-neutral" style="margin-top:0.85rem;font-size:0.86rem;color:var(--text-muted);">لم تُسجّل دفعات حتى الآن لهذا المشترك.</div>`;
+
+  body.innerHTML = `
+    <div class="info-box-neutral" style="margin-bottom:0.85rem;">
+      <progress class="umrah-progress" max="100" value="${pct}" aria-label="نسبة السداد ${pct}%" style="margin-bottom:0.55rem;"></progress>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.5rem;text-align:center;">
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">الإجمالي</div><strong>${m.totalTarget.toLocaleString('ar-EG')} ج.م</strong></div>
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">المسدد (${pct}%)</div><strong style="color:var(--success);">${m.totalPaid.toLocaleString('ar-EG')} ج.م</strong></div>
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">المتبقي (${summary.overdueCount} متأخر)</div><strong style="color:var(--gold-dark);">${rem.toLocaleString('ar-EG')} ج.م</strong></div>
+      </div>
+    </div>
+    <div class="table-wrapper" tabindex="0" role="region" aria-label="تفاصيل الأقساط">
+      <table class="schedule-table"><thead><tr><th>البند</th><th>الاستحقاق</th><th>المطلوب</th><th>المسدد</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+    </div>
+    ${logHtml}
+    <details class="ref-disclosure" style="margin-top:0.95rem;">
+      <summary><span>⚙️ تعديل الخطة أو إزالة المشترك</span><span aria-hidden="true">▾</span></summary>
+      <form id="edit-gam-member-form" style="margin-top:0.65rem;">
+        <div class="form-inline-grid" style="margin-bottom:0.65rem;">
+          <div>
+            <label for="edit-gam-plan" class="field-label">نظام السداد:</label>
+            <select id="edit-gam-plan" class="field-input">
+              ${Object.values(GameyaType)
+                .map((gt) => `<option value="${gt}" ${gt === m.planType ? 'selected' : ''}>${escapeHtml(PLAN_LABELS[gt])}</option>`)
+                .join('')}
+            </select>
+          </div>
+          <div><label for="edit-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="edit-gam-target" type="number" min="100" value="${m.totalTarget}" class="field-input" required></div>
+          <div><label for="edit-gam-down" class="field-label">المقدم (ج.م):</label><input id="edit-gam-down" type="number" min="0" value="${m.downPayment}" class="field-input"></div>
+          <div><label for="edit-gam-count" class="field-label">عدد الدفعات:</label><input id="edit-gam-count" type="number" min="1" max="48" value="${m.installmentCount}" class="field-input"></div>
+          <div><label for="edit-gam-start" class="field-label">تاريخ البدء:</label><input id="edit-gam-start" type="date" value="${escapeHtml(m.startDateIso)}" class="field-input"></div>
+          <div><label for="edit-gam-turn" class="field-label">الدور (للجمعية):</label><input id="edit-gam-turn" type="number" min="1" max="48" value="${m.turnMonth}" class="field-input"></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ تعديل الخطة</button>
+          <button type="button" id="btn-delete-gam-member" class="btn btn-danger" data-confirm-step="0">🗑️ حذف المشترك</button>
+        </div>
+      </form>
+    </details>
+  `;
+
+  body.querySelectorAll<HTMLElement>('[data-copy-receipt]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const p = m.payments.find((x) => x.id === btn.dataset.copyReceipt);
+      if (!p) return;
+      void copyToClipboard(
+        buildReceiptMessage(active.settings.tripTitle, active.settings.supervisorName, m, p.amount),
+        '✅ تم نسخ إيصال الدفعة للواتساب'
+      );
+    });
+  });
+
+  body.querySelectorAll<HTMLElement>('[data-void-payment]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = m.payments.findIndex((x) => x.id === btn.dataset.voidPayment);
+      if (idx === -1) return;
+      const removed = m.payments.splice(idx, 1)[0];
+      m.totalPaid = m.payments.reduce((acc, x) => acc + x.amount, 0);
+      saveState();
+      renderAll();
+      openScheduleModalForMember(m);
+      showToast(`↩️ تم التراجع عن دفعة ${removed.amount.toLocaleString('ar-EG')} ج.م`);
+    });
+  });
+
+  body.querySelector('#edit-gam-member-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newPlan = (body.querySelector('#edit-gam-plan') as HTMLSelectElement).value as GameyaType;
+    const newTarget = Number((body.querySelector('#edit-gam-target') as HTMLInputElement).value) || m.totalTarget;
+    const rawDown = Number((body.querySelector('#edit-gam-down') as HTMLInputElement).value) || 0;
+    const rawCount = Number((body.querySelector('#edit-gam-count') as HTMLInputElement).value) || m.installmentCount;
+    const newStart = (body.querySelector('#edit-gam-start') as HTMLInputElement).value || m.startDateIso;
+    const newTurn = Number((body.querySelector('#edit-gam-turn') as HTMLInputElement).value) || m.turnMonth;
+
+    if (
+      (newPlan === GameyaType.DEPOSIT_PLUS_MONTHLY || newPlan === GameyaType.DEPOSIT_PLUS_FINAL) &&
+      rawDown >= newTarget
+    ) {
+      showToast('⚠️ قيمة المقدم يجب أن تكون أقل من الإجمالي', true);
+      return;
+    }
+
+    m.planType = newPlan;
+    m.totalTarget = newTarget;
+    m.downPayment =
+      newPlan === GameyaType.FULL_CASH
+        ? newTarget
+        : newPlan === GameyaType.DEPOSIT_PLUS_MONTHLY || newPlan === GameyaType.DEPOSIT_PLUS_FINAL
+          ? Math.max(0, rawDown)
+          : 0;
+    m.installmentCount =
+      newPlan === GameyaType.FULL_CASH ? 1 : newPlan === GameyaType.DEPOSIT_PLUS_FINAL ? 2 : Math.max(1, rawCount);
+    m.startDateIso = newStart;
+    m.turnMonth = Math.max(1, newTurn);
+    saveState();
+    renderAll();
+    openScheduleModalForMember(m);
+    showToast(`✅ تم تحديث خطة سداد ${m.name}`);
+  });
+
+  const delBtn = body.querySelector<HTMLButtonElement>('#btn-delete-gam-member');
+  delBtn?.addEventListener('click', () => {
+    if (delBtn.dataset.confirmStep !== '1') {
+      delBtn.dataset.confirmStep = '1';
+      delBtn.textContent = '⚠️ اضغط مجدداً لتأكيد الحذف';
+      return;
+    }
+    active.gameya = active.gameya.filter((x) => x.id !== m.id);
+    saveState();
+    renderAll();
+    closeDialogById('schedule-modal');
+    showToast(`🗑️ تم حذف اشتراك ${m.name}`);
+  });
+
+  openDialogById('schedule-modal');
+}
+
+function renderGameyaSummaryAndRosca(
+  enriched: Array<{ member: GameyaRecord; overdueCount: number; remaining: number }>
+): void {
+  const summaryStrip = document.getElementById('gameya-summary-strip');
+  if (summaryStrip) {
+    const totalExpected = enriched.reduce((s, e) => s + e.member.totalTarget, 0);
+    const totalPaid = enriched.reduce((s, e) => s + e.member.totalPaid, 0);
+    const totalRemaining = Math.max(0, totalExpected - totalPaid);
+    const overdueSubs = enriched.filter((e) => e.remaining > 0 && e.overdueCount > 0).length;
+    const pct = totalExpected > 0 ? Math.min(100, Math.round((totalPaid / totalExpected) * 100)) : 0;
+
+    summaryStrip.innerHTML = `
+      <div class="gam-metric-tile">
+        <div style="font-size:0.78rem;color:var(--text-muted);">إجمالي باقات المشتركين (${enriched.length})</div>
+        <strong style="font-size:1.15rem;color:var(--primary-ink);">${totalExpected.toLocaleString('ar-EG')} ج.م</strong>
+      </div>
+      <div class="gam-metric-tile">
+        <div style="font-size:0.78rem;color:var(--text-muted);">المحصّل الفعلي (${pct}%)</div>
+        <strong style="font-size:1.15rem;color:var(--success);display:block;margin-bottom:0.3rem;">${totalPaid.toLocaleString('ar-EG')} ج.م</strong>
+        <progress class="umrah-progress" max="100" value="${pct}" aria-label="نسبة تحصيل الأقساط ${pct}%"></progress>
+      </div>
+      <div class="gam-metric-tile">
+        <div style="font-size:0.78rem;color:var(--text-muted);">المتبقي قيد التحصيل</div>
+        <strong style="font-size:1.15rem;color:var(--gold-dark);">${totalRemaining.toLocaleString('ar-EG')} ج.م</strong>
+      </div>
+      <button type="button" class="gam-metric-tile gam-metric-tile-btn" id="btn-filter-overdue-shortcut" aria-label="تصفية الاشتراكات المتأخرة">
+        <div style="font-size:0.78rem;color:var(--text-muted);">متأخرون عن الموعد</div>
+        <strong style="font-size:1.15rem;color:${overdueSubs > 0 ? 'var(--danger)' : 'var(--success)'};">
+          ${overdueSubs > 0 ? `⚠️ ${overdueSubs} مشترك` : '0 متأخرين ✅'}
+        </strong>
+      </button>
+    `;
+    document.getElementById('btn-filter-overdue-shortcut')?.addEventListener('click', () => {
+      gameyaFilter = gameyaFilter === 'OVERDUE' ? 'ALL' : 'OVERDUE';
+      document.querySelectorAll<HTMLButtonElement>('[data-gameya-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.gameyaFilter === gameyaFilter));
+      });
+      renderGameyaTable();
+    });
+  }
+
+  const roscaBoard = document.getElementById('gameya-rosca-board');
+  if (roscaBoard) {
+    const roscaMembers = enriched.map((e) => e.member).filter((m) => m.planType === GameyaType.ROTATING_ROSCA);
+    if (roscaMembers.length === 0) {
+      roscaBoard.hidden = true;
+      roscaBoard.innerHTML = '';
+    } else {
+      roscaBoard.hidden = false;
+      const avgTarget = Math.round(roscaMembers.reduce((s, m) => s + m.totalTarget, 0) / roscaMembers.length);
+      const roscaGroup = new GameyaGroup({
+        id: 'rosca-overview',
+        name: getActiveGroup().settings.tripTitle,
+        type: GameyaType.ROTATING_ROSCA,
+        targetAmountPerMember: Money.fromDecimal(avgTarget, 'EGP'),
+        durationMonths: Math.max(...roscaMembers.map((m) => m.installmentCount), roscaMembers.length),
+        startDate: new Date(roscaMembers[0].startDateIso || Date.now()),
+        currency: 'EGP',
+      });
+      roscaMembers.forEach((m) => {
+        roscaGroup.registerMember({
+          id: m.id,
+          pilgrimId: m.id,
+          fullName: m.name,
+          phone: m.phone,
+          turnNumber: m.turnMonth,
+        });
+      });
+      const plan = roscaGroup.getTurnPayoutPlan();
+      roscaBoard.innerHTML = `
+        <div class="info-box-neutral">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.65rem;">
+            <strong style="color:var(--primary-ink);">🔄 جدول استلام أدوار الجمعية الشهرية (${plan.length})</strong>
+            <span class="badge badge-primary">مرتب تلقائياً حسب الشهر</span>
+          </div>
+          <div class="grid-2" style="margin-bottom:0;">
+            ${plan
+              .map((slot) => {
+                const mem = roscaMembers.find((x) => x.id === slot.memberId)!;
+                const rem = Math.max(0, mem.totalTarget - mem.totalPaid);
+                return `
+                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:0.65rem 0.8rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
+                  <div>
+                    <span class="badge badge-warning">الدور #${slot.turnNumber}</span>
+                    <strong style="margin-inline-start:0.35rem;">${escapeHtml(mem.name)}</strong>
+                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">موعد الاستحقاق: ${slot.payoutMonth.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })}</div>
+                  </div>
+                  <div style="text-align:end;font-size:0.82rem;">
+                    <strong>${mem.totalTarget.toLocaleString('ar-EG')} ج.م</strong>
+                    <div style="color:${rem === 0 ? 'var(--success)' : 'var(--gold-dark)'};font-weight:700;">${rem === 0 ? 'مكتمل ✅' : `متبقي ${rem.toLocaleString('ar-EG')}`}</div>
+                  </div>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+function exportGameyaCSV(): void {
+  const active = getActiveGroup();
+  const rows = [
+    ['الفوج', 'المشترك', 'الهاتف', 'نظام السداد', 'الإجمالي', 'المسدد', 'المتبقي', 'عدد الدفعات المسجلة', 'الحالة'],
+    ...active.gameya.map((m) => {
+      const { summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
+      const rem = Math.max(0, m.totalTarget - m.totalPaid);
+      const status = rem === 0 ? 'مكتمل السداد' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount})` : 'قيد السداد';
+      return [
+        active.settings.tripTitle,
+        m.name,
+        m.phone,
+        PLAN_LABELS[m.planType],
+        String(m.totalTarget),
+        String(m.totalPaid),
+        String(rem),
+        String(m.payments.length),
+        status,
+      ];
+    }),
+  ];
+  let csv = '\uFEFF';
+  rows.forEach((r) => {
+    csv += r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\r\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `umrah_installments_${active.settings.tripCode.replace('#', '')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 تم تنزيل كشف الأقساط (CSV / Excel)');
+}
+
 function renderGameyaTable(): void {
   const active = getActiveGroup();
   const tbody = document.getElementById('gameya-tbody');
   if (!tbody) return;
 
-  if (active.gameya.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.25rem;color:var(--text-muted);">لا يوجد مشتركون في خطة أقساط لهذا الفوج بعد.</td></tr>`;
+  const enriched = active.gameya.map((m) => {
+    const { summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
+    const remaining = Math.max(0, m.totalTarget - m.totalPaid);
+    return { member: m, summary, overdueCount: summary.overdueCount, remaining };
+  });
+
+  renderGameyaSummaryAndRosca(enriched);
+
+  const q = gameyaSearch.toLowerCase().trim();
+  const visible = enriched.filter(({ member, overdueCount, remaining }) => {
+    const matchesSearch =
+      !q || member.name.toLowerCase().includes(q) || member.phone.toLowerCase().includes(q);
+    if (!matchesSearch) return false;
+    if (gameyaFilter === 'OVERDUE') return remaining > 0 && overdueCount > 0;
+    if (gameyaFilter === 'ACTIVE') return remaining > 0;
+    if (gameyaFilter === 'PAID') return remaining === 0;
+    if (gameyaFilter === 'ROSCA') return member.planType === GameyaType.ROTATING_ROSCA;
+    return true;
+  });
+
+  if (visible.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.25rem;color:var(--text-muted);">${
+      active.gameya.length === 0
+        ? 'لا يوجد مشتركون في خطة أقساط لهذا الفوج بعد.'
+        : 'لا توجد نتائج مطابقة للتصفية أو البحث الحالي.'
+    }</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = active.gameya
-    .map((m) => {
-      const { summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
-      const remaining = Math.max(0, m.totalTarget - m.totalPaid);
+  tbody.innerHTML = visible
+    .map(({ member: m, summary, remaining }) => {
+      const pct = Math.min(100, Math.round((m.totalPaid / Math.max(1, m.totalTarget)) * 100));
       const nextDueAmount = summary.nextDueItem ? summary.nextDueItem.remainingBalance.toDecimal() : 0;
+      const nextDueDateStr = summary.nextDueItem ? summary.nextDueItem.dueDate.toLocaleDateString('ar-EG') : '';
       const nextDueLabel = summary.nextDueItem
         ? `${nextDueAmount.toLocaleString('ar-EG')} ج.م (${summary.nextDueItem.labelAr || 'قسط'})`
         : '0 ج.م';
 
-      const receiptText = [
-        `📋 *إيصال سداد معتمد - ${active.settings.tripTitle}* 🕋`,
-        `التاريخ: ${new Date().toLocaleDateString('ar-EG')}`,
-        `المشترك: *${m.name}*`,
-        `خطة السداد: *${PLAN_LABELS[m.planType]}*`,
-        `إجمالي المسدد: *${m.totalPaid.toLocaleString('ar-EG')} ج.م*`,
-        `المتبقي: *${remaining.toLocaleString('ar-EG')} ج.م*`,
-        `الحالة: *${remaining === 0 ? 'مكتمل السداد 🎉' : 'قيد السداد المنتظم ✅'}*`,
-        `_${active.settings.supervisorName}_`,
-      ].join('\n');
-
-      const reminderText = `السلام عليكم ورحمة الله وبركاته يا ${m.name}، نود تذكيركم بموعد الدفعة القادمة لرحلة (${active.settings.tripTitle}) ضمن خطة (${PLAN_LABELS[m.planType]}) بمبلغ ${nextDueAmount.toLocaleString('ar-EG')} ج.م. تقبل الله طاعتكم.`;
+      const receiptText = buildReceiptMessage(active.settings.tripTitle, active.settings.supervisorName, m);
+      const reminderText = `السلام عليكم ورحمة الله وبركاته يا ${m.name}، نود تذكيركم بموعد الدفعة القادمة لرحلة (${active.settings.tripTitle}) ضمن خطة (${PLAN_LABELS[m.planType]}) بمبلغ ${nextDueAmount.toLocaleString('ar-EG')} ج.م (تستحق ${nextDueDateStr}). تقبل الله طاعتكم.`;
 
       return `
       <tr>
-        <th scope="row">${escapeHtml(m.name)}</th>
+        <th scope="row">
+          <div>${escapeHtml(m.name)}</div>
+          ${m.phone ? `<div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;" dir="ltr">${escapeHtml(m.phone)}</div>` : ''}
+        </th>
         <td>
           <div><span class="badge badge-primary">${escapeHtml(PLAN_LABELS[m.planType])}</span></div>
-          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">الدور: شهر ${m.turnMonth}</div>` : ''}
+          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.76rem;color:var(--text-muted);margin-top:0.2rem;">الدور: شهر ${m.turnMonth}</div>` : ''}
         </td>
-        <td>${m.totalTarget.toLocaleString('ar-EG')} ج.م</td>
-        <td>${m.totalPaid.toLocaleString('ar-EG')} ج.م</td>
-        <td>${escapeHtml(nextDueLabel)}</td>
+        <td>
+          <div style="font-weight:700;margin-bottom:0.25rem;">${m.totalTarget.toLocaleString('ar-EG')} ج.م <span style="font-size:0.75rem;color:var(--primary-ink);">(${pct}%)</span></div>
+          <progress class="umrah-progress" max="100" value="${pct}" aria-label="سداد ${m.name} ${pct}%"></progress>
+        </td>
+        <td>
+          <div style="font-weight:700;color:var(--success);">${m.totalPaid.toLocaleString('ar-EG')} ج.م</div>
+          <div style="font-size:0.76rem;color:var(--gold-dark);font-weight:600;">متبقي: ${remaining.toLocaleString('ar-EG')} ج.م</div>
+        </td>
+        <td>
+          <div>${escapeHtml(nextDueLabel)}</div>
+          ${nextDueDateStr ? `<div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(nextDueDateStr)}</div>` : ''}
+        </td>
         <td>
           <span class="badge ${remaining === 0 ? 'badge-success' : summary.overdueCount > 0 ? 'badge-danger' : 'badge-warning'}">
-            ${remaining === 0 ? 'مكتمل السداد 🎉' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount})` : 'قيد السداد'}
+            ${remaining === 0 ? 'مكتمل السداد 🎉' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount}) ⚠️` : 'قيد السداد'}
           </span>
         </td>
         <td>
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            ${remaining > 0 ? `<button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-open-pay="${escapeHtml(m.id)}">💳 تسجيل دفعة</button>` : ''}
+            ${remaining > 0 ? `<button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-open-pay="${escapeHtml(m.id)}">💳 دفعة</button>` : ''}
             <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;" data-view-schedule="${escapeHtml(m.id)}">📅 الجدول</button>
             <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;text-decoration:none;">📲 واتساب</a>
           </div>
@@ -1324,56 +1768,14 @@ function renderGameyaTable(): void {
   tbody.querySelectorAll<HTMLElement>('[data-open-pay]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const m = active.gameya.find((x) => x.id === btn.dataset.openPay);
-      if (!m) return;
-      activePaymentMemberId = m.id;
-      const { summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
-      const rem = Math.max(0, m.totalTarget - m.totalPaid);
-      const suggested = summary.nextDueItem ? summary.nextDueItem.remainingBalance.toDecimal() : rem;
-      (document.getElementById('pay-modal-member') as HTMLElement).textContent = `${m.name} (المتبقي: ${rem.toLocaleString('ar-EG')} ج.م)`;
-      (document.getElementById('pay-amount') as HTMLInputElement).value = String(suggested);
-      (document.getElementById('pay-amount') as HTMLInputElement).max = String(rem);
-      (document.getElementById('pay-ref') as HTMLInputElement).value = '';
-      openDialogById('payment-modal');
+      if (m) openPaymentModalForMember(m);
     });
   });
 
   tbody.querySelectorAll<HTMLElement>('[data-view-schedule]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const m = active.gameya.find((x) => x.id === btn.dataset.viewSchedule);
-      if (!m) return;
-      const { items } = buildScheduleSummaryForMember(m, active.settings.endDate);
-      const title = document.getElementById('schedule-modal-title');
-      const body = document.getElementById('schedule-modal-body');
-      if (title) title.textContent = `📅 جدول دفعات: ${m.name} (${PLAN_LABELS[m.planType]})`;
-      if (body) {
-        const rowsHtml = items
-          .map(
-            (it) => `
-          <tr>
-            <th scope="row">${escapeHtml(it.labelAr || `قسط ${it.installmentNumber}`)}</th>
-            <td>${it.dueDate.toLocaleDateString('ar-EG')}</td>
-            <td>${it.amountDue.toDecimal().toLocaleString('ar-EG')} ج.م</td>
-            <td>${it.amountPaid.toDecimal().toLocaleString('ar-EG')} ج.م</td>
-            <td><span class="badge ${it.status === InstallmentStatus.PAID ? 'badge-success' : it.status === InstallmentStatus.PARTIALLY_PAID ? 'badge-warning' : 'badge-primary'}">${it.status === InstallmentStatus.PAID ? 'مسدد ✅' : it.status === InstallmentStatus.PARTIALLY_PAID ? 'جزئي' : 'معلق'}</span></td>
-          </tr>
-        `
-          )
-          .join('');
-        const logHtml =
-          m.payments.length > 0
-            ? `<h2 style="font-size:0.98rem;margin:1rem 0 0.5rem;">سجل المدفوعات الموثق</h2>
-               <ul style="margin-right:1.25rem;font-size:0.86rem;line-height:1.8;">
-                 ${m.payments.map((p) => `<li>${p.amount.toLocaleString('ar-EG')} ج.م — ${escapeHtml(PAYMENT_METHOD_LABELS[p.method])} ${p.ref ? `(مرجع: ${escapeHtml(p.ref)})` : ''} — ${escapeHtml(p.dateIso)}</li>`).join('')}
-               </ul>`
-            : '';
-        body.innerHTML = `
-          <div class="table-wrapper" tabindex="0" role="region" aria-label="تفاصيل الأقساط">
-            <table class="schedule-table"><thead><tr><th>البند</th><th>الاستحقاق</th><th>المطلوب</th><th>المسدد</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
-          </div>
-          ${logHtml}
-        `;
-      }
-      openDialogById('schedule-modal');
+      if (m) openScheduleModalForMember(m);
     });
   });
 }
@@ -1778,6 +2180,41 @@ function exportManifestCSV(): void {
 // =========================================================================
 // BOOTSTRAP
 // =========================================================================
+function updateGameyaPlanPreview(validateOnBlurOrSubmit: boolean = false): boolean {
+  const plan = ((document.getElementById('new-gam-plan') as HTMLSelectElement | null)?.value ||
+    GameyaType.DEPOSIT_PLUS_MONTHLY) as GameyaType;
+  const target = Number((document.getElementById('new-gam-target') as HTMLInputElement | null)?.value) || 0;
+  const downInput = document.getElementById('new-gam-down') as HTMLInputElement | null;
+  const rawDown = downInput && !downInput.disabled ? Number(downInput.value) || 0 : 0;
+  const rawCount = Number((document.getElementById('new-gam-count') as HTMLInputElement | null)?.value) || 6;
+
+  const preview = previewInstallmentPlan({
+    planType: plan,
+    totalTarget: target,
+    downPayment: rawDown,
+    installmentCount: rawCount,
+  });
+
+  if (downInput) {
+    const showInvalid = !preview.valid && (validateOnBlurOrSubmit || downInput.dataset.interacted === '1');
+    downInput.setAttribute('aria-invalid', showInvalid ? 'true' : 'false');
+    if (showInvalid) {
+      downInput.setAttribute('aria-describedby', 'new-gam-down-error');
+    } else {
+      downInput.removeAttribute('aria-describedby');
+    }
+  }
+
+  const box = document.getElementById('gameya-plan-preview');
+  if (box) {
+    box.className = preview.valid ? 'info-box-neutral' : 'info-box-warn';
+    box.innerHTML = preview.valid
+      ? `💡 <strong>معاينة الخطة:</strong> ${escapeHtml(preview.summaryAr)}`
+      : `⚠️ ${escapeHtml(preview.errorAr || preview.summaryAr)}`;
+  }
+  return preview.valid;
+}
+
 function updateGameyaFormFields(): void {
   const plan = ((document.getElementById('new-gam-plan') as HTMLSelectElement | null)?.value ||
     GameyaType.DEPOSIT_PLUS_MONTHLY) as GameyaType;
@@ -1796,10 +2233,18 @@ function updateGameyaFormFields(): void {
     plan === GameyaType.ROTATING_ROSCA ||
     plan === GameyaType.BIWEEKLY_INSTALLMENT;
   const showTurn = plan === GameyaType.ROTATING_ROSCA;
+  const showMarkPaid = showDown || plan === GameyaType.FULL_CASH;
 
   setFieldState('gam-down-wrap', 'new-gam-down', showDown);
   setFieldState('gam-count-wrap', 'new-gam-count', showCount);
   setFieldState('gam-turn-wrap', 'new-gam-turn', showTurn);
+  setFieldState('gam-mark-paid-wrap', 'new-gam-mark-paid', showMarkPaid);
+
+  const startEl = document.getElementById('new-gam-start') as HTMLInputElement | null;
+  if (startEl && !startEl.value) {
+    startEl.value = new Date().toISOString().slice(0, 10);
+  }
+  updateGameyaPlanPreview(false);
 }
 
 async function pullCloudSosAlerts(notifyUser: boolean): Promise<void> {
@@ -2244,8 +2689,17 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-assign-room')?.addEventListener('click', handleAssignRoom);
 
-  // Gam'eya Enhanced Plan Form + Progressive Disclosure + Flexible Payment Modal
+  // Gam'eya Enhanced Plan Form + Progressive Disclosure + Live Calculator + Filter + Payment Modal
   document.getElementById('new-gam-plan')?.addEventListener('change', updateGameyaFormFields);
+  ['new-gam-target', 'new-gam-down', 'new-gam-count'].forEach((id) => {
+    const input = document.getElementById(id) as HTMLInputElement | null;
+    input?.addEventListener('input', () => updateGameyaPlanPreview(false));
+    input?.addEventListener('blur', () => {
+      input.dataset.interacted = '1';
+      updateGameyaPlanPreview(true);
+    });
+  });
+
   document.getElementById('new-gam-name')?.addEventListener('change', (e) => {
     const picked = (e.target as HTMLInputElement).value.trim();
     const active = getActiveGroup();
@@ -2257,8 +2711,37 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  document.querySelectorAll<HTMLButtonElement>('[data-gameya-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      gameyaFilter = (btn.dataset.gameyaFilter || 'ALL') as typeof gameyaFilter;
+      document.querySelectorAll<HTMLButtonElement>('[data-gameya-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      renderGameyaTable();
+    });
+  });
+
+  document.getElementById('gameya-search')?.addEventListener('input', (e) => {
+    gameyaSearch = (e.target as HTMLInputElement).value;
+    renderGameyaTable();
+  });
+
+  document.getElementById('btn-export-gameya-csv')?.addEventListener('click', exportGameyaCSV);
+
+  document.getElementById('pay-amount')?.addEventListener('input', (e) => {
+    const active = getActiveGroup();
+    const m = active.gameya.find((x) => x.id === activePaymentMemberId);
+    if (m) updatePaymentProjectionPreview(m, Number((e.target as HTMLInputElement).value) || 0);
+  });
+
   document.getElementById('add-gameya-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (!updateGameyaPlanPreview(true)) {
+      const downEl = document.getElementById('new-gam-down') as HTMLInputElement | null;
+      downEl?.focus();
+      showToast('⚠️ يرجى تصحيح قيمة المقدم مقارنة بإجمالي الباقة أولاً', true);
+      return;
+    }
     const active = getActiveGroup();
     const name = (document.getElementById('new-gam-name') as HTMLInputElement).value.trim();
     const phone = (document.getElementById('new-gam-phone') as HTMLInputElement).value.trim();
@@ -2267,6 +2750,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const rawDown = Number((document.getElementById('new-gam-down') as HTMLInputElement).value) || 0;
     const rawCount = Number((document.getElementById('new-gam-count') as HTMLInputElement).value) || 6;
     const turnMonth = Number((document.getElementById('new-gam-turn') as HTMLInputElement).value) || 1;
+    const startDateIso =
+      (document.getElementById('new-gam-start') as HTMLInputElement | null)?.value ||
+      new Date().toISOString().slice(0, 10);
+    const markPaidEl = document.getElementById('new-gam-mark-paid') as HTMLInputElement | null;
     if (!name) return;
 
     const downPayment =
@@ -2278,6 +2765,20 @@ window.addEventListener('DOMContentLoaded', () => {
     const installmentCount =
       planType === GameyaType.FULL_CASH ? 1 : planType === GameyaType.DEPOSIT_PLUS_FINAL ? 2 : rawCount;
 
+    const initialPaid = markPaidEl && !markPaidEl.disabled && markPaidEl.checked && downPayment > 0 ? downPayment : 0;
+    const initialPayments: GameyaRecord['payments'] =
+      initialPaid > 0
+        ? [
+            {
+              id: `pay-${Date.now()}`,
+              amount: initialPaid,
+              method: PaymentMethod.CASH,
+              ref: 'ENROLL-DEP',
+              dateIso: startDateIso,
+            },
+          ]
+        : [];
+
     active.gameya.push({
       id: `g-${Date.now()}`,
       name,
@@ -2287,15 +2788,24 @@ window.addEventListener('DOMContentLoaded', () => {
       totalTarget: target,
       downPayment,
       installmentCount,
-      totalPaid: 0,
-      startDateIso: new Date().toISOString().slice(0, 10),
-      payments: [],
+      totalPaid: initialPaid,
+      startDateIso,
+      payments: initialPayments,
     });
     saveState();
     renderAll();
     (e.target as HTMLFormElement).reset();
+    const downEl = document.getElementById('new-gam-down') as HTMLInputElement | null;
+    if (downEl) {
+      delete downEl.dataset.interacted;
+      downEl.setAttribute('aria-invalid', 'false');
+    }
     updateGameyaFormFields();
-    showToast(`✅ تم إضافة ${name} بخطة (${PLAN_LABELS[planType]})`);
+    showToast(
+      initialPaid > 0
+        ? `✅ تم تسجيل ${name} وتحصيل ${initialPaid.toLocaleString('ar-EG')} ج.م`
+        : `✅ تم إضافة ${name} بخطة (${PLAN_LABELS[planType]})`
+    );
   });
 
   document.getElementById('payment-form')?.addEventListener('submit', (e) => {
@@ -2305,6 +2815,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!m) return;
     const amount = Number((document.getElementById('pay-amount') as HTMLInputElement).value) || 0;
     const method = (document.getElementById('pay-method') as HTMLSelectElement).value as PaymentMethod;
+    const dateIso =
+      (document.getElementById('pay-date') as HTMLInputElement | null)?.value ||
+      new Date().toISOString().slice(0, 10);
     const ref = (document.getElementById('pay-ref') as HTMLInputElement).value.trim();
     if (amount <= 0) return;
 
@@ -2332,7 +2845,7 @@ window.addEventListener('DOMContentLoaded', () => {
       amount: effectiveAmount,
       method,
       ref: ref || undefined,
-      dateIso: new Date().toISOString().slice(0, 10),
+      dateIso,
     });
     saveState();
     renderAll();
