@@ -179,7 +179,7 @@
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.board.title">🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <span class="badge badge-primary">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
+            <span class="badge badge-primary" data-i18n="sup.badge.multiGroup">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
             <button type="button" id="btn-pull-cloud-group" class="btn btn-secondary btn-compact" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
           </div>
         </div>
@@ -191,15 +191,15 @@
           <h2 class="card-title" data-i18n="sup.manifest.title">🚌 كشف حضور باص الفوج النشط + روابط QR</h2>
           <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary" id="manifest-count-badge"></span>
-            <button type="button" id="btn-open-add-pilgrim" class="btn btn-primary" style="font-size:0.84rem;">➕ إضافة معتمر</button>
+            <button type="button" id="btn-open-add-pilgrim" class="btn btn-primary" style="font-size:0.84rem;" data-i18n="sup.btn.addPilgrim">➕ إضافة معتمر</button>
             <button type="button" id="btn-board-all" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.boardAll">✅ تأكيد ركوب الجميع</button>
             <button type="button" id="btn-export-csv" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.manifest.exportCsv">📥 تصدير CSV</button>
           </div>
         </div>
 
         <search style="display:block;margin-bottom:0.85rem;">
-          <label for="manifest-search" class="field-label">بحث سريع في الكشف:</label>
-          <input type="search" id="manifest-search" name="manifestSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم أو الجواز أو رقم الغرفة...">
+          <label for="manifest-search" class="field-label" data-i18n="sup.search.manifest">بحث سريع في الكشف:</label>
+          <input type="search" id="manifest-search" name="manifestSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم أو الجواز أو رقم الغرفة..." data-i18n-placeholder="sup.search.manifestPh">
         </search>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="manifest-caption">
@@ -207,12 +207,12 @@
             <caption id="manifest-caption" class="sr-only">كشف حضور الباص والمعتمرين للفوج النشط</caption>
             <thead>
               <tr>
-                <th scope="col">اسم المعتمر</th>
-                <th scope="col">رقم الجواز</th>
-                <th scope="col">الغرفة</th>
-                <th scope="col">نُسك</th>
-                <th scope="col">الباص</th>
-                <th scope="col">إجراءات</th>
+                <th scope="col" data-i18n="sup.col.pilgrimName">اسم المعتمر</th>
+                <th scope="col" data-i18n="sup.col.passport">رقم الجواز</th>
+                <th scope="col" data-i18n="sup.col.room">الغرفة</th>
+                <th scope="col" data-i18n="sup.col.nusuk">نُسك</th>
+                <th scope="col" data-i18n="sup.col.bus">الباص</th>
+                <th scope="col" data-i18n="sup.col.actions">إجراءات</th>
               </tr>
             </thead>
             <tbody id="manifest-tbody"></tbody>
@@ -222,11 +222,11 @@
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)</h2>
+          <h2 class="card-title" data-i18n="sup.rooming.title">🏨 محرك تسكين الغرف (بضوابط الفصل والسعة)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <span class="badge badge-success">يمنع الخلط غير العائلي وتجاوز السعة</span>
-            <button type="button" id="btn-open-add-room" class="btn btn-secondary" style="font-size:0.84rem;">➕ فتح غرفة</button>
-            <button type="button" id="btn-open-assign-room" class="btn btn-primary" style="font-size:0.84rem;">🏨 تسكين معتمر</button>
+            <span class="badge badge-success" data-i18n="sup.badge.roomGuard">يمنع الخلط غير العائلي وتجاوز السعة</span>
+            <button type="button" id="btn-open-add-room" class="btn btn-secondary" style="font-size:0.84rem;" data-i18n="sup.btn.openRoom">➕ فتح غرفة</button>
+            <button type="button" id="btn-open-assign-room" class="btn btn-primary" style="font-size:0.84rem;" data-i18n="sup.btn.assignRoom">🏨 تسكين معتمر</button>
           </div>
         </div>
 
@@ -241,7 +241,7 @@
           <h2 class="card-title" data-i18n="sup.people.title">👥 سجل الأشخاص الدائم عبر الرحلات (CRM)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-warning" id="people-count-badge"></span>
-            <button type="button" id="btn-open-add-person" class="btn btn-primary" style="font-size:0.84rem;">➕ إضافة شخص للسجل</button>
+            <button type="button" id="btn-open-add-person" class="btn btn-primary" style="font-size:0.84rem;" data-i18n="sup.btn.addPerson">➕ إضافة شخص للسجل</button>
           </div>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">
@@ -249,8 +249,8 @@
         </p>
 
         <search style="display:block;margin-bottom:0.85rem;">
-          <label for="people-search" class="field-label">بحث في سجل الأشخاص:</label>
-          <input type="search" id="people-search" name="peopleSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم، رقم الجواز، أو الهاتف...">
+          <label for="people-search" class="field-label" data-i18n="sup.search.people">بحث في سجل الأشخاص:</label>
+          <input type="search" id="people-search" name="peopleSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم، رقم الجواز، أو الهاتف..." data-i18n-placeholder="sup.search.peoplePh">
         </search>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="people-caption">
@@ -258,12 +258,12 @@
             <caption id="people-caption" class="sr-only">سجل الأشخاص الدائم وتاريخ مشاركاتهم</caption>
             <thead>
               <tr>
-                <th scope="col">الاسم</th>
-                <th scope="col">الجواز والصلاحية</th>
-                <th scope="col">الهاتف</th>
-                <th scope="col">الحالة الصحية</th>
-                <th scope="col">الرحلات السابقة</th>
-                <th scope="col">إجراءات</th>
+                <th scope="col" data-i18n="sup.col.name">الاسم</th>
+                <th scope="col" data-i18n="sup.col.passport">الجواز والصلاحية</th>
+                <th scope="col" data-i18n="sup.col.phone">الهاتف</th>
+                <th scope="col" data-i18n="sup.col.health">الحالة الصحية</th>
+                <th scope="col" data-i18n="sup.col.trips">الرحلات السابقة</th>
+                <th scope="col" data-i18n="sup.col.actions">إجراءات</th>
               </tr>
             </thead>
             <tbody id="people-tbody"></tbody>
@@ -278,10 +278,10 @@
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.gameya.title">💰 خطط الأقساط المرنة والجمعية</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
-            <button type="button" id="btn-open-add-gameya" class="btn btn-primary btn-compact">➕ إضافة مشترك</button>
-            <button type="button" id="btn-gameya-print-agreement" class="btn btn-secondary btn-compact">🖨️ طباعة إقرار سداد</button>
-            <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary btn-compact">📥 تصدير كشف الأقساط CSV</button>
+            <span class="badge badge-primary" data-i18n="sup.badge.gamSummary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
+            <button type="button" id="btn-open-add-gameya" class="btn btn-primary btn-compact" data-i18n="sup.btn.addMember">➕ إضافة مشترك</button>
+            <button type="button" id="btn-gameya-print-agreement" class="btn btn-secondary btn-compact" data-i18n="sup.btn.printAgreement">🖨️ طباعة إقرار سداد</button>
+            <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary btn-compact" data-i18n="sup.btn.exportGameyaCsv">📥 تصدير كشف الأقساط CSV</button>
           </div>
         </div>
 
@@ -289,15 +289,15 @@
 
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.85rem;">
           <div class="atlas-filter-bar" role="group" aria-label="تصفية المشتركين حسب الحالة" style="margin-bottom:0;">
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ALL" aria-pressed="true">الكل</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="OVERDUE" aria-pressed="false">⚠️ متأخر</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ACTIVE" aria-pressed="false">⏳ قيد السداد</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="PAID" aria-pressed="false">✅ مكتمل</button>
-            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ROSCA" aria-pressed="false">🔄 جمعية بالأدوار</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ALL" aria-pressed="true" data-i18n="sup.filter.all">الكل</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="OVERDUE" aria-pressed="false" data-i18n="sup.filter.overdue">⚠️ متأخر</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ACTIVE" aria-pressed="false" data-i18n="sup.filter.active">⏳ قيد السداد</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="PAID" aria-pressed="false" data-i18n="sup.filter.paid">✅ مكتمل</button>
+            <button type="button" class="btn btn-secondary atlas-filter-btn" data-gameya-filter="ROSCA" aria-pressed="false" data-i18n="sup.filter.rosca">🔄 جمعية بالأدوار</button>
           </div>
           <search style="flex:1;min-width:210px;max-width:340px;">
             <label for="gameya-search" class="sr-only">بحث في المشتركين</label>
-            <input type="search" id="gameya-search" name="gameyaSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف...">
+            <input type="search" id="gameya-search" name="gameyaSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف..." data-i18n-placeholder="sup.search.gameyaPh">
           </search>
         </div>
 
@@ -306,13 +306,13 @@
             <caption id="gameya-caption" class="sr-only">جدول خطط الأقساط والجمعية للفوج النشط</caption>
             <thead>
               <tr>
-                <th scope="col">المشترك</th>
-                <th scope="col">نظام السداد</th>
-                <th scope="col">الإجمالي والتقدم</th>
-                <th scope="col">المسدد / المتبقي</th>
-                <th scope="col">الدفعة القادمة</th>
-                <th scope="col">الحالة</th>
-                <th scope="col">إجراءات</th>
+                <th scope="col" data-i18n="sup.col.subscriber">المشترك</th>
+                <th scope="col" data-i18n="sup.col.plan">نظام السداد</th>
+                <th scope="col" data-i18n="sup.col.total">الإجمالي والتقدم</th>
+                <th scope="col" data-i18n="sup.col.paidRemaining">المسدد / المتبقي</th>
+                <th scope="col" data-i18n="sup.col.nextDue">الدفعة القادمة</th>
+                <th scope="col" data-i18n="sup.col.status">الحالة</th>
+                <th scope="col" data-i18n="sup.col.actions">إجراءات</th>
               </tr>
             </thead>
             <tbody id="gameya-tbody"></tbody>
@@ -329,8 +329,8 @@
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.whatsapp.title">💬 رسائل الواتساب الموجهة للفوج</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <span class="badge badge-success">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
-            <a href="/?tab=haram-atlas" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">⛩️ دليل الحرمين والزوار (تطبيق المعتمر) ↗</a>
+            <span class="badge badge-success" data-i18n="sup.badge.waAuto">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
+            <a href="/?tab=haram-atlas" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;" data-i18n="sup.link.visitorAtlas">⛩️ دليل الحرمين والزوار (تطبيق المعتمر) ↗</a>
           </div>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
@@ -350,7 +350,7 @@
         <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
           <div class="card-header" style="border-bottom-color:var(--women-border);">
             <h3 class="card-title" style="color:var(--women-accent);" data-i18n="sup.women.title">🧕 رسائل الواتساب والردود السريعة لمجموعة الأخوات</h3>
-            <a href="/?tab=women-fiqh" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">📖 مرجع فقه المعتمرة الكامل ↗</a>
+            <a href="/?tab=women-fiqh" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;" data-i18n="sup.link.womenFiqh">📖 مرجع فقه المعتمرة الكامل ↗</a>
           </div>
           <p style="font-size:0.92rem;line-height:1.75;">
             قوالب رسائل واتساب جاهزة لمجموعة الأخوات وردود فقهية مختصرة تُرسل بنقرة واحدة (التفاصيل والمصادر الموسعة مخصصة في تطبيق المعتمرة).
@@ -388,7 +388,7 @@
           <h2 class="card-title" data-i18n="sup.sos.title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-danger">حساب المسافة للفندق</span>
-            <button type="button" id="btn-open-add-sos" class="btn btn-danger btn-compact">🆘 تسجيل بلاغ نشط</button>
+            <button type="button" id="btn-open-add-sos" class="btn btn-danger btn-compact" data-i18n="sup.btn.addSos">🆘 تسجيل بلاغ نشط</button>
             <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary btn-compact" data-i18n="sup.sos.pullBtn">☁️ تحديث من D1</button>
           </div>
         </div>
@@ -402,7 +402,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h2 class="card-title">🏛️ أرقام الطوارئ ومنصات المملكة الرسمية</h2></div>
+        <div class="card-header"><h2 class="card-title" data-i18n="sup.sos.officialTitle">🏛️ أرقام الطوارئ ومنصات المملكة الرسمية</h2></div>
         <div id="sup-official-resources" class="grid-2" style="margin-bottom:0;"></div>
       </div>
     </section>
@@ -434,16 +434,16 @@
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.luggage.title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <button type="button" id="btn-open-add-bag" class="btn btn-primary btn-compact">➕ إضافة حقيبة</button>
-            <button type="button" id="btn-open-luggage-print" class="btn btn-secondary btn-compact">🖨️ طباعة بطاقات الأمتعة + QR</button>
+            <button type="button" id="btn-open-add-bag" class="btn btn-primary btn-compact" data-i18n="sup.btn.addBag">➕ إضافة حقيبة</button>
+            <button type="button" id="btn-open-luggage-print" class="btn btn-secondary btn-compact" data-i18n="sup.btn.printLuggage">🖨️ طباعة بطاقات الأمتعة + QR</button>
           </div>
         </div>
 
         <div class="metrics-grid" style="margin-bottom:1rem;">
-          <div class="info-box-neutral" style="text-align:center;"><div>الإجمالي</div><strong id="count-lug-total" style="font-size:1.3rem;">0</strong></div>
-          <div class="info-box-warn" style="text-align:center;"><div>بالحافلة</div><strong id="count-lug-bus" style="font-size:1.3rem;">0</strong></div>
-          <div class="info-box-neutral" style="text-align:center;"><div>ببهو الاستقبال</div><strong id="count-lug-lobby" style="font-size:1.3rem;">0</strong></div>
-          <div class="info-box-neutral" style="text-align:center;border-color:var(--success);"><div>سُلّمت للغرف</div><strong id="count-lug-room" style="font-size:1.3rem;color:var(--success);">0</strong></div>
+          <div class="info-box-neutral" style="text-align:center;"><div data-i18n="sup.lug.total">الإجمالي</div><strong id="count-lug-total" style="font-size:1.3rem;">0</strong></div>
+          <div class="info-box-warn" style="text-align:center;"><div data-i18n="sup.lug.bus">بالحافلة</div><strong id="count-lug-bus" style="font-size:1.3rem;">0</strong></div>
+          <div class="info-box-neutral" style="text-align:center;"><div data-i18n="sup.lug.lobby">ببهو الاستقبال</div><strong id="count-lug-lobby" style="font-size:1.3rem;">0</strong></div>
+          <div class="info-box-neutral" style="text-align:center;border-color:var(--success);"><div data-i18n="sup.lug.rooms">سُلّمت للغرف</div><strong id="count-lug-room" style="font-size:1.3rem;color:var(--success);">0</strong></div>
         </div>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="luggage-caption">
@@ -451,11 +451,11 @@
             <caption id="luggage-caption" class="sr-only">سجل أمتعة الفوج النشط</caption>
             <thead>
               <tr>
-                <th scope="col">كود الحقيبة</th>
-                <th scope="col">المعتمر</th>
-                <th scope="col">الغرفة</th>
-                <th scope="col">الحالة</th>
-                <th scope="col">تحديث</th>
+                <th scope="col" data-i18n="sup.col.bagCode">كود الحقيبة</th>
+                <th scope="col" data-i18n="sup.col.pilgrim">المعتمر</th>
+                <th scope="col" data-i18n="sup.col.room">الغرفة</th>
+                <th scope="col" data-i18n="sup.col.status">الحالة</th>
+                <th scope="col" data-i18n="sup.col.update">تحديث</th>
               </tr>
             </thead>
             <tbody id="luggage-tbody"></tbody>
@@ -465,10 +465,10 @@
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">♿ السجل الطبي ورعاية كبار السن</h2>
+          <h2 class="card-title" data-i18n="sup.medical.title">♿ السجل الطبي ورعاية كبار السن</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-warning" id="medical-count-badge">0 حالات</span>
-            <button type="button" id="btn-open-add-med" class="btn btn-primary btn-compact">➕ إضافة حالة طبية</button>
+            <button type="button" id="btn-open-add-med" class="btn btn-primary btn-compact" data-i18n="sup.btn.addMed">➕ إضافة حالة طبية</button>
           </div>
         </div>
 
@@ -494,24 +494,24 @@
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ والموارد الرسمية</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج النشط</button>
-      <div class="popover-section-label">العرض والأمان</div>
+      <div class="popover-section-label" data-i18n="sup.popover.displaySec">العرض والأمان</div>
       <div class="popover-quick-grid">
         <button type="button" class="btn btn-secondary" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
         <button type="button" class="btn btn-secondary" data-lang-toggle>🌐 English</button>
       </div>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn>🔒 تفعيل قفل الخصوصية (PIN)</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now hidden>🔐 قفل الشاشة الآن</button>
-      <div class="popover-section-label">المزامنة والنسخ الاحتياطي</div>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn data-i18n="sup.popover.pinSetup">🔒 تفعيل قفل الخصوصية (PIN)</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now data-i18n="sup.popover.pinLockNow" hidden>🔐 قفل الشاشة الآن</button>
+      <div class="popover-section-label" data-i18n="sup.popover.syncSec">المزامنة والنسخ الاحتياطي</div>
       <div class="popover-quick-grid">
         <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" data-i18n="tools.sync">☁️ رفع للسحابة</button>
         <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" data-i18n="sup.board.pullBtn">☁️ سحب من D1</button>
-        <button type="button" id="btn-export-backup-json" class="btn btn-secondary">💾 تصدير JSON</button>
+        <button type="button" id="btn-export-backup-json" class="btn btn-secondary" data-i18n="sup.popover.exportJson">💾 تصدير JSON</button>
         <label for="input-restore-backup-json" class="btn btn-secondary" style="cursor:pointer;">
-          📤 استعادة JSON
+          <span data-i18n="sup.popover.restoreJson">📤 استعادة JSON</span>
           <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
         </label>
       </div>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo>🔄 استعادة البيانات الافتراضية</button>
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo data-i18n="sup.popover.resetDemo">🔄 استعادة البيانات الافتراضية</button>
       <a href="/" class="btn btn-gold" style="text-decoration:none;" data-i18n="tools.pilgrimApp">🤲 معاينة تطبيق المعتمر</a>
     </nav>
   </div>
@@ -600,7 +600,11 @@
     <div id="pay-quick-presets" class="quick-preset-row" aria-label="مبالغ سريعة مقترحة"></div>
     <form id="payment-form">
       <div class="form-inline-grid">
-        <div><label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label><input id="pay-amount" type="number" inputmode="decimal" min="1" step="0.01" class="field-input" required></div>
+        <div>
+          <label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label>
+          <input id="pay-amount" type="number" inputmode="decimal" min="1" step="0.01" class="field-input" data-error="pay-amount-error" required>
+          <div id="pay-amount-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل مبلغاً صحيحاً أكبر من الصفر.</div>
+        </div>
         <div>
           <label for="pay-method" class="field-label">وسيلة الدفع:</label>
           <select id="pay-method" class="field-input">
@@ -710,10 +714,25 @@
       <button type="button" class="dialog-close-btn" data-close-dialog="add-pilgrim-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="add-pilgrim-form" name="addPilgrim">
+      <input type="hidden" id="pilgrim-edit-id" value="">
       <div class="form-inline-grid">
-        <div><label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label><input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" placeholder="الاسم الثلاثي" required></div>
-        <div><label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label><input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" class="field-input" placeholder="A98765432" required></div>
-        <div><label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label><input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
+        <div>
+          <label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label>
+          <input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" placeholder="الاسم الثلاثي" data-error="new-pilgrim-name-error" required>
+          <div id="new-pilgrim-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى كتابة اسم المعتمر كاملاً.</div>
+        </div>
+        <div>
+          <label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label>
+          <span id="new-pilgrim-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً (مثل A98765432)</span>
+          <input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" aria-describedby="new-pilgrim-passport-hint" data-error="new-pilgrim-passport-error" class="field-input" placeholder="A98765432" required>
+          <div id="new-pilgrim-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5 أحرف/أرقام على الأقل).</div>
+        </div>
+        <div>
+          <label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label>
+          <span id="new-pilgrim-phone-hint" class="field-hint">يفضل بالصيغة الدولية (+20 أو +966)</span>
+          <input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" pattern="(\+?\d[\d\s\-]{7,18})?" aria-describedby="new-pilgrim-phone-hint" data-error="new-pilgrim-phone-error" class="field-input" placeholder="+2010...">
+          <div id="new-pilgrim-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم هاتف صحيحاً أو اتركه فارغاً.</div>
+        </div>
         <div>
           <label for="new-pilgrim-gender" class="field-label">النوع:</label>
           <select id="new-pilgrim-gender" name="gender" class="field-input">
@@ -721,9 +740,12 @@
             <option value="FEMALE">امرأة</option>
           </select>
         </div>
+        <div class="field-span-wide" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;min-height:44px;font-size:0.86rem;">
+          <label for="new-pilgrim-nusuk"><input type="checkbox" id="new-pilgrim-nusuk" checked> تصريح نُسك جاهز</label>
+        </div>
       </div>
       <div class="dialog-sticky-actions">
-        <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة للفوج والسجل</button>
+        <button type="submit" id="btn-save-pilgrim-submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة للفوج والسجل</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-pilgrim-modal">إلغاء</button>
       </div>
     </form>
@@ -779,11 +801,26 @@
       <button type="button" class="dialog-close-btn" data-close-dialog="add-person-modal" aria-label="إغلاق">&times;</button>
     </div>
     <form id="add-person-form">
+      <input type="hidden" id="crm-edit-id" value="">
       <div class="form-inline-grid">
-        <div><label for="crm-name" class="field-label">الاسم الكامل:</label><input id="crm-name" autocomplete="name" class="field-input" required></div>
-        <div><label for="crm-passport" class="field-label">رقم الجواز:</label><input id="crm-passport" class="field-input" required></div>
+        <div>
+          <label for="crm-name" class="field-label">الاسم الكامل:</label>
+          <input id="crm-name" autocomplete="name" class="field-input" data-error="crm-name-error" required>
+          <div id="crm-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال الاسم الكامل.</div>
+        </div>
+        <div>
+          <label for="crm-passport" class="field-label">رقم الجواز:</label>
+          <span id="crm-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً</span>
+          <input id="crm-passport" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" aria-describedby="crm-passport-hint" data-error="crm-passport-error" class="field-input" required>
+          <div id="crm-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5+ أحرف/أرقام).</div>
+        </div>
         <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" type="date" class="field-input"></div>
-        <div><label for="crm-phone" class="field-label">الهاتف / واتساب:</label><input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
+        <div>
+          <label for="crm-phone" class="field-label">الهاتف / واتساب:</label>
+          <span id="crm-phone-hint" class="field-hint">بالصيغة الدولية (+20 أو +966)</span>
+          <input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" pattern="\+?\d[\d\s\-]{7,18}" aria-describedby="crm-phone-hint" data-error="crm-phone-error" class="field-input" required>
+          <div id="crm-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال رقم هاتف/واتساب صحيح.</div>
+        </div>
         <div>
           <label for="crm-gender" class="field-label">النوع:</label>
           <select id="crm-gender" class="field-input">
@@ -798,8 +835,8 @@
           <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
         </div>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ بالسجل الدائم</button>
+      <div class="dialog-sticky-actions">
+        <button type="submit" id="btn-save-person-submit" class="btn btn-primary" style="flex:1;">💾 حفظ بالسجل الدائم</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-person-modal">إلغاء</button>
       </div>
     </form>

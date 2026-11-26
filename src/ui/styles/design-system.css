@@ -945,6 +945,7 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
 
 /* Unified Form Controls & Customizable Branded Selects */
 .field-label { display: block; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text-muted); }
+.field-hint { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.25rem; }
 
 .field-input {
   width: 100%;
@@ -958,19 +959,28 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
   font-size: max(1rem, 0.92rem);
 }
 
-.field-input:user-invalid {
+:is(.field-input:user-invalid, .field-input.user-invalid-fallback, .field-input[aria-invalid="true"]) {
   border-color: var(--danger);
+}
+:is(.field-input:user-valid, .field-input.user-valid-fallback) {
+  border-color: var(--primary);
 }
 
 .field-error-msg {
   display: none;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--danger);
   margin-top: 0.25rem;
 }
-:is(.field-input:user-invalid, .field-input[aria-invalid="true"]) + .field-error-msg {
+:is(.field-input:user-invalid, .field-input.user-invalid-fallback, .field-input[aria-invalid="true"]) ~ .field-error-msg {
   display: block;
+}
+
+.btn-confirm-armed {
+  background: var(--danger-btn) !important;
+  color: #ffffff !important;
+  border-color: var(--danger) !important;
 }
 
 /* Progress Meters, Quick Chips & Installment Ledger UX */
@@ -1238,6 +1248,43 @@ dialog::backdrop { background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(4px);
   pointer-events: none;
 }
 .toast.show { transform: translateX(-50%) translateY(0); visibility: visible; }
+
+.action-toast {
+  position: fixed;
+  inset: auto;
+  inset-block-end: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  inset-inline: 50% auto;
+  transform: translateX(-50%);
+  width: min(92vw, 460px);
+  background: #022c22;
+  color: #f8fafc;
+  border: 1px solid rgba(110, 231, 183, 0.45);
+  border-radius: 14px;
+  padding: 0.65rem 0.9rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  opacity: 0;
+  transition: opacity 0.2s ease, display 0.2s ease;
+  transition-behavior: allow-discrete;
+}
+.action-toast:is(:popover-open, .\:popover-open) {
+  display: flex;
+  opacity: 1;
+}
+@media (max-width: 767px) {
+  .action-toast {
+    inset-block-end: calc(5.1rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+.action-toast-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
 
 footer {
   text-align: center;

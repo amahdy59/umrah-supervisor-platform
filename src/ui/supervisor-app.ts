@@ -28,10 +28,13 @@ import {
   buildWhatsAppUrl,
   renderQrSvg,
   showToast,
+  showUndoToast,
+  handleTwoStepDelete,
   copyToClipboard,
   setupDialogs,
   openDialogById,
   closeDialogById,
+  initAccessibleFormValidation,
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
@@ -82,6 +85,31 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   [PaymentMethod.BANK_TRANSFER]: 'تحويل بنكي',
   [PaymentMethod.CARD]: 'بطاقة بنكية',
 };
+
+const PLAN_LABELS_EN: Record<GameyaType, string> = {
+  [GameyaType.ROTATING_ROSCA]: 'Rotating ROSCA (Turns)',
+  [GameyaType.DIRECT_INSTALLMENT]: 'Monthly Installments',
+  [GameyaType.DEPOSIT_PLUS_MONTHLY]: 'Deposit + Monthly',
+  [GameyaType.DEPOSIT_PLUS_FINAL]: 'Deposit + Pre-Trip Balance',
+  [GameyaType.BIWEEKLY_INSTALLMENT]: 'Biweekly Installments',
+  [GameyaType.FULL_CASH]: 'Full Cash Settlement',
+};
+
+const PAYMENT_METHOD_LABELS_EN: Record<PaymentMethod, string> = {
+  [PaymentMethod.CASH]: 'Cash',
+  [PaymentMethod.INSTAPAY]: 'InstaPay',
+  [PaymentMethod.VODAFONE_CASH]: 'Mobile Wallet',
+  [PaymentMethod.BANK_TRANSFER]: 'Bank Transfer',
+  [PaymentMethod.CARD]: 'Bank Card',
+};
+
+function getPlanLabel(type: GameyaType): string {
+  return getCurrentLanguage() === 'en' ? PLAN_LABELS_EN[type] : PLAN_LABELS[type];
+}
+
+function getMethodLabel(method: PaymentMethod): string {
+  return getCurrentLanguage() === 'en' ? PAYMENT_METHOD_LABELS_EN[method] : PAYMENT_METHOD_LABELS[method];
+}
 
 const HOTEL_PRESETS: Record<
   string,
@@ -594,6 +622,9 @@ function renderGroupSwitcher(): void {
 
 function renderTopMetrics(): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const reg = buildRegistryFromState();
   const agg = reg.getAggregateActiveMetrics();
 
@@ -613,28 +644,41 @@ function renderTopMetrics(): void {
   };
 
   set('metric-trip-title', active.settings.tripTitle);
-  set('metric-trip-stage', TRIP_STAGE_LABELS[active.settings.status]);
-  set('metric-pilgrim-count', `${totalP} معتمر (الكل: ${agg.totalActivePilgrims})`);
-  set('metric-bus-summary', `${active.settings.busNumber}: ${boardedP} صعدوا / ${remainingP} متبقين`);
-  set('metric-gameya-total', `${totalCollected.toLocaleString('ar-EG')} ج.م`);
-  set('metric-gameya-pct', `التحصيل: ${pct}% • (${agg.activeGroupsCount} أفواج نشطة)`);
-  set('sup-sos-count', `${activeSos} (كل الأفواج: ${agg.totalActiveSos})`);
+  set('metric-trip-stage', getTripStageLabel(active.settings.status));
+  set(
+    'metric-pilgrim-count',
+    isEn ? `${totalP} Pilgrims (Total: ${agg.totalActivePilgrims})` : `${totalP} معتمر (الكل: ${agg.totalActivePilgrims})`
+  );
+  set(
+    'metric-bus-summary',
+    isEn
+      ? `${active.settings.busNumber}: ${boardedP} Boarded / ${remainingP} Pending`
+      : `${active.settings.busNumber}: ${boardedP} صعدوا / ${remainingP} متبقين`
+  );
+  set('metric-gameya-total', `${totalCollected.toLocaleString(loc)} ${curr}`);
+  set(
+    'metric-gameya-pct',
+    isEn
+      ? `Collected: ${pct}% • (${agg.activeGroupsCount} Active Groups)`
+      : `التحصيل: ${pct}% • (${agg.activeGroupsCount} أفواج نشطة)`
+  );
+  set('sup-sos-count', isEn ? `${activeSos} (All Groups: ${agg.totalActiveSos})` : `${activeSos} (كل الأفواج: ${agg.totalActiveSos})`);
 
   const sosSub = document.getElementById('sup-sos-sub');
   const sosCountEl = document.getElementById('sup-sos-count');
   if (sosSub && sosCountEl) {
     if (agg.totalActiveSos > 0) {
       sosCountEl.style.color = 'var(--danger)';
-      sosSub.textContent = '⚠️ يوجد بلاغات تائهين تتطلب متابعة!';
+      sosSub.textContent = isEn ? '⚠️ Active lost-pilgrim SOS alerts require follow-up!' : '⚠️ يوجد بلاغات تائهين تتطلب متابعة!';
       sosSub.style.color = 'var(--danger)';
     } else {
       sosCountEl.style.color = 'var(--success)';
-      sosSub.textContent = 'جميع الأفواج في نطاق الأمان';
+      sosSub.textContent = isEn ? 'All groups safe with zero open SOS' : 'جميع الأفواج في نطاق الأمان';
       sosSub.style.color = 'var(--success)';
     }
   }
 
-  set('manifest-count-badge', `${boardedP} صعدوا / ${remainingP} متبقين`);
+  set('manifest-count-badge', isEn ? `${boardedP} Boarded / ${remainingP} Pending` : `${boardedP} صعدوا / ${remainingP} متبقين`);
 }
 
 // =========================================================================
@@ -771,10 +815,80 @@ function buildPilgrimShareUrl(p: PilgrimRecord, badgeToken?: string): string {
   return `${base}?${qs.toString()}`;
 }
 
+function openPilgrimModal(p?: PilgrimRecord): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const titleEl = document.getElementById('add-pilgrim-modal-title');
+  const submitBtn = document.getElementById('btn-save-pilgrim-submit');
+  const editIdEl = document.getElementById('pilgrim-edit-id') as HTMLInputElement | null;
+  const nameEl = document.getElementById('new-pilgrim-name') as HTMLInputElement | null;
+  const passEl = document.getElementById('new-pilgrim-passport') as HTMLInputElement | null;
+  const phoneEl = document.getElementById('new-pilgrim-phone') as HTMLInputElement | null;
+  const genderEl = document.getElementById('new-pilgrim-gender') as HTMLSelectElement | null;
+  const nusukEl = document.getElementById('new-pilgrim-nusuk') as HTMLInputElement | null;
+
+  if (p) {
+    if (titleEl) titleEl.textContent = isEn ? `✏️ Edit Pilgrim: ${p.fullName}` : `✏️ تعديل بيانات المعتمر: ${p.fullName}`;
+    if (submitBtn) submitBtn.textContent = isEn ? '💾 Save Pilgrim Updates' : '💾 حفظ تعديلات المعتمر';
+    if (editIdEl) editIdEl.value = p.id;
+    if (nameEl) nameEl.value = p.fullName;
+    if (passEl) passEl.value = p.passportNumber;
+    if (phoneEl) phoneEl.value = p.phone;
+    if (genderEl) genderEl.value = p.gender;
+    if (nusukEl) nusukEl.checked = p.nusukReady;
+  } else {
+    if (titleEl) titleEl.textContent = isEn ? '➕ Add Pilgrim to Active Group' : '➕ إضافة معتمر للفوج النشط';
+    if (submitBtn) submitBtn.textContent = isEn ? '✅ Save & Add to Group + CRM' : '✅ حفظ وإضافة للفوج والسجل';
+    (document.getElementById('add-pilgrim-form') as HTMLFormElement | null)?.reset();
+    if (editIdEl) editIdEl.value = '';
+    if (nusukEl) nusukEl.checked = true;
+  }
+  openDialogById('add-pilgrim-modal');
+  window.requestAnimationFrame(() => nameEl?.focus());
+}
+
+function openPersonModal(person?: PersonRecord): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const titleEl = document.getElementById('add-person-modal-title');
+  const submitBtn = document.getElementById('btn-save-person-submit');
+  const editIdEl = document.getElementById('crm-edit-id') as HTMLInputElement | null;
+  const nameEl = document.getElementById('crm-name') as HTMLInputElement | null;
+  const passEl = document.getElementById('crm-passport') as HTMLInputElement | null;
+  const expEl = document.getElementById('crm-expiry') as HTMLInputElement | null;
+  const phoneEl = document.getElementById('crm-phone') as HTMLInputElement | null;
+  const genderEl = document.getElementById('crm-gender') as HTMLSelectElement | null;
+  const ecEl = document.getElementById('crm-ec-phone') as HTMLInputElement | null;
+  const notesEl = document.getElementById('crm-notes') as HTMLInputElement | null;
+  const wcEl = document.getElementById('crm-wheelchair') as HTMLInputElement | null;
+  const insEl = document.getElementById('crm-insulin') as HTMLInputElement | null;
+
+  if (person) {
+    if (titleEl) titleEl.textContent = isEn ? `✏️ Edit CRM Profile: ${person.fullName}` : `✏️ تعديل سجل الشخص: ${person.fullName}`;
+    if (submitBtn) submitBtn.textContent = isEn ? '💾 Save CRM Changes' : '💾 حفظ التعديلات بالسجل';
+    if (editIdEl) editIdEl.value = person.id;
+    if (nameEl) nameEl.value = person.fullName;
+    if (passEl) passEl.value = person.passportNumber;
+    if (expEl) expEl.value = person.passportExpiryDate || '';
+    if (phoneEl) phoneEl.value = person.phone;
+    if (genderEl) genderEl.value = person.gender;
+    if (ecEl) ecEl.value = person.emergencyContactPhone || '';
+    if (notesEl) notesEl.value = person.notes || '';
+    if (wcEl) wcEl.checked = person.requiresWheelchair;
+    if (insEl) insEl.checked = person.requiresInsulinRefrigeration;
+  } else {
+    if (titleEl) titleEl.textContent = isEn ? '👥 Add Persistent Person Record (CRM)' : '👥 إضافة سجل شخص دائم (CRM)';
+    if (submitBtn) submitBtn.textContent = isEn ? '💾 Save to Persistent CRM' : '💾 حفظ بالسجل الدائم';
+    (document.getElementById('add-person-form') as HTMLFormElement | null)?.reset();
+    if (editIdEl) editIdEl.value = '';
+  }
+  openDialogById('add-person-modal');
+  window.requestAnimationFrame(() => nameEl?.focus());
+}
+
 function renderManifestTable(): void {
   const active = getActiveGroup();
   const tbody = document.getElementById('manifest-tbody');
   if (!tbody) return;
+  const isEn = getCurrentLanguage() === 'en';
   const q = manifestFilter.toLowerCase().trim();
   const filtered = active.pilgrims.filter(
     (p) =>
@@ -785,7 +899,11 @@ function renderManifestTable(): void {
   );
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">لا يوجد معتمرون في هذا الفوج بعد — أضف معتمراً أو أدرجه من سجل الأشخاص الدائم.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">${
+      isEn
+        ? 'No pilgrims in this group yet — add a pilgrim or enroll from People CRM.'
+        : 'لا يوجد معتمرون في هذا الفوج بعد — أضف معتمراً أو أدرجه من سجل الأشخاص الدائم.'
+    }</td></tr>`;
     return;
   }
 
@@ -793,22 +911,31 @@ function renderManifestTable(): void {
     .map((p) => {
       const alertText = `السلام عليكم ورحمة الله وبركاته يا ${p.fullName}، ${active.settings.busNumber} لفوج (${active.settings.tripTitle}) يستعد للانطلاق الآن عند ${active.settings.meetingPoint}.`;
       const waLink = buildWhatsAppUrl(alertText, p.phone);
+      const unroomedLabel = isEn ? 'Unassigned' : 'غير مسكن';
+      const nusukOk = isEn ? 'Nusuk Ready ✓' : 'نُسك جاهز ✓';
+      const nusukWait = isEn ? 'Pending' : 'معلق';
+      const busYes = isEn ? 'Boarded ✅' : 'صعد الباص ✅';
+      const busNo = isEn ? 'Pending ⏳' : 'لم يصعد بعد ⏳';
+      const waLabel = isEn ? '📲 WhatsApp' : '📲 واتساب';
+      const qrLabel = isEn ? '🔗 QR Card' : '🔗 QR البطاقة';
+      const editLabel = isEn ? '✏️ Edit' : '✏️ تعديل';
       return `
       <tr class="${p.boarded ? '' : 'row-pending'}">
         <th scope="row">${escapeHtml(p.fullName)}</th>
         <td data-label="${escapeHtml(t('sup.col.passport'))}">${escapeHtml(p.passportNumber)}</td>
-        <td data-label="${escapeHtml(t('sup.col.room'))}">${escapeHtml(p.roomNumber || 'غير مسكن')}</td>
-        <td data-label="${escapeHtml(t('sup.col.nusuk'))}"><span class="badge ${p.nusukReady ? 'badge-success' : 'badge-warning'}">${p.nusukReady ? 'نُسك جاهز ✓' : 'معلق'}</span></td>
+        <td data-label="${escapeHtml(t('sup.col.room'))}">${escapeHtml(p.roomNumber || unroomedLabel)}</td>
+        <td data-label="${escapeHtml(t('sup.col.nusuk'))}"><span class="badge ${p.nusukReady ? 'badge-success' : 'badge-warning'}">${p.nusukReady ? nusukOk : nusukWait}</span></td>
         <td data-label="${escapeHtml(t('sup.col.bus'))}">
           <button type="button" class="badge btn-compact ${p.boarded ? 'badge-success' : 'badge-warning'}" style="border:none;cursor:pointer;" data-toggle-board="${escapeHtml(p.id)}">
-            ${p.boarded ? 'صعد الباص ✅' : 'لم يصعد بعد ⏳'}
+            ${p.boarded ? busYes : busNo}
           </button>
         </td>
         <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            <a href="${waLink}" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">📲 واتساب</a>
-            <button type="button" class="btn btn-primary btn-compact" data-share-pilgrim="${escapeHtml(p.id)}">🔗 QR البطاقة</button>
-            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-delete-pilgrim="${escapeHtml(p.id)}" aria-label="إزالة ${escapeHtml(p.fullName)}">🗑️</button>
+            <a href="${waLink}" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">${waLabel}</a>
+            <button type="button" class="btn btn-primary btn-compact" data-share-pilgrim="${escapeHtml(p.id)}">${qrLabel}</button>
+            <button type="button" class="btn btn-secondary btn-compact" data-edit-pilgrim="${escapeHtml(p.id)}" aria-label="${isEn ? `Edit ${escapeHtml(p.fullName)}` : `تعديل ${escapeHtml(p.fullName)}`}">${editLabel}</button>
+            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-delete-pilgrim="${escapeHtml(p.id)}" aria-label="${isEn ? `Remove ${escapeHtml(p.fullName)}` : `إزالة ${escapeHtml(p.fullName)}`}">🗑️</button>
           </div>
         </td>
       </tr>
@@ -875,16 +1002,43 @@ function renderManifestTable(): void {
     });
   });
 
+  tbody.querySelectorAll<HTMLElement>('[data-edit-pilgrim]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const p = active.pilgrims.find((x) => x.id === btn.dataset.editPilgrim);
+      if (p) openPilgrimModal(p);
+    });
+  });
+
   tbody.querySelectorAll<HTMLElement>('[data-delete-pilgrim]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.deletePilgrim!;
-      active.pilgrims = active.pilgrims.filter((x) => x.id !== id);
-      active.rooms.forEach((r) => {
-        r.occupantIds = r.occupantIds.filter((oid) => oid !== id);
+      const isEn = getCurrentLanguage() === 'en';
+      handleTwoStepDelete(btn, isEn ? 'Confirm Delete' : 'تأكيد الحذف؟', () => {
+        const idx = active.pilgrims.findIndex((x) => x.id === id);
+        if (idx === -1) return;
+        const removed = active.pilgrims[idx];
+        const prevRoomIds = active.rooms.filter((r) => r.occupantIds.includes(id)).map((r) => r.id);
+        active.pilgrims.splice(idx, 1);
+        active.rooms.forEach((r) => {
+          r.occupantIds = r.occupantIds.filter((oid) => oid !== id);
+        });
+        saveState();
+        renderAll();
+        showUndoToast(
+          isEn ? `Removed ${removed.fullName} from group` : `تمت إزالة ${removed.fullName} من الفوج`,
+          isEn ? '↩️ Undo' : '↩️ تراجع',
+          () => {
+            active.pilgrims.splice(Math.min(idx, active.pilgrims.length), 0, removed);
+            prevRoomIds.forEach((rid) => {
+              const room = active.rooms.find((r) => r.id === rid);
+              if (room && !room.occupantIds.includes(removed.id)) room.occupantIds.push(removed.id);
+            });
+            saveState();
+            renderAll();
+            showToast(isEn ? `Restored ${removed.fullName}` : `✅ تمت استعادة ${removed.fullName}`);
+          }
+        );
       });
-      saveState();
-      renderAll();
-      showToast('تمت إزالة المعتمر من هذا الفوج (بياناته محفوظة في سجل الأشخاص الدائم)');
     });
   });
 }
@@ -1037,6 +1191,7 @@ function handleAssignRoom(): void {
 // =========================================================================
 function renderPeopleDirectory(): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
   const dir = buildPeopleDirectoryFromState();
   const tripStart = new Date(active.settings.startDate || Date.now());
   const results = dir.searchPeople(peopleFilter);
@@ -1044,13 +1199,17 @@ function renderPeopleDirectory(): void {
   const countBadge = document.getElementById('people-count-badge');
   const expiringCount = dir.getExpiringPassports(tripStart, 6).length;
   if (countBadge) {
-    countBadge.textContent = `${rootState.people.length} شخص مسجل${expiringCount > 0 ? ` • ⚠️ ${expiringCount} جواز قارب على الانتهاء` : ''}`;
+    countBadge.textContent = isEn
+      ? `${rootState.people.length} Saved${expiringCount > 0 ? ` • ⚠️ ${expiringCount} Expiring < 6 mo` : ''}`
+      : `${rootState.people.length} شخص مسجل${expiringCount > 0 ? ` • ⚠️ ${expiringCount} جواز قارب على الانتهاء` : ''}`;
   }
 
   const tbody = document.getElementById('people-tbody');
   if (!tbody) return;
   if (results.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">لا توجد سجلات مطابقة</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">${
+      isEn ? 'No matching CRM records' : 'لا توجد سجلات مطابقة'
+    }</td></tr>`;
     return;
   }
 
@@ -1066,27 +1225,28 @@ function renderPeopleDirectory(): void {
         <td data-label="${escapeHtml(t('sup.col.passport'))}">
           <div>${escapeHtml(p.passportNumber)}</div>
           <div style="font-size:0.78rem;color:${passportValid ? 'var(--text-muted)' : 'var(--danger)'};font-weight:${passportValid ? '500' : '700'};">
-            ${p.passportExpiryDate ? `ينتهي: ${escapeHtml(p.passportExpiryDate)}` : 'بدون تاريخ انتهاء'}
-            ${passportValid ? '' : ' ⚠️ أقل من 6 أشهر!'}
+            ${p.passportExpiryDate ? (isEn ? `Expires: ${escapeHtml(p.passportExpiryDate)}` : `ينتهي: ${escapeHtml(p.passportExpiryDate)}`) : isEn ? 'No expiry set' : 'بدون تاريخ انتهاء'}
+            ${passportValid ? '' : isEn ? ' ⚠️ < 6 months!' : ' ⚠️ أقل من 6 أشهر!'}
           </div>
         </td>
         <td data-label="${escapeHtml(t('sup.col.phone'))}" dir="ltr">${escapeHtml(p.phone)}</td>
         <td data-label="${escapeHtml(t('sup.col.health'))}">
-          ${p.requiresWheelchair ? '<span class="badge badge-danger">كرسي</span> ' : ''}
-          ${p.requiresInsulinRefrigeration ? '<span class="badge badge-danger">إنسولين</span> ' : ''}
-          ${!p.requiresWheelchair && !p.requiresInsulinRefrigeration ? '<span class="badge badge-success">سليم</span>' : ''}
+          ${p.requiresWheelchair ? `<span class="badge badge-danger">${isEn ? 'Wheelchair' : 'كرسي'}</span> ` : ''}
+          ${p.requiresInsulinRefrigeration ? `<span class="badge badge-danger">${isEn ? 'Insulin' : 'إنسولين'}</span> ` : ''}
+          ${!p.requiresWheelchair && !p.requiresInsulinRefrigeration ? `<span class="badge badge-success">${isEn ? 'Clear' : 'سليم'}</span>` : ''}
         </td>
         <td data-label="${escapeHtml(t('sup.col.trips'))}">
-          <div style="font-size:0.82rem;">${p.pastTrips.length > 0 ? escapeHtml(p.pastTrips.join('، ')) : 'أول رحلة'}</div>
+          <div style="font-size:0.82rem;">${p.pastTrips.length > 0 ? escapeHtml(p.pastTrips.join('، ')) : isEn ? 'First Trip' : 'أول رحلة'}</div>
         </td>
         <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
             ${
               alreadyInActive
-                ? '<span class="badge badge-primary">مدرج بالفوج ✓</span>'
-                : `<button type="button" class="btn btn-primary btn-compact" data-enroll-person="${escapeHtml(p.id)}">➕ إدراج بالفوج النشط</button>`
+                ? `<span class="badge badge-primary">${isEn ? 'Enrolled ✓' : 'مدرج بالفوج ✓'}</span>`
+                : `<button type="button" class="btn btn-primary btn-compact" data-enroll-person="${escapeHtml(p.id)}">${isEn ? '➕ Enroll' : '➕ إدراج بالفوج النشط'}</button>`
             }
-            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-person="${escapeHtml(p.id)}" aria-label="حذف سجل ${escapeHtml(p.fullName)}">🗑️</button>
+            <button type="button" class="btn btn-secondary btn-compact" data-edit-person="${escapeHtml(p.id)}" aria-label="${isEn ? `Edit ${escapeHtml(p.fullName)}` : `تعديل ${escapeHtml(p.fullName)}`}">${isEn ? '✏️ Edit' : '✏️ تعديل'}</button>
+            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-person="${escapeHtml(p.id)}" aria-label="${isEn ? `Delete ${escapeHtml(p.fullName)}` : `حذف سجل ${escapeHtml(p.fullName)}`}">🗑️</button>
           </div>
         </td>
       </tr>
@@ -1128,16 +1288,38 @@ function renderPeopleDirectory(): void {
       }
       saveState();
       renderAll();
-      showToast(`✅ تم إدراج ${person.fullName} في "${active.settings.tripTitle}"`);
+      showToast(isEn ? `✅ Enrolled ${person.fullName} into "${active.settings.tripTitle}"` : `✅ تم إدراج ${person.fullName} في "${active.settings.tripTitle}"`);
+    });
+  });
+
+  tbody.querySelectorAll<HTMLElement>('[data-edit-person]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const person = rootState.people.find((x) => x.id === btn.dataset.editPerson);
+      if (person) openPersonModal(person);
     });
   });
 
   tbody.querySelectorAll<HTMLElement>('[data-del-person]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      rootState.people = rootState.people.filter((x) => x.id !== btn.dataset.delPerson);
-      saveState();
-      renderPeopleDirectory();
-      showToast('تم حذف السجل من دفتر الأشخاص');
+      const id = btn.dataset.delPerson!;
+      handleTwoStepDelete(btn, isEn ? 'Confirm Delete' : 'تأكيد الحذف؟', () => {
+        const idx = rootState.people.findIndex((x) => x.id === id);
+        if (idx === -1) return;
+        const removed = rootState.people[idx];
+        rootState.people.splice(idx, 1);
+        saveState();
+        renderAll();
+        showUndoToast(
+          isEn ? `Deleted ${removed.fullName} from CRM` : `تم حذف ${removed.fullName} من دفتر الأشخاص`,
+          isEn ? '↩️ Undo' : '↩️ تراجع',
+          () => {
+            rootState.people.splice(Math.min(idx, rootState.people.length), 0, removed);
+            saveState();
+            renderAll();
+            showToast(isEn ? `Restored ${removed.fullName}` : `✅ تمت استعادة ${removed.fullName}`);
+          }
+        );
+      });
     });
   });
 }
@@ -1404,7 +1586,7 @@ function openScheduleModalForMember(m: GameyaRecord): void {
                (p) => `
              <div class="info-box-neutral" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.45rem;padding:0.55rem 0.75rem;font-size:0.84rem;">
                <div>
-                 <strong>${p.amount.toLocaleString('ar-EG')} ج.م</strong> — ${escapeHtml(PAYMENT_METHOD_LABELS[p.method])}
+                 <strong>${p.amount.toLocaleString(getCurrentLanguage() === 'en' ? 'en-US' : 'ar-EG')} ${getCurrentLanguage() === 'en' ? 'EGP' : 'ج.م'}</strong> — ${escapeHtml(getMethodLabel(p.method))}
                  ${p.ref ? ` (مرجع: ${escapeHtml(p.ref)})` : ''}
                  <span style="color:var(--text-muted);"> • ${escapeHtml(p.dateIso)}</span>
                </div>
@@ -1537,6 +1719,9 @@ function openScheduleModalForMember(m: GameyaRecord): void {
 function renderGameyaSummaryAndRosca(
   enriched: Array<{ member: GameyaRecord; overdueCount: number; remaining: number }>
 ): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const summaryStrip = document.getElementById('gameya-summary-strip');
   if (summaryStrip) {
     const totalExpected = enriched.reduce((s, e) => s + e.member.totalTarget, 0);
@@ -1547,22 +1732,22 @@ function renderGameyaSummaryAndRosca(
 
     summaryStrip.innerHTML = `
       <div class="gam-metric-tile">
-        <div style="font-size:0.78rem;color:var(--text-muted);">إجمالي باقات المشتركين (${enriched.length})</div>
-        <strong style="font-size:1.15rem;color:var(--primary-ink);">${totalExpected.toLocaleString('ar-EG')} ج.م</strong>
+        <div style="font-size:0.78rem;color:var(--text-muted);">${isEn ? `Total Plans (${enriched.length})` : `إجمالي باقات المشتركين (${enriched.length})`}</div>
+        <strong style="font-size:1.15rem;color:var(--primary-ink);">${totalExpected.toLocaleString(loc)} ${curr}</strong>
       </div>
       <div class="gam-metric-tile">
-        <div style="font-size:0.78rem;color:var(--text-muted);">المحصّل الفعلي (${pct}%)</div>
-        <strong style="font-size:1.15rem;color:var(--success);display:block;margin-bottom:0.3rem;">${totalPaid.toLocaleString('ar-EG')} ج.م</strong>
-        <progress class="umrah-progress" max="100" value="${pct}" aria-label="نسبة تحصيل الأقساط ${pct}%"></progress>
+        <div style="font-size:0.78rem;color:var(--text-muted);">${isEn ? `Collected (${pct}%)` : `المحصّل الفعلي (${pct}%)`}</div>
+        <strong style="font-size:1.15rem;color:var(--success);display:block;margin-bottom:0.3rem;">${totalPaid.toLocaleString(loc)} ${curr}</strong>
+        <progress class="umrah-progress" max="100" value="${pct}" aria-label="${pct}%"></progress>
       </div>
       <div class="gam-metric-tile">
-        <div style="font-size:0.78rem;color:var(--text-muted);">المتبقي قيد التحصيل</div>
-        <strong style="font-size:1.15rem;color:var(--gold-dark);">${totalRemaining.toLocaleString('ar-EG')} ج.م</strong>
+        <div style="font-size:0.78rem;color:var(--text-muted);">${isEn ? 'Remaining Balance' : 'المتبقي قيد التحصيل'}</div>
+        <strong style="font-size:1.15rem;color:var(--gold-dark);">${totalRemaining.toLocaleString(loc)} ${curr}</strong>
       </div>
-      <button type="button" class="gam-metric-tile gam-metric-tile-btn" id="btn-filter-overdue-shortcut" aria-label="تصفية الاشتراكات المتأخرة">
-        <div style="font-size:0.78rem;color:var(--text-muted);">متأخرون عن الموعد</div>
+      <button type="button" class="gam-metric-tile gam-metric-tile-btn" id="btn-filter-overdue-shortcut" aria-label="${isEn ? 'Filter Overdue Accounts' : 'تصفية الاشتراكات المتأخرة'}">
+        <div style="font-size:0.78rem;color:var(--text-muted);">${isEn ? 'Overdue Accounts' : 'متأخرون عن الموعد'}</div>
         <strong style="font-size:1.15rem;color:${overdueSubs > 0 ? 'var(--danger)' : 'var(--success)'};">
-          ${overdueSubs > 0 ? `⚠️ ${overdueSubs} مشترك` : '0 متأخرين ✅'}
+          ${overdueSubs > 0 ? (isEn ? `⚠️ ${overdueSubs} Overdue` : `⚠️ ${overdueSubs} مشترك`) : isEn ? '0 Overdue ✅' : '0 متأخرين ✅'}
         </strong>
       </button>
     `;
@@ -1675,6 +1860,9 @@ function exportGameyaCSV(): void {
 
 function renderGameyaTable(): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const tbody = document.getElementById('gameya-tbody');
   if (!tbody) return;
 
@@ -1701,8 +1889,12 @@ function renderGameyaTable(): void {
   if (visible.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.25rem;color:var(--text-muted);">${
       active.gameya.length === 0
-        ? 'لا يوجد مشتركون في خطة أقساط لهذا الفوج بعد.'
-        : 'لا توجد نتائج مطابقة للتصفية أو البحث الحالي.'
+        ? isEn
+          ? 'No installment subscribers registered for this group yet.'
+          : 'لا يوجد مشتركون في خطة أقساط لهذا الفوج بعد.'
+        : isEn
+          ? 'No subscribers match your current filter or search.'
+          : 'لا توجد نتائج مطابقة للتصفية أو البحث الحالي.'
     }</td></tr>`;
     return;
   }
@@ -1711,13 +1903,13 @@ function renderGameyaTable(): void {
     .map(({ member: m, summary, remaining }) => {
       const pct = Math.min(100, Math.round((m.totalPaid / Math.max(1, m.totalTarget)) * 100));
       const nextDueAmount = summary.nextDueItem ? summary.nextDueItem.remainingBalance.toDecimal() : 0;
-      const nextDueDateStr = summary.nextDueItem ? summary.nextDueItem.dueDate.toLocaleDateString('ar-EG') : '';
+      const nextDueDateStr = summary.nextDueItem ? summary.nextDueItem.dueDate.toLocaleDateString(loc) : '';
       const nextDueLabel = summary.nextDueItem
-        ? `${nextDueAmount.toLocaleString('ar-EG')} ج.م (${summary.nextDueItem.labelAr || 'قسط'})`
-        : '0 ج.م';
+        ? `${nextDueAmount.toLocaleString(loc)} ${curr}${isEn ? '' : ` (${summary.nextDueItem.labelAr || 'قسط'})`}`
+        : `0 ${curr}`;
 
       const receiptText = buildReceiptMessage(active.settings.tripTitle, active.settings.supervisorName, m);
-      const reminderText = `السلام عليكم ورحمة الله وبركاته يا ${m.name}، نود تذكيركم بموعد الدفعة القادمة لرحلة (${active.settings.tripTitle}) ضمن خطة (${PLAN_LABELS[m.planType]}) بمبلغ ${nextDueAmount.toLocaleString('ar-EG')} ج.م (تستحق ${nextDueDateStr}). تقبل الله طاعتكم.`;
+      const reminderText = `السلام عليكم ورحمة الله وبركاته يا ${m.name}، نود تذكيركم بموعد الدفعة القادمة لرحلة (${active.settings.tripTitle}) ضمن خطة (${PLAN_LABELS[m.planType]}) بمبلغ ${nextDueAmount.toLocaleString('ar-EG')} ج.م (تستحق ${summary.nextDueItem ? summary.nextDueItem.dueDate.toLocaleDateString('ar-EG') : ''}). تقبل الله طاعتكم.`;
 
       return `
       <tr>
@@ -1726,16 +1918,16 @@ function renderGameyaTable(): void {
           ${m.phone ? `<div style="font-size:0.78rem;color:var(--text-muted);font-weight:500;" dir="ltr">${escapeHtml(m.phone)}</div>` : ''}
         </th>
         <td data-label="${escapeHtml(t('sup.col.plan'))}">
-          <div><span class="badge badge-primary">${escapeHtml(PLAN_LABELS[m.planType])}</span></div>
-          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">الدور: شهر ${m.turnMonth}</div>` : ''}
+          <div><span class="badge badge-primary">${escapeHtml(getPlanLabel(m.planType))}</span></div>
+          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">${isEn ? `Turn: Month ${m.turnMonth}` : `الدور: شهر ${m.turnMonth}`}</div>` : ''}
         </td>
         <td data-label="${escapeHtml(t('sup.col.total'))}">
-          <div style="font-weight:700;margin-bottom:0.25rem;">${m.totalTarget.toLocaleString('ar-EG')} ج.م <span style="font-size:0.78rem;color:var(--primary-ink);">(${pct}%)</span></div>
-          <progress class="umrah-progress" max="100" value="${pct}" aria-label="سداد ${m.name} ${pct}%"></progress>
+          <div style="font-weight:700;margin-bottom:0.25rem;">${m.totalTarget.toLocaleString(loc)} ${curr} <span style="font-size:0.78rem;color:var(--primary-ink);">(${pct}%)</span></div>
+          <progress class="umrah-progress" max="100" value="${pct}" aria-label="${pct}%"></progress>
         </td>
         <td data-label="${escapeHtml(t('sup.col.paidRemaining'))}">
-          <div style="font-weight:700;color:var(--success);">${m.totalPaid.toLocaleString('ar-EG')} ج.م</div>
-          <div style="font-size:0.78rem;color:var(--gold-dark);font-weight:600;">متبقي: ${remaining.toLocaleString('ar-EG')} ج.م</div>
+          <div style="font-weight:700;color:var(--success);">${m.totalPaid.toLocaleString(loc)} ${curr}</div>
+          <div style="font-size:0.78rem;color:var(--gold-dark);font-weight:600;">${isEn ? `Left: ${remaining.toLocaleString(loc)} ${curr}` : `متبقي: ${remaining.toLocaleString(loc)} ${curr}`}</div>
         </td>
         <td data-label="${escapeHtml(t('sup.col.nextDue'))}">
           <div>${escapeHtml(nextDueLabel)}</div>
@@ -1743,14 +1935,14 @@ function renderGameyaTable(): void {
         </td>
         <td data-label="${escapeHtml(t('sup.col.status'))}">
           <span class="badge ${remaining === 0 ? 'badge-success' : summary.overdueCount > 0 ? 'badge-danger' : 'badge-warning'}">
-            ${remaining === 0 ? 'مكتمل السداد 🎉' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount}) ⚠️` : 'قيد السداد'}
+            ${remaining === 0 ? (isEn ? 'Paid in Full 🎉' : 'مكتمل السداد 🎉') : summary.overdueCount > 0 ? (isEn ? `Overdue (${summary.overdueCount}) ⚠️` : `متأخر (${summary.overdueCount}) ⚠️`) : isEn ? 'Active' : 'قيد السداد'}
           </span>
         </td>
         <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            ${remaining > 0 ? `<button type="button" class="btn btn-primary btn-compact" data-open-pay="${escapeHtml(m.id)}">💳 دفعة</button>` : ''}
-            <button type="button" class="btn btn-secondary btn-compact" data-view-schedule="${escapeHtml(m.id)}">📅 الجدول</button>
-            <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">📲 واتساب</a>
+            ${remaining > 0 ? `<button type="button" class="btn btn-primary btn-compact" data-open-pay="${escapeHtml(m.id)}">${isEn ? '💳 Pay' : '💳 دفعة'}</button>` : ''}
+            <button type="button" class="btn btn-secondary btn-compact" data-view-schedule="${escapeHtml(m.id)}">${isEn ? '📅 Ledger' : '📅 الجدول'}</button>
+            <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">${isEn ? '📲 WhatsApp' : '📲 واتساب'}</a>
           </div>
         </td>
       </tr>
@@ -2005,6 +2197,7 @@ function renderWomenGuidanceSynced(): void {
 // =========================================================================
 function renderLuggageSection(): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
   const onBus = active.luggage.filter((b) => b.status === LuggageStatus.ON_BUS).length;
   const lobby = active.luggage.filter((b) => b.status === LuggageStatus.HOTEL_LOBBY).length;
   const delivered = active.luggage.filter((b) => b.status === LuggageStatus.DELIVERED_TO_ROOM).length;
@@ -2013,23 +2206,23 @@ function renderLuggageSection(): void {
     const el = document.getElementById(id);
     if (el) el.textContent = txt;
   };
-  set('count-lug-total', `${active.luggage.length} حقائب`);
-  set('count-lug-bus', `${onBus} بالحافلة`);
-  set('count-lug-lobby', `${lobby} بالبهو`);
-  set('count-lug-room', `${delivered} بالغرف`);
+  set('count-lug-total', isEn ? `${active.luggage.length}` : `${active.luggage.length} حقائب`);
+  set('count-lug-bus', isEn ? `${onBus}` : `${onBus} بالحافلة`);
+  set('count-lug-lobby', isEn ? `${lobby}` : `${lobby} بالبهو`);
+  set('count-lug-room', isEn ? `${delivered}` : `${delivered} بالغرف`);
 
   const tbody = document.getElementById('luggage-tbody');
   if (!tbody) return;
   const statusMap: Record<LuggageStatus, { label: string; cls: string }> = {
-    [LuggageStatus.ON_BUS]: { label: 'بالحافلة 🚌', cls: 'badge-warning' },
-    [LuggageStatus.HOTEL_LOBBY]: { label: 'ببهو الاستقبال 🏨', cls: 'badge-primary' },
-    [LuggageStatus.DELIVERED_TO_ROOM]: { label: 'سُلّمت للغرفة ✅', cls: 'badge-success' },
-    [LuggageStatus.LOST]: { label: 'مفقودة / بحث 🔍', cls: 'badge-danger' },
+    [LuggageStatus.ON_BUS]: { label: isEn ? 'On Bus 🚌' : 'بالحافلة 🚌', cls: 'badge-warning' },
+    [LuggageStatus.HOTEL_LOBBY]: { label: isEn ? 'Hotel Lobby 🏨' : 'ببهو الاستقبال 🏨', cls: 'badge-primary' },
+    [LuggageStatus.DELIVERED_TO_ROOM]: { label: isEn ? 'Delivered ✅' : 'سُلّمت للغرفة ✅', cls: 'badge-success' },
+    [LuggageStatus.LOST]: { label: isEn ? 'Missing 🔍' : 'مفقودة / بحث 🔍', cls: 'badge-danger' },
   };
 
   tbody.innerHTML =
     active.luggage.length === 0
-      ? `<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">لا توجد حقائب مسجلة لهذا الفوج بعد.</td></tr>`
+      ? `<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">${isEn ? 'No luggage bags registered for this group yet.' : 'لا توجد حقائب مسجلة لهذا الفوج بعد.'}</td></tr>`
       : active.luggage
           .map((bag) => {
             const st = statusMap[bag.status];
@@ -2041,8 +2234,8 @@ function renderLuggageSection(): void {
               <td data-label="${escapeHtml(t('sup.col.status'))}"><span class="badge ${st.cls}">${st.label}</span></td>
               <td class="table-actions-cell">
                 <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-                  <button type="button" class="btn btn-secondary btn-compact" data-cycle-bag="${escapeHtml(bag.id)}">تغيير الحالة 🔁</button>
-                  <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-bag="${escapeHtml(bag.id)}">🗑️</button>
+                  <button type="button" class="btn btn-secondary btn-compact" data-cycle-bag="${escapeHtml(bag.id)}">${isEn ? 'Next Status 🔁' : 'تغيير الحالة 🔁'}</button>
+                  <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-bag="${escapeHtml(bag.id)}" aria-label="${isEn ? `Delete ${escapeHtml(bag.tagCode)}` : `حذف ${escapeHtml(bag.tagCode)}`}">🗑️</button>
                 </div>
               </td>
             </tr>
@@ -2058,15 +2251,30 @@ function renderLuggageSection(): void {
       bag.status = order[(order.indexOf(bag.status) + 1) % order.length];
       saveState();
       renderLuggageSection();
-      showToast(`تم تحديث حالة ${bag.tagCode}`);
+      showToast(isEn ? `Updated status for ${bag.tagCode}` : `تم تحديث حالة ${bag.tagCode}`);
     });
   });
 
   tbody.querySelectorAll<HTMLElement>('[data-del-bag]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      active.luggage = active.luggage.filter((x) => x.id !== btn.dataset.delBag);
-      saveState();
-      renderLuggageSection();
+      const id = btn.dataset.delBag!;
+      handleTwoStepDelete(btn, isEn ? 'Confirm?' : 'تأكيد؟', () => {
+        const idx = active.luggage.findIndex((x) => x.id === id);
+        if (idx === -1) return;
+        const removed = active.luggage[idx];
+        active.luggage.splice(idx, 1);
+        saveState();
+        renderLuggageSection();
+        showUndoToast(
+          isEn ? `Removed bag ${removed.tagCode}` : `تم حذف الحقيبة ${removed.tagCode}`,
+          isEn ? '↩️ Undo' : '↩️ تراجع',
+          () => {
+            active.luggage.splice(Math.min(idx, active.luggage.length), 0, removed);
+            saveState();
+            renderLuggageSection();
+          }
+        );
+      });
     });
   });
 }
@@ -2101,30 +2309,31 @@ function openLuggagePrintModal(): void {
 
 function renderMedicalSection(): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
   const list = document.getElementById('medical-cards-list');
   const badge = document.getElementById('medical-count-badge');
-  if (badge) badge.textContent = `${active.medical.length} حالات مسجلة`;
+  if (badge) badge.textContent = isEn ? `${active.medical.length} Cases` : `${active.medical.length} حالات مسجلة`;
   if (!list) return;
 
   list.innerHTML =
     active.medical.length === 0
-      ? '<div class="info-box-neutral">لا توجد حالات طبية مسجلة لهذا الفوج.</div>'
+      ? `<div class="info-box-neutral">${isEn ? 'No medical care profiles recorded for this group.' : 'لا توجد حالات طبية مسجلة لهذا الفوج.'}</div>`
       : active.medical
           .map(
             (m) => `
           <div class="info-box-neutral">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.35rem;">
-              <strong>${escapeHtml(m.pilgrimName)} (غرفة ${escapeHtml(m.roomNumber)})</strong>
+              <strong>${escapeHtml(m.pilgrimName)} (${isEn ? `Room ${escapeHtml(m.roomNumber)}` : `غرفة ${escapeHtml(m.roomNumber)}`})</strong>
               <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
-                ${m.requiresWheelchair ? '<span class="badge badge-danger">كرسي متحرك</span>' : ''}
-                ${m.requiresElectricCart ? '<span class="badge badge-warning">عربة غولف نُسك</span>' : ''}
-                ${m.requiresInsulinRefrigeration ? '<span class="badge badge-danger">ثلاجة إنسولين</span>' : ''}
+                ${m.requiresWheelchair ? `<span class="badge badge-danger">${isEn ? 'Wheelchair' : 'كرسي متحرك'}</span>` : ''}
+                ${m.requiresElectricCart ? `<span class="badge badge-warning">${isEn ? 'Nusuk Electric Cart' : 'عربة غولف نُسك'}</span>` : ''}
+                ${m.requiresInsulinRefrigeration ? `<span class="badge badge-danger">${isEn ? 'Insulin Cooling' : 'ثلاجة إنسولين'}</span>` : ''}
               </div>
             </div>
             <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:0.35rem;">${escapeHtml(m.notes)}</p>
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;font-size:0.85rem;">
-              <span>مرافق الطوارئ: <strong>${escapeHtml(m.emergencyContactName)}</strong> (<span dir="ltr">${escapeHtml(m.emergencyContactPhone)}</span>)</span>
-              <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-med="${escapeHtml(m.id)}">حذف</button>
+              <span>${isEn ? 'Emergency Companion:' : 'مرافق الطوارئ:'} <strong>${escapeHtml(m.emergencyContactName)}</strong> (<span dir="ltr">${escapeHtml(m.emergencyContactPhone)}</span>)</span>
+              <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-med="${escapeHtml(m.id)}">${isEn ? 'Delete' : 'حذف'}</button>
             </div>
           </div>
         `
@@ -2133,9 +2342,24 @@ function renderMedicalSection(): void {
 
   list.querySelectorAll<HTMLElement>('[data-del-med]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      active.medical = active.medical.filter((x) => x.id !== btn.dataset.delMed);
-      saveState();
-      renderMedicalSection();
+      const id = btn.dataset.delMed!;
+      handleTwoStepDelete(btn, isEn ? 'Confirm Delete?' : 'تأكيد الحذف؟', () => {
+        const idx = active.medical.findIndex((x) => x.id === id);
+        if (idx === -1) return;
+        const removed = active.medical[idx];
+        active.medical.splice(idx, 1);
+        saveState();
+        renderMedicalSection();
+        showUndoToast(
+          isEn ? `Removed medical profile for ${removed.pilgrimName}` : `تم حذف الملف الطبي لـ ${removed.pilgrimName}`,
+          isEn ? '↩️ Undo' : '↩️ تراجع',
+          () => {
+            active.medical.splice(Math.min(idx, active.medical.length), 0, removed);
+            saveState();
+            renderMedicalSection();
+          }
+        );
+      });
     });
   });
 }
@@ -2443,6 +2667,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initLanguage();
   updateThemeButtonLabel();
   setupDialogs();
+  initAccessibleFormValidation();
   initImageLightbox();
   initStickyHeaders();
   registerServiceWorkerAndNetworkStatus();
@@ -2610,10 +2835,10 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   };
-  bindModalOpen('btn-open-add-pilgrim', 'add-pilgrim-modal', 'new-pilgrim-name');
+  document.getElementById('btn-open-add-pilgrim')?.addEventListener('click', () => openPilgrimModal());
   bindModalOpen('btn-open-add-room', 'add-room-modal', 'new-room-num');
   bindModalOpen('btn-open-assign-room', 'assign-room-modal', 'assign-pilgrim-select', renderRoomsBoard);
-  bindModalOpen('btn-open-add-person', 'add-person-modal', 'crm-name');
+  document.getElementById('btn-open-add-person')?.addEventListener('click', () => openPersonModal());
   bindModalOpen('btn-open-add-gameya', 'add-gameya-modal', 'new-gam-name', updateGameyaFormFields);
   bindModalOpen('btn-open-add-sos', 'add-sos-modal', 'sos-pilgrim-name');
   bindModalOpen('btn-open-add-bag', 'add-bag-modal', 'new-bag-name');
@@ -2622,11 +2847,41 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('add-pilgrim-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const active = getActiveGroup();
+    const isEn = getCurrentLanguage() === 'en';
+    const editId = (document.getElementById('pilgrim-edit-id') as HTMLInputElement | null)?.value.trim() || '';
     const fullName = (document.getElementById('new-pilgrim-name') as HTMLInputElement).value.trim();
     const passportNumber = (document.getElementById('new-pilgrim-passport') as HTMLInputElement).value.trim();
     const phone = (document.getElementById('new-pilgrim-phone') as HTMLInputElement).value.trim();
     const gender = (document.getElementById('new-pilgrim-gender') as HTMLSelectElement).value as Gender;
+    const nusukReady = (document.getElementById('new-pilgrim-nusuk') as HTMLInputElement | null)?.checked ?? true;
     if (!fullName || !passportNumber) return;
+
+    if (editId) {
+      const target = active.pilgrims.find((x) => x.id === editId);
+      if (target) {
+        target.fullName = fullName;
+        target.passportNumber = passportNumber;
+        target.phone = phone;
+        target.gender = gender;
+        target.nusukReady = nusukReady;
+        if (target.personId) {
+          const linked = rootState.people.find((x) => x.id === target.personId);
+          if (linked) {
+            linked.fullName = fullName;
+            linked.passportNumber = passportNumber;
+            linked.phone = phone;
+            linked.gender = gender;
+            linked.updatedAt = new Date().toISOString();
+          }
+        }
+        saveState();
+        renderAll();
+        (e.target as HTMLFormElement).reset();
+        closeDialogById('add-pilgrim-modal');
+        showToast(isEn ? `✅ Updated ${fullName}` : `✅ تم تحديث بيانات المعتمر ${fullName}`);
+        return;
+      }
+    }
 
     const existingPerson = rootState.people.find((x) => x.passportNumber === passportNumber);
     let personId = existingPerson?.id;
@@ -2659,13 +2914,17 @@ window.addEventListener('DOMContentLoaded', () => {
       phone,
       roomNumber: '',
       boarded: false,
-      nusukReady: true,
+      nusukReady,
     });
     saveState();
     renderAll();
     (e.target as HTMLFormElement).reset();
     closeDialogById('add-pilgrim-modal');
-    showToast(`✅ تمت إضافة ${fullName} للفوج وحفظه في سجل الأشخاص الدائم`);
+    showToast(
+      isEn
+        ? `✅ Added ${fullName} to active group & CRM`
+        : `✅ تمت إضافة ${fullName} للفوج وحفظه في سجل الأشخاص الدائم`
+    );
   });
 
   document.getElementById('manifest-search')?.addEventListener('input', (e) => {
@@ -2684,9 +2943,12 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-export-csv')?.addEventListener('click', exportManifestCSV);
 
-  // Add Person to CRM directly
+  // Add or Edit Person in Persistent CRM
   document.getElementById('add-person-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const active = getActiveGroup();
+    const isEn = getCurrentLanguage() === 'en';
+    const editId = (document.getElementById('crm-edit-id') as HTMLInputElement | null)?.value.trim() || '';
     const fullName = (document.getElementById('crm-name') as HTMLInputElement).value.trim();
     const passportNumber = (document.getElementById('crm-passport') as HTMLInputElement).value.trim();
     const passportExpiryDate = (document.getElementById('crm-expiry') as HTMLInputElement).value;
@@ -2698,8 +2960,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const notes = (document.getElementById('crm-notes') as HTMLInputElement).value.trim();
     if (!fullName || !passportNumber) return;
 
-    rootState.people.unshift({
-      id: `per-${Date.now()}`,
+    const dir = buildPeopleDirectoryFromState();
+    const tripStart = new Date(active.settings.startDate || Date.now());
+    const savedId = editId || `per-${Date.now()}`;
+    const record: PersonRecord = {
+      id: savedId,
       fullName,
       gender,
       passportNumber,
@@ -2710,15 +2975,45 @@ window.addEventListener('DOMContentLoaded', () => {
       conditions: [ChronicCondition.NONE],
       requiresWheelchair: wheelchair,
       requiresInsulinRefrigeration: insulin,
-      pastTrips: [],
+      pastTrips: editId ? rootState.people.find((x) => x.id === editId)?.pastTrips || [] : [],
       notes: notes || undefined,
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    if (editId) {
+      const idx = rootState.people.findIndex((x) => x.id === editId);
+      if (idx !== -1) {
+        rootState.people[idx] = record;
+      } else {
+        rootState.people.unshift(record);
+      }
+      active.pilgrims.forEach((p) => {
+        if (p.personId === editId) {
+          p.fullName = fullName;
+          p.passportNumber = passportNumber;
+          p.phone = phone;
+          p.gender = gender;
+        }
+      });
+    } else {
+      rootState.people.unshift(record);
+    }
+
+    const expiryWarn = !dir.isPassportValidForTrip(record, tripStart, 6);
     saveState();
-    renderPeopleDirectory();
+    renderAll();
     (e.target as HTMLFormElement).reset();
     closeDialogById('add-person-modal');
-    showToast(`✅ تم حفظ سجل "${fullName}" في قاعدة الأشخاص الدائمة`);
+    showToast(
+      expiryWarn
+        ? isEn
+          ? `⚠️ Saved ${fullName} (Note: passport validity < 6 months)`
+          : `⚠️ تم حفظ "${fullName}" (تنبيه: صلاحية الجواز أقل من 6 أشهر!)`
+        : isEn
+          ? `✅ Saved CRM profile for "${fullName}"`
+          : `✅ تم حفظ سجل "${fullName}" في قاعدة الأشخاص الدائمة`,
+      expiryWarn
+    );
   });
 
   document.getElementById('people-search')?.addEventListener('input', (e) => {

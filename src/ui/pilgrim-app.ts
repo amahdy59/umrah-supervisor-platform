@@ -17,6 +17,7 @@ import {
   setupDialogs,
   openDialogById,
   closeDialogById,
+  initAccessibleFormValidation,
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
@@ -1802,6 +1803,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initLanguage();
   updateThemeButtonLabel();
   setupDialogs();
+  initAccessibleFormValidation();
   initImageLightbox();
   initStickyHeaders();
   registerServiceWorkerAndNetworkStatus();

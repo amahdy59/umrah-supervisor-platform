@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v16');
+    expect(swText).toContain('umrah-companion-v17');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -141,11 +141,45 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.goto('/supervisor.html');
     await expect(page.locator('#active-group-switcher')).toBeVisible();
 
-    // Clean modal-based forms & Installments hub UX
+    // Clean modal-based forms, post-interaction validation, Edit Pilgrim, 2-step delete + Undo toast
     await page.click('#btn-open-add-pilgrim');
     await expect(page.locator('#add-pilgrim-modal')).toBeVisible();
+    await page.fill('#new-pilgrim-passport', '12');
+    await page.locator('#new-pilgrim-passport').blur();
+    await expect(page.locator('#new-pilgrim-passport')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#new-pilgrim-passport-error')).toBeVisible();
     await page.click('#add-pilgrim-modal [data-close-dialog="add-pilgrim-modal"] >> nth=0');
     await expect(page.locator('#add-pilgrim-modal')).toBeHidden();
+
+    // Edit Pilgrim modal updates existing record
+    const initialCount = await page.locator('#manifest-tbody tr').count();
+    await page.locator('#manifest-tbody [data-edit-pilgrim]').first().click();
+    await expect(page.locator('#add-pilgrim-modal')).toBeVisible();
+    await page.fill('#new-pilgrim-name', 'أحمد الشريف المعدل');
+    await page.click('#btn-save-pilgrim-submit');
+    await expect(page.locator('#add-pilgrim-modal')).toBeHidden();
+    await expect(page.locator('#manifest-tbody')).toContainText('أحمد الشريف المعدل');
+
+    // 2-step delete confirmation arms on 1st click, deletes on 2nd click, and Undo toast restores
+    const firstDelBtn = page.locator('#manifest-tbody [data-delete-pilgrim]').first();
+    await firstDelBtn.click();
+    await expect(firstDelBtn).toContainText('تأكيد');
+    await expect(page.locator('#manifest-tbody tr')).toHaveCount(initialCount);
+    await firstDelBtn.click();
+    await expect(page.locator('#manifest-tbody tr')).toHaveCount(initialCount - 1);
+    await expect(page.locator('#action-toast-undo-btn')).toBeVisible();
+    await page.click('#action-toast-undo-btn');
+    await expect(page.locator('#manifest-tbody tr')).toHaveCount(initialCount);
+
+    // Edit CRM Person modal & English supervisor localization toggle
+    await page.click('.top-primary-nav [data-tab-target="people"]');
+    await page.locator('#people-tbody [data-edit-person]').first().click();
+    await expect(page.locator('#add-person-modal')).toBeVisible();
+    await page.click('#add-person-modal [data-close-dialog="add-person-modal"] >> nth=0');
+    await page.click('.group-switcher-bar [data-lang-toggle]');
+    await expect(page.locator('.manifest-table thead')).toContainText('Pilgrim Name');
+    await expect(page.locator('#people-tbody [data-edit-person]').first()).toContainText('Edit');
+    await page.click('.group-switcher-bar [data-lang-toggle]');
 
     await page.click('.top-primary-nav [data-tab-target="gameya"]');
     await expect(page.locator('#gameya-summary-strip')).toBeVisible();

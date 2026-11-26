@@ -99,6 +99,311 @@ export function showToast(text: string, urgent: boolean = false): void {
   announceToScreenReader(text, urgent);
 }
 
+let actionToastTimer: number | null = null;
+let actionToastPriorFocus: HTMLElement | null = null;
+
+/**
+ * Displays a persistent interactive Undo toast using popover="manual" with
+ * pause-on-focus/hover, keyboard close support, and screen reader announcement.
+ */
+export function showUndoToast(
+  message: string,
+  undoLabel: string,
+  onUndo: () => void,
+  durationMs: number = 7000
+): void {
+  if (document.querySelector('dialog[open]')) {
+    showToast(message);
+    return;
+  }
+
+  let region = document.getElementById('action-toast-region');
+  if (!region) {
+    region = document.createElement('div');
+    region.id = 'action-toast-region';
+    region.setAttribute('role', 'region');
+    region.setAttribute('aria-label', 'الإشعارات والإجراءات السريعة');
+    document.body.appendChild(region);
+  }
+
+  let card = document.getElementById('action-toast-card') as (HTMLElement & {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+  }) | null;
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'action-toast-card';
+    card.className = 'action-toast';
+    card.setAttribute('popover', 'manual');
+    region.appendChild(card);
+  }
+
+  if (actionToastTimer !== null) {
+    window.clearTimeout(actionToastTimer);
+    actionToastTimer = null;
+  }
+
+  const prevActive = document.activeElement as HTMLElement | null;
+  actionToastPriorFocus = prevActive && !card.contains(prevActive) ? prevActive : null;
+
+  card.innerHTML = `
+    <span style="font-size:0.86rem;font-weight:700;line-height:1.45;">${escapeHtml(message)}</span>
+    <span class="action-toast-actions">
+      <button type="button" id="action-toast-undo-btn" class="btn btn-gold btn-compact">${escapeHtml(undoLabel)}</button>
+      <button type="button" id="action-toast-close-btn" class="btn btn-secondary btn-compact" aria-label="إغلاق الإشعار">&times;</button>
+    </span>
+  `;
+
+  const dismiss = (restoreFocus: boolean = false) => {
+    if (actionToastTimer !== null) {
+      window.clearTimeout(actionToastTimer);
+      actionToastTimer = null;
+    }
+    try {
+      if (card?.matches(':popover-open') && card.hidePopover) {
+        card.hidePopover();
+      } else {
+        card?.classList.remove(':popover-open');
+      }
+    } catch {
+      card?.classList.remove(':popover-open');
+    }
+    if (restoreFocus && actionToastPriorFocus && actionToastPriorFocus.isConnected) {
+      window.requestAnimationFrame(() => actionToastPriorFocus?.focus({ preventScroll: true }));
+    }
+  };
+
+  let actionToastDuration = durationMs;
+  const armTimer = () => {
+    if (actionToastTimer !== null) window.clearTimeout(actionToastTimer);
+    actionToastTimer = window.setTimeout(() => {
+      if (card && card.contains(document.activeElement)) return;
+      dismiss(false);
+    }, actionToastDuration);
+  };
+
+  if (card.dataset.wired !== '1') {
+    card.dataset.wired = '1';
+    card.addEventListener('mouseenter', () => {
+      if (actionToastTimer !== null) window.clearTimeout(actionToastTimer);
+    });
+    card.addEventListener('mouseleave', () => armTimer());
+    card.addEventListener('focusin', () => {
+      if (actionToastTimer !== null) window.clearTimeout(actionToastTimer);
+    });
+    card.addEventListener('focusout', () => {
+      window.setTimeout(() => {
+        if (card && !card.contains(document.activeElement)) armTimer();
+      }, 50);
+    });
+  }
+
+  card.querySelector('#action-toast-undo-btn')?.addEventListener('click', () => {
+    dismiss(true);
+    onUndo();
+  });
+  card.querySelector('#action-toast-close-btn')?.addEventListener('click', () => dismiss(true));
+
+  try {
+    if (card.showPopover) {
+      if (!card.matches(':popover-open')) card.showPopover();
+    } else {
+      card.classList.add(':popover-open');
+    }
+  } catch {
+    card.classList.add(':popover-open');
+  }
+
+  announceToScreenReader(`${message} (${undoLabel})`, false);
+  armTimer();
+}
+
+const armedDeleteTimers = new WeakMap<HTMLElement, number>();
+
+/**
+ * Requires two deliberate taps on destructive table/row buttons before executing,
+ * resetting automatically after 4 seconds if unconfirmed.
+ */
+export function handleTwoStepDelete(
+  btn: HTMLElement,
+  armedLabel: string,
+  onConfirm: () => void
+): void {
+  if (btn.dataset.confirmArmed === '1') {
+    const prevTimer = armedDeleteTimers.get(btn);
+    if (prevTimer) window.clearTimeout(prevTimer);
+    armedDeleteTimers.delete(btn);
+    delete btn.dataset.confirmArmed;
+    btn.classList.remove('btn-confirm-armed');
+    onConfirm();
+    return;
+  }
+
+  const origText = btn.textContent || '🗑️';
+  btn.dataset.confirmArmed = '1';
+  btn.textContent = armedLabel;
+  btn.classList.add('btn-confirm-armed');
+  const timer = window.setTimeout(() => {
+    if (btn.isConnected && btn.dataset.confirmArmed === '1') {
+      delete btn.dataset.confirmArmed;
+      btn.textContent = origText;
+      btn.classList.remove('btn-confirm-armed');
+    }
+  }, 4000);
+  armedDeleteTimers.set(btn, timer);
+}
+
+let validationInitialized = false;
+
+/**
+ * Synchronizes aria-invalid, aria-describedby, fallback classes, and polite error
+ * announcements after user interaction (:user-invalid).
+ */
+export function initAccessibleFormValidation(): void {
+  if (validationInitialized) return;
+  validationInitialized = true;
+
+  const supportsUserInvalid =
+    typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('selector(:user-invalid)');
+  const dirtyState = new WeakMap<Element, { hasInteracted: boolean; hasBlurred: boolean }>();
+  const flagged = new WeakSet<Element>();
+  const announced = new WeakSet<Element>();
+  let announceTimer: number | null = null;
+  let announcedField: Element | null = null;
+
+  const linkError = (el: HTMLElement, shown: boolean) => {
+    const errorId = el.dataset.error;
+    if (!errorId) return;
+    const ids = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter((id) => id && id !== errorId);
+    if (shown) ids.push(errorId);
+    if (ids.length) el.setAttribute('aria-describedby', ids.join(' '));
+    else el.removeAttribute('aria-describedby');
+  };
+
+  const spokenText = (node: Element): string => {
+    const copy = node.cloneNode(true) as Element;
+    copy.querySelectorAll('[aria-hidden="true"]').forEach((n) => n.remove());
+    copy.querySelectorAll('[role="img"][aria-label]').forEach((n) => {
+      n.replaceWith(`${n.getAttribute('aria-label') || ''}: `);
+    });
+    return (copy.textContent || '').replace(/\s+/g, ' ').trim();
+  };
+
+  const announceError = (el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+    const errorId = el.dataset.error;
+    if (!errorId) return;
+    const error = document.getElementById(errorId);
+    if (!error) return;
+    const label = el.labels?.[0] ? `${spokenText(el.labels[0])}: ` : '';
+    if (announceTimer !== null) window.clearTimeout(announceTimer);
+    announcedField = el;
+    announceTimer = window.setTimeout(() => {
+      announceToScreenReader(label + spokenText(error), false);
+    }, 500);
+  };
+
+  const syncAria = (target: EventTarget | null, allowAnnounce: boolean = false) => {
+    const el = target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+    if (!el || !el.matches?.('input, select, textarea')) return;
+
+    let isInvalid = false;
+    if (supportsUserInvalid) {
+      isInvalid = el.matches(':user-invalid');
+    } else {
+      const state = dirtyState.get(el);
+      isInvalid = Boolean(state?.hasInteracted && state?.hasBlurred && !el.validity.valid);
+      el.classList.toggle('user-invalid-fallback', isInvalid);
+      el.classList.toggle('user-valid-fallback', Boolean(state?.hasInteracted && state?.hasBlurred && el.validity.valid));
+    }
+
+    if (isInvalid) {
+      if (allowAnnounce && !announced.has(el)) {
+        announceError(el);
+        announced.add(el);
+      }
+      el.setAttribute('aria-invalid', 'true');
+      linkError(el, true);
+      flagged.add(el);
+    } else if (flagged.has(el) || el.getAttribute('aria-invalid') !== 'true') {
+      el.setAttribute('aria-invalid', 'false');
+      linkError(el, false);
+      flagged.delete(el);
+      announced.delete(el);
+      if (announcedField === el && announceTimer !== null) {
+        window.clearTimeout(announceTimer);
+        announceTimer = null;
+      }
+    }
+  };
+
+  document.querySelectorAll<HTMLElement>('input, select, textarea').forEach((el) => syncAria(el));
+
+  document.addEventListener(
+    'blur',
+    (e) => {
+      const el = e.target as HTMLInputElement | null;
+      if (el?.matches?.('input, select, textarea')) {
+        const st = dirtyState.get(el) || { hasInteracted: false, hasBlurred: false };
+        st.hasBlurred = true;
+        dirtyState.set(el, st);
+        syncAria(el, true);
+      }
+    },
+    true
+  );
+
+  document.addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement | null;
+    if (!el?.matches?.('input, select, textarea')) return;
+    const st = dirtyState.get(el) || { hasInteracted: false, hasBlurred: false };
+    st.hasInteracted = true;
+    dirtyState.set(el, st);
+    if (el.hasAttribute('aria-invalid')) syncAria(el, false);
+  });
+
+  document.addEventListener(
+    'change',
+    (e) => {
+      const el = e.target as HTMLInputElement | null;
+      if (!el?.matches?.('input, select, textarea')) return;
+      const st = dirtyState.get(el) || { hasInteracted: false, hasBlurred: false };
+      st.hasInteracted = true;
+      st.hasBlurred = true;
+      dirtyState.set(el, st);
+      syncAria(el, true);
+    },
+    true
+  );
+
+  document.addEventListener(
+    'invalid',
+    (e) => {
+      const el = e.target as HTMLInputElement | null;
+      if (!el?.matches?.('input, select, textarea')) return;
+      dirtyState.set(el, { hasInteracted: true, hasBlurred: true });
+      announced.add(el);
+      syncAria(el, false);
+    },
+    true
+  );
+
+  document.addEventListener(
+    'reset',
+    (e) => {
+      const form = e.target as HTMLFormElement | null;
+      if (!form?.elements) return;
+      window.setTimeout(() => {
+        Array.from(form.elements).forEach((el) => {
+          dirtyState.delete(el);
+          el.classList.remove('user-invalid-fallback', 'user-valid-fallback');
+          syncAria(el, false);
+        });
+      });
+    },
+    true
+  );
+}
+
 export async function copyToClipboard(text: string, successMessage: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
