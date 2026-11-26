@@ -197,9 +197,9 @@
       transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
     }
     .prayer-card.active {
-      border-color: light-dark(#b45309, #f59e0b);
-      background: light-dark(#fffbeb, #1c1407);
-      box-shadow: 0 0 0 3px light-dark(rgba(180, 83, 9, 0.16), rgba(245, 158, 11, 0.24)), var(--shadow);
+      border-color: var(--gold);
+      background: var(--gold-soft);
+      box-shadow: 0 0 0 3px var(--gold-border), var(--shadow);
     }
     .prayer-card.passed {
       background: var(--surface-muted);
@@ -236,8 +236,9 @@
       text-overflow: ellipsis;
     }
     .prayer-card.active .prayer-card-badge {
-      background: #fef3c7;
-      color: #78350f;
+      background: var(--card-bg);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-dark);
     }
     .prayer-card.passed .prayer-card-badge {
       background: light-dark(#e2e8f0, #0f172a);
@@ -319,9 +320,9 @@
     }
 
     .audio-btn {
-      background: light-dark(#ecfdf5, #052e16);
+      background: var(--primary-soft);
       color: var(--primary-ink);
-      border: 1px solid light-dark(#a7f3d0, #065f46);
+      border: 1px solid var(--primary-border);
       border-radius: 8px;
       padding: 0.38rem 0.85rem;
       min-height: 44px;
@@ -378,7 +379,7 @@
     }
     .accordion-body { padding: 1rem 1.1rem; border-top: 1px solid var(--border); background: var(--card-bg); font-size: 0.92rem; line-height: 1.85; }
 
-    .women-fatwa-box { background: var(--women-bg); border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-inline-start: 3px solid #db2777; }
+    .women-fatwa-box { background: var(--women-bg); border: 1px solid var(--women-border); border-radius: 8px; padding: 0.75rem 1rem; margin: 0.5rem 0; border-inline-start: 4px solid var(--women-border); }
 
     .pack-row { display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; padding: 0.45rem; min-height: 44px; border-radius: 8px; }
     .pack-row input[type="checkbox"] { width: 22px; height: 22px; margin-top: 3px; flex: none; accent-color: var(--primary); }
@@ -418,7 +419,7 @@
 
       <div class="header-tools">
         <span id="network-status-pill" class="badge badge-success">جاهز ✅</span>
-        <button type="button" id="btn-header-sos" class="header-chip-btn" style="background:#b91c1c;border-color:#fca5a5;">
+        <button type="button" id="btn-header-sos" class="header-chip-btn header-chip-danger">
           <span aria-hidden="true">🆘</span> <span data-i18n="tools.sos">طوارئ</span>
         </button>
         <button type="button" class="header-chip-btn senior-toggle-btn desktop-only-tools" data-senior-toggle aria-pressed="false">
@@ -493,7 +494,7 @@
       </details>
 
       <!-- Mataf crowd warning (kept) -->
-      <div id="mataf-warning-banner" role="alert" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:0.7rem 1rem;border-radius:10px;font-size:0.86rem;font-weight:700;"></div>
+      <div id="mataf-warning-banner" class="info-box-danger" role="alert" style="display:none;font-size:0.86rem;font-weight:700;"></div>
     </section>
 
     <!-- TAB 1: MY UMRAH (RITUALS, STAGE HUB, QUICK SITUATIONS & BADGE) -->
@@ -510,29 +511,29 @@
         </div>
       </section>
       <div class="grid-2">
-        <div class="card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:white;">
+        <div class="card hero-emerald-card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;">
-            <span class="badge" style="background:#fef3c7;color:#78350f;" data-i18n="badge.cardTitle">بطاقة معتمر رقمية</span>
-            <span style="font-size:0.85rem;color:#d1fae5;" id="badge-trip-code"></span>
+            <span class="badge hero-card-pill" data-i18n="badge.cardTitle">بطاقة معتمر رقمية</span>
+            <span class="hero-card-subtle" style="font-size:0.85rem;" id="badge-trip-code"></span>
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;flex-wrap:wrap;">
             <div>
-              <h2 style="font-size:1.3rem;font-weight:800;color:white;" id="badge-pilgrim-name">أحمد محمود الشريف</h2>
-              <div style="font-size:0.86rem;color:#d1fae5;" id="badge-passport"></div>
+              <h2 style="font-size:1.3rem;font-weight:800;color:#ffffff;" id="badge-pilgrim-name">أحمد محمود الشريف</h2>
+              <div class="hero-card-subtle" style="font-size:0.86rem;" id="badge-passport"></div>
             </div>
             <button type="button" id="btn-edit-profile" class="header-chip-btn" style="min-height:40px;font-size:0.82rem;" data-i18n="badge.editBtn">✏️ تعديل بياناتي</button>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin:1rem 0;background:rgba(255,255,255,0.1);padding:0.9rem;border-radius:12px;font-size:0.88rem;">
-            <div><div style="color:#d1fae5;font-size:0.75rem;" data-i18n="badge.hotelLabel">الفندق بمكة:</div><div style="font-weight:700;" id="badge-hotel"></div></div>
-            <div><div style="color:#d1fae5;font-size:0.75rem;" data-i18n="badge.roomLabel">رقم الغرفة:</div><div style="font-weight:700;" id="badge-room"></div></div>
-            <div><div style="color:#d1fae5;font-size:0.75rem;" data-i18n="badge.busLabel">رقم الباص:</div><div style="font-weight:700;" id="badge-bus"></div></div>
-            <div><div style="color:#d1fae5;font-size:0.75rem;" data-i18n="badge.supPhoneLabel">هاتف المشرف:</div><div style="font-weight:700;" dir="ltr" id="badge-sup-phone"></div></div>
+          <div class="hero-card-metrics">
+            <div><div class="hero-card-subtle" style="font-size:0.75rem;" data-i18n="badge.hotelLabel">الفندق بمكة:</div><div style="font-weight:700;" id="badge-hotel"></div></div>
+            <div><div class="hero-card-subtle" style="font-size:0.75rem;" data-i18n="badge.roomLabel">رقم الغرفة:</div><div style="font-weight:700;" id="badge-room"></div></div>
+            <div><div class="hero-card-subtle" style="font-size:0.75rem;" data-i18n="badge.busLabel">رقم الباص:</div><div style="font-weight:700;" id="badge-bus"></div></div>
+            <div><div class="hero-card-subtle" style="font-size:0.75rem;" data-i18n="badge.supPhoneLabel">هاتف المشرف:</div><div style="font-weight:700;" dir="ltr" id="badge-sup-phone"></div></div>
           </div>
 
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-            <button type="button" id="btn-open-taxi" class="btn btn-gold" style="flex:1;" data-i18n="badge.taxiBtn">🚕 كارت التاكسي والأمن</button>
+          <div class="hero-action-row">
+            <button type="button" id="btn-open-taxi" class="btn btn-gold" data-i18n="badge.taxiBtn">🚕 كارت التاكسي والأمن</button>
             <button type="button" id="btn-badge-nusuk" class="btn btn-secondary" data-i18n="badge.nusukBtn">📲 تصريح نُسك</button>
             <button type="button" id="btn-my-installments" class="btn btn-secondary" data-i18n="badge.accountBtn">💳 حسابي وأقساطي</button>
             <button type="button" id="btn-open-cert" class="btn btn-secondary" data-i18n="badge.certBtn">📜 الشهادة</button>
@@ -561,10 +562,10 @@
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#022c22 0%,#064e3b 100%);color:white;">
+      <div class="card hero-emerald-card" style="margin-bottom:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
-          <h2 style="font-weight:800;font-size:1.05rem;color:#d1fae5;" data-i18n="talbiyah.title">🔊 التلبية النبوية (من الميقات حتى بدء الطواف)</h2>
-          <span class="badge" style="background:rgba(255,255,255,0.16);color:#fef08a;" data-i18n="talbiyah.badge">سُنّة الإحرام المؤكدة</span>
+          <h2 style="font-weight:800;font-size:1.05rem;color:#fde68a;" data-i18n="talbiyah.title">🔊 التلبية النبوية (من الميقات حتى بدء الطواف)</h2>
+          <span class="badge hero-card-pill" data-i18n="talbiyah.badge">سُنّة الإحرام المؤكدة</span>
         </div>
         <div style="font-size:1.15rem;font-weight:700;line-height:2;margin-bottom:0.9rem;color:#fef3c7;text-align:center;background:rgba(0,0,0,0.22);padding:0.9rem;border-radius:12px;">
           «لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ»
@@ -786,19 +787,19 @@
 
     <!-- TAB 4: TRIP WALLET (PACKING, NUSUK WALLET, TAXI, CURRENCY & HOTLINES) -->
     <section id="tab-wallet" class="tab-view" hidden>
-      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#064e3b 0%,#022c22 100%);color:white;">
-        <div class="card-header" style="border-bottom-color:rgba(255,255,255,0.18);">
-          <h2 class="card-title" style="color:#fef08a;" data-i18n="packing.title">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</h2>
+      <div class="card hero-emerald-card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="packing.title">🧳 مؤشر جاهزية حقيبة المعتمر (محفوظ تلقائياً)</h2>
           <button type="button" class="btn btn-secondary" id="btn-reset-packing" style="min-height:40px;padding:0.25rem 0.75rem;font-size:0.84rem;" data-i18n="packing.resetBtn">🔄 إعادة تعيين</button>
         </div>
         <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:0.4rem;">
           <span data-i18n="packing.pctLabel">نسبة اكتمال تجهيز أغراض الرحلة:</span>
           <span id="packing-percentage-label">0%</span>
         </div>
-        <div style="background:rgba(255,255,255,0.2);height:14px;border-radius:10px;overflow:hidden;">
-          <div id="packing-progress-bar" style="background:var(--gold);height:100%;width:0%;transition:width 0.35s ease;"></div>
+        <div style="background:rgba(255,255,255,0.18);height:14px;border-radius:10px;overflow:hidden;">
+          <div id="packing-progress-bar" style="background:#fbbf24;height:100%;width:0%;transition:width 0.35s ease;"></div>
         </div>
-        <div style="font-size:0.86rem;color:#d1fae5;margin-top:0.5rem;" id="packing-status-summary"></div>
+        <div class="hero-card-subtle" style="font-size:0.86rem;margin-top:0.5rem;" id="packing-status-summary"></div>
       </div>
 
       <div class="grid-2">

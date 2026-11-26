@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v12');
+    expect(swText).toContain('umrah-companion-v13');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);

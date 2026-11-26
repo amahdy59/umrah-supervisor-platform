@@ -516,35 +516,35 @@ function renderAttentionQueueStrip(): void {
   if (activeSos > 0) {
     chips.push({
       tab: 'sos',
-      badgeCls: 'btn-danger',
+      badgeCls: 'attention-chip-danger',
       label: isEn ? `🚨 ${activeSos} Active SOS` : `🚨 ${activeSos} بلاغ طوارئ نشط`,
     });
   }
   if (expiringPassports > 0) {
     chips.push({
       tab: 'people',
-      badgeCls: 'btn-gold',
+      badgeCls: 'attention-chip-warning',
       label: isEn ? `⚠️ ${expiringPassports} Passport < 6 Mo` : `⚠️ ${expiringPassports} جواز أقل من 6 أشهر`,
     });
   }
   if (unroomedCount > 0) {
     chips.push({
       tab: 'manifest',
-      badgeCls: 'btn-secondary',
+      badgeCls: 'attention-chip-neutral',
       label: isEn ? `🏨 ${unroomedCount} Unassigned Rooms` : `🏨 ${unroomedCount} معتمر بلا غرفة`,
     });
   }
   if (overdueInstallments > 0) {
     chips.push({
       tab: 'gameya',
-      badgeCls: 'btn-gold',
+      badgeCls: 'attention-chip-warning',
       label: isEn ? `💰 ${overdueInstallments} Overdue Plan(s)` : `💰 ${overdueInstallments} اشتراك متأخر`,
     });
   }
   if (mobilityCount > 0) {
     chips.push({
       tab: 'logistics-health',
-      badgeCls: 'btn-secondary',
+      badgeCls: 'attention-chip-neutral',
       label: isEn ? `♿ ${mobilityCount} Mobility / Insulin Care` : `♿ ${mobilityCount} رعاية كرسي/إنسولين`,
     });
   }
@@ -557,7 +557,7 @@ function renderAttentionQueueStrip(): void {
   strip.innerHTML = chips
     .map(
       (c) =>
-        `<button type="button" class="btn ${c.badgeCls}" style="min-height:44px;font-size:0.82rem;padding:0.35rem 0.75rem;" data-attention-jump="${c.tab}">${escapeHtml(c.label)}</button>`
+        `<button type="button" class="attention-chip ${c.badgeCls}" data-attention-jump="${c.tab}">${escapeHtml(c.label)}</button>`
     )
     .join('');
 

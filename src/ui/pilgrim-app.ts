@@ -1546,7 +1546,7 @@ function renderFiqhSection(): void {
     <details class="accordion-item ${entry.isWomen ? 'women-topic' : ''}">
       <summary class="accordion-header" style="${entry.isWomen ? 'color:var(--women-accent);' : ''}">
         <span>${escapeHtml(entry.title)}</span>
-        <span class="badge ${entry.isWomen ? 'badge-warning' : 'badge-primary'}" style="margin-inline-start:0.5rem;">${escapeHtml(isEn ? entry.badgeEn : entry.badgeAr)}</span>
+        <span class="badge ${entry.isWomen ? 'badge-women' : 'badge-primary'}" style="margin-inline-start:0.5rem;">${escapeHtml(isEn ? entry.badgeEn : entry.badgeAr)}</span>
       </summary>
       <div class="accordion-body">
         <p><strong>${isEn ? 'Question:' : 'السؤال:'}</strong> ${escapeHtml(entry.question)}</p>

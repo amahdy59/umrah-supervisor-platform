@@ -30,14 +30,14 @@
 
     .sticky-bar-container {
       container-name: sup-top-nav;
-      background: linear-gradient(135deg, #0f172a 0%, #022c22 100%);
+      background: linear-gradient(135deg, #09151a 0%, #022c22 65%, #064e3b 100%);
     }
 
     @container sup-top-nav scroll-state(stuck: top) {
       .sticky-header-inner { padding: 0.45rem 1rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
     }
 
-    .app-title p { color: #cbd5e1; }
+    .app-title p { color: #cde7dc; }
 
     .group-switcher-bar {
       display: flex;
@@ -51,14 +51,14 @@
       height: 40px;
       padding: 0.35rem 0.65rem;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.11);
       color: #ffffff;
       font-weight: 700;
       font-size: 0.84rem;
       max-width: 260px;
     }
-    .group-select option { background: #0f172a; color: #ffffff; }
+    .group-select option { background: #121a21; color: #edf2ef; }
 
     @media (max-width: 767px) {
       .group-select { max-width: 185px; font-size: 0.78rem; }
@@ -66,10 +66,10 @@
 
     .whatsapp-box, .whatsapp-textarea {
       width: 100%;
-      background: light-dark(#eefbf4, #052e16);
+      background: var(--primary-soft);
       color: var(--text);
-      border: 1px solid light-dark(#c7f0d8, #14532d);
-      border-inline-start: 5px solid #16a34a;
+      border: 1px solid var(--primary-border);
+      border-inline-start: 5px solid var(--primary);
       border-radius: 12px;
       padding: 1rem;
       font-size: 0.92rem;
@@ -83,7 +83,7 @@
     thead th { position: sticky; inset-block-start: 0; z-index: 2; background: var(--surface-muted); color: var(--text-muted); padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); }
     tbody th, tbody td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tbody th { position: sticky; inset-inline-start: 0; z-index: 1; background: var(--card-bg); font-weight: 800; }
-    tr.row-pending td, tr.row-pending th { background: light-dark(#fff7ed, #2a1807); }
+    tr.row-pending td, tr.row-pending th { background: var(--gold-soft); }
 
     @container (width < 540px) {
       table, thead, tbody, tr, th, td { display: block; }
@@ -132,7 +132,7 @@
         <span id="network-status-pill" class="badge badge-success">جاهز ✅</span>
         <label for="active-group-switcher" class="sr-only">اختر الفوج النشط</label>
         <select id="active-group-switcher" class="group-select"></select>
-        <button type="button" id="btn-new-group" class="header-chip-btn" style="background:#92400e;border-color:#fde68a;" data-i18n="tools.newGroup">➕ فوج جديد</button>
+        <button type="button" id="btn-new-group" class="header-chip-btn header-chip-accent" data-i18n="tools.newGroup">➕ فوج جديد</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
         <button type="button" id="btn-cloud-sync-now" class="header-chip-btn desktop-only-tools" data-i18n="tools.sync">☁️ مزامنة</button>
@@ -419,7 +419,7 @@
         <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
           <div class="card-header" style="border-bottom-color:var(--women-border);">
             <h3 class="card-title" style="color:var(--women-accent);" data-i18n="sup.women.title">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</h3>
-            <span class="badge" style="background:var(--women-border);color:var(--women-accent);">دليل المعتمر وتنظيم نُسك</span>
+            <span class="badge badge-women">دليل المعتمر وتنظيم نُسك</span>
           </div>
           <p style="font-size:0.92rem;line-height:1.75;">
             توجيهات المشرفة المرافقة للرد على طوارئ فقه المعتمرة وتنسيق دخول الروضة الشريفة وفق المواعيد المتاحة فعلياً في تطبيق «نُسك».
@@ -447,10 +447,10 @@
           <div class="card">
             <div class="card-header"><h3 class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</h3></div>
             <div style="display:flex;flex-direction:column;gap:0.65rem;font-size:0.88rem;">
-              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى (البخاري 1650 / مسلم 1211).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة («دليل المعتمر» ص 44).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف (البخاري 306).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid #db2777;"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له (أبو داود 1833).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى (البخاري 1650 / مسلم 1211).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة («دليل المعتمر» ص 44).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف (البخاري 306).</div>
+              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له (أبو داود 1833).</div>
             </div>
           </div>
         </div>
