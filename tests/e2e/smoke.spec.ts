@@ -144,8 +144,9 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     // Clean modal-based forms, post-interaction validation, Edit Pilgrim, 2-step delete + Undo toast
     await page.click('#btn-open-add-pilgrim');
     await expect(page.locator('#add-pilgrim-modal')).toBeVisible();
+    await page.click('#new-pilgrim-passport');
     await page.fill('#new-pilgrim-passport', '12');
-    await page.locator('#new-pilgrim-passport').blur();
+    await page.locator('#new-pilgrim-name').focus();
     await expect(page.locator('#new-pilgrim-passport')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('#new-pilgrim-passport-error')).toBeVisible();
     await page.click('#add-pilgrim-modal [data-close-dialog="add-pilgrim-modal"] >> nth=0');

@@ -306,12 +306,13 @@ export function initAccessibleFormValidation(): void {
     const el = target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
     if (!el || !el.matches?.('input, select, textarea')) return;
 
+    const state = dirtyState.get(el);
+    const interactedInvalid = Boolean(state?.hasInteracted && state?.hasBlurred && !el.validity.valid);
     let isInvalid = false;
     if (supportsUserInvalid) {
-      isInvalid = el.matches(':user-invalid');
+      isInvalid = el.matches(':user-invalid') || interactedInvalid;
     } else {
-      const state = dirtyState.get(el);
-      isInvalid = Boolean(state?.hasInteracted && state?.hasBlurred && !el.validity.valid);
+      isInvalid = interactedInvalid;
       el.classList.toggle('user-invalid-fallback', isInvalid);
       el.classList.toggle('user-valid-fallback', Boolean(state?.hasInteracted && state?.hasBlurred && el.validity.valid));
     }
