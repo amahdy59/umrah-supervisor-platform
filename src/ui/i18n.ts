@@ -276,6 +276,23 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.women.title': { ar: '🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة', en: '🧕 Women Affairs & Al-Rawdah Coordination' },
   'sup.luggage.title': { ar: '🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)', en: '🧳 Group Luggage Sorting & QR Tags' },
   'sup.medical.title': { ar: '♿ السجل الطبي ورعاية كبار السن', en: '♿ Medical Care & Senior Mobility Registry' },
+  'sup.col.passport': { ar: 'الجواز', en: 'Passport' },
+  'sup.col.room': { ar: 'الغرفة', en: 'Room' },
+  'sup.col.nusuk': { ar: 'نُسك', en: 'Nusuk' },
+  'sup.col.bus': { ar: 'الباص', en: 'Bus' },
+  'sup.col.actions': { ar: 'إجراءات', en: 'Actions' },
+  'sup.col.phone': { ar: 'الهاتف', en: 'Phone' },
+  'sup.col.health': { ar: 'الصحة', en: 'Health' },
+  'sup.col.trips': { ar: 'الرحلات', en: 'Trips' },
+  'sup.col.plan': { ar: 'الخطة', en: 'Plan' },
+  'sup.col.total': { ar: 'الإجمالي والتقدم', en: 'Total & Progress' },
+  'sup.col.paidRemaining': { ar: 'المسدد / المتبقي', en: 'Paid / Left' },
+  'sup.col.nextDue': { ar: 'القادم والاستحقاق', en: 'Next Due' },
+  'sup.col.status': { ar: 'الحالة', en: 'Status' },
+  'sup.col.pilgrim': { ar: 'المعتمر', en: 'Pilgrim' },
+  'sup.col.dueDate': { ar: 'الاستحقاق', en: 'Due Date' },
+  'sup.col.dueAmount': { ar: 'المطلوب', en: 'Due' },
+  'sup.col.paidAmount': { ar: 'المسدد', en: 'Paid' },
 };
 
 let currentLang: UiLanguage = 'ar';

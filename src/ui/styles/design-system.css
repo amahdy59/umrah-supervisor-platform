@@ -228,6 +228,25 @@
   :root { --target-size: 48px; }
 }
 
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+
+:where(label:has(input[type="checkbox"], input[type="radio"])) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: var(--target-size);
+  cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  inline-size: 20px;
+  block-size: 20px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+}
+
 :root:has(> head > meta[name="color-scheme"][content="dark"]) { color-scheme: dark; }
 :root:has(> head > meta[name="color-scheme"][content="light"]) { color-scheme: light; }
 
@@ -252,7 +271,7 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-wrap: break-word;
@@ -491,7 +510,7 @@ body {
     color: var(--text-muted);
     border-radius: var(--control-radius);
     padding: 0.25rem 0.12rem;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     display: flex;
     flex-direction: column;
@@ -499,6 +518,7 @@ body {
     justify-content: center;
     gap: 0.12rem;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   .mobile-nav-btn.active, .mobile-nav-btn[aria-current="page"] {
@@ -513,7 +533,10 @@ body {
 .more-trigger-mobile { anchor-name: --more-mobile-btn; }
 
 .more-popover {
-  width: min(92vw, 330px);
+  width: min(92vw, 350px);
+  max-block-size: min(72dvh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--card-bg);
   color: var(--text);
   border: 1px solid var(--control-border);
@@ -561,6 +584,19 @@ body {
 }
 
 .more-popover-grid { display: flex; flex-direction: column; gap: 0.45rem; }
+.popover-section-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+}
+.popover-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
 
 /* Main Layout & Cards */
 main {
@@ -581,17 +617,36 @@ main {
 
 img { max-width: 100%; }
 
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.25rem; margin-bottom: 1.35rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(0.85rem, 2.2vw, 1.25rem); margin-bottom: 1.25rem; }
 .grid-2 > *, .metrics-grid > * { min-inline-size: 0; }
-.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0.9rem; margin-bottom: 1.25rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0.85rem; margin-bottom: 1.15rem; }
 
 .card {
   background: var(--card-bg);
   border-radius: var(--radius);
-  padding: 1.3rem;
+  padding: clamp(0.9rem, 2.5vw, 1.3rem);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   min-inline-size: 0;
+}
+
+.surface-tint-card {
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  color: var(--text);
+}
+.surface-tint-card .card-title { color: var(--primary-ink); }
+.surface-tint-card .surface-quote-box {
+  font-size: clamp(1rem, 2.6vw, 1.18rem);
+  font-weight: 800;
+  line-height: 2;
+  margin-bottom: 0.85rem;
+  color: var(--primary-ink);
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--primary-border);
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
 }
 
 .card-header {
@@ -822,7 +877,19 @@ img { max-width: 100%; }
   border-radius: var(--control-radius);
   border: 1px solid transparent;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn-compact {
+  padding: 0.3rem 0.72rem;
+  font-size: 0.8rem;
+  min-height: 36px;
+}
+@media (pointer: coarse), (max-width: 767px) {
+  .btn-compact {
+    min-height: var(--target-size);
+    padding: 0.4rem 0.85rem;
+  }
 }
 .btn-primary { background: var(--primary); color: #ffffff; }
 .btn-primary:hover { background: var(--primary-hover); }
@@ -854,14 +921,14 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
 }
 .ref-disclosure summary {
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--primary-ink);
   list-style: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 36px;
+  min-height: var(--target-size);
 }
 .ref-disclosure ul {
   margin: 0.5rem 1.15rem 0.2rem;
@@ -938,15 +1005,16 @@ progress.umrah-progress::-moz-progress-bar {
   margin-bottom: 0.75rem;
 }
 .quick-preset-chip {
-  min-height: 36px;
-  padding: 0.28rem 0.72rem;
-  font-size: 0.78rem;
+  min-height: var(--target-size);
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
   font-weight: 700;
   border-radius: 999px;
   border: 1px solid var(--primary-border);
   background: var(--primary-soft);
   color: var(--primary-ink);
   cursor: pointer;
+  touch-action: manipulation;
 }
 .quick-preset-chip:hover {
   background: var(--primary);
@@ -1091,7 +1159,66 @@ dialog {
 dialog:modal { overscroll-behavior: contain; }
 dialog::backdrop { background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(4px); overflow: hidden; overscroll-behavior: contain; }
 .dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
-.dialog-close-btn { background: var(--surface-muted); color: var(--text); border: 1px solid var(--control-border); border-radius: var(--control-radius); width: 44px; height: 44px; font-size: 1.35rem; cursor: pointer; }
+.dialog-close-btn { background: var(--surface-muted); color: var(--text); border: 1px solid var(--control-border); border-radius: var(--control-radius); width: 44px; height: 44px; font-size: 1.35rem; cursor: pointer; flex-shrink: 0; }
+.dialog-sticky-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: -1rem;
+  background: var(--card-bg);
+  padding-top: 0.65rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  z-index: 2;
+}
+
+@media (max-width: 767px) {
+  dialog:not(.lightbox-dialog) {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding: 1.1rem 1rem max(1.25rem, env(safe-area-inset-bottom, 0px));
+  }
+  dialog[open].focus-ritual-sheet {
+    min-height: 88dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  dialog[open].focus-ritual-sheet .focus-sheet-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
+@media (forced-colors: active) {
+  .card, dialog, .more-popover, .badge {
+    border: 1px solid CanvasText;
+  }
+  .mode-btn.active, .mode-btn[aria-current="page"],
+  .mobile-nav-btn.active, .mobile-nav-btn[aria-current="page"],
+  button.atlas-filter-btn[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    border-color: Highlight;
+  }
+  .hero-emerald-card {
+    border: 2px solid CanvasText;
+  }
+  progress.umrah-progress {
+    border: 1px solid CanvasText;
+  }
+  progress.umrah-progress::-webkit-progress-value {
+    background: Highlight;
+  }
+  progress.umrah-progress::-moz-progress-bar {
+    background: Highlight;
+  }
+}
 
 .toast {
   position: fixed;

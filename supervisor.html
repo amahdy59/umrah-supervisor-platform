@@ -78,39 +78,26 @@
     }
 
     /* Responsive Tables */
-    .table-wrapper { overflow: auto; max-inline-size: 100%; max-block-size: min(560px, 75vh); container-type: inline-size; border: 1px solid var(--border); border-radius: 12px; }
+    .table-wrapper { overflow: auto; max-inline-size: 100%; max-block-size: min(560px, 75dvh); container-type: inline-size; border: 1px solid var(--border); border-radius: 12px; }
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; font-size: 0.9rem; }
     thead th { position: sticky; inset-block-start: 0; z-index: 2; background: var(--surface-muted); color: var(--text-muted); padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); }
     tbody th, tbody td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tbody th { position: sticky; inset-inline-start: 0; z-index: 1; background: var(--card-bg); font-weight: 800; }
     tr.row-pending td, tr.row-pending th { background: var(--gold-soft); }
 
+    @media (max-width: 767px) {
+      .table-wrapper { max-block-size: none; overflow: visible; border: none; }
+    }
+
     @container (width < 540px) {
       table, thead, tbody, tr, th, td { display: block; }
       thead { display: none; }
-      tr { margin-block-end: 0.9rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      tr { margin-block-end: 0.9rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
       tbody th { position: static; background: var(--surface-muted); border-bottom: 1px solid var(--border); }
       tbody td { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-      .manifest-table td:nth-child(2)::before { content: "الجواز: "; font-weight: 700; color: var(--text-muted); }
-      .manifest-table td:nth-child(3)::before { content: "الغرفة: "; font-weight: 700; color: var(--text-muted); }
-      .manifest-table td:nth-child(4)::before { content: "نُسك: "; font-weight: 700; color: var(--text-muted); }
-      .manifest-table td:nth-child(5)::before { content: "الباص: "; font-weight: 700; color: var(--text-muted); }
-      .people-table td:nth-child(2)::before { content: "الجواز: "; font-weight: 700; color: var(--text-muted); }
-      .people-table td:nth-child(3)::before { content: "الهاتف: "; font-weight: 700; color: var(--text-muted); }
-      .people-table td:nth-child(4)::before { content: "الصحة: "; font-weight: 700; color: var(--text-muted); }
-      .people-table td:nth-child(5)::before { content: "السجل: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(2)::before { content: "الخطة: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(3)::before { content: "الإجمالي والتقدم: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(4)::before { content: "المسدد / المتبقي: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(5)::before { content: "القادم والاستحقاق: "; font-weight: 700; color: var(--text-muted); }
-      .gameya-table td:nth-child(6)::before { content: "الحالة: "; font-weight: 700; color: var(--text-muted); }
-      .luggage-table td:nth-child(2)::before { content: "المعتمر: "; font-weight: 700; color: var(--text-muted); }
-      .luggage-table td:nth-child(3)::before { content: "الغرفة: "; font-weight: 700; color: var(--text-muted); }
-      .luggage-table td:nth-child(4)::before { content: "الحالة: "; font-weight: 700; color: var(--text-muted); }
-      .schedule-table td:nth-child(2)::before { content: "الاستحقاق: "; font-weight: 700; color: var(--text-muted); }
-      .schedule-table td:nth-child(3)::before { content: "المطلوب: "; font-weight: 700; color: var(--text-muted); }
-      .schedule-table td:nth-child(4)::before { content: "المسدد: "; font-weight: 700; color: var(--text-muted); }
-      .schedule-table td:nth-child(5)::before { content: "الحالة: "; font-weight: 700; color: var(--text-muted); }
+      tbody td[data-label]::before { content: attr(data-label) ": "; font-weight: 700; color: var(--text-muted); flex-shrink: 0; }
+      tbody td.table-actions-cell { justify-content: flex-start; flex-wrap: wrap; }
+      tbody td.table-actions-cell::before { display: none; }
     }
   </style>
 </head>
@@ -193,7 +180,7 @@
           <h2 class="card-title" data-i18n="sup.board.title">🗂️ لوحة إدارة الأفواج المتزامنة والمتتابعة</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary">إدارة عدة أفواج معاً وتجهيز الفوج التالي</span>
-            <button type="button" id="btn-pull-cloud-group" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
+            <button type="button" id="btn-pull-cloud-group" class="btn btn-secondary btn-compact" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
           </div>
         </div>
         <div id="multi-groups-board" class="grid-2" style="margin-bottom:0;"></div>
@@ -212,7 +199,7 @@
 
         <search style="display:block;margin-bottom:0.85rem;">
           <label for="manifest-search" class="field-label">بحث سريع في الكشف:</label>
-          <input type="search" id="manifest-search" name="manifestSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم أو الجواز أو رقم الغرفة...">
+          <input type="search" id="manifest-search" name="manifestSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم أو الجواز أو رقم الغرفة...">
         </search>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="manifest-caption">
@@ -263,7 +250,7 @@
 
         <search style="display:block;margin-bottom:0.85rem;">
           <label for="people-search" class="field-label">بحث في سجل الأشخاص:</label>
-          <input type="search" id="people-search" name="peopleSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم، رقم الجواز، أو الهاتف...">
+          <input type="search" id="people-search" name="peopleSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="ابحث بالاسم، رقم الجواز، أو الهاتف...">
         </search>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="people-caption">
@@ -292,8 +279,9 @@
           <h2 class="card-title" data-i18n="sup.gameya.title">💰 خطط الأقساط المرنة والجمعية</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-primary">6 خطط سداد + دفعات جزئية + سجل إيصالات</span>
-            <button type="button" id="btn-open-add-gameya" class="btn btn-primary" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;">➕ إضافة مشترك</button>
-            <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;">📥 تصدير كشف الأقساط CSV</button>
+            <button type="button" id="btn-open-add-gameya" class="btn btn-primary btn-compact">➕ إضافة مشترك</button>
+            <button type="button" id="btn-gameya-print-agreement" class="btn btn-secondary btn-compact">🖨️ طباعة إقرار سداد</button>
+            <button type="button" id="btn-export-gameya-csv" class="btn btn-secondary btn-compact">📥 تصدير كشف الأقساط CSV</button>
           </div>
         </div>
 
@@ -309,7 +297,7 @@
           </div>
           <search style="flex:1;min-width:210px;max-width:340px;">
             <label for="gameya-search" class="sr-only">بحث في المشتركين</label>
-            <input type="search" id="gameya-search" name="gameyaSearch" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف...">
+            <input type="search" id="gameya-search" name="gameyaSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف...">
           </search>
         </div>
 
@@ -342,7 +330,7 @@
           <h2 class="card-title" data-i18n="sup.whatsapp.title">💬 رسائل الواتساب الموجهة للفوج</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-success">تترتب تلقائياً حسب مرحلة الفوج الحالية</span>
-            <a href="/?tab=haram-atlas" target="_blank" rel="noopener" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;text-decoration:none;">⛩️ دليل الحرمين والزوار (تطبيق المعتمر) ↗</a>
+            <a href="/?tab=haram-atlas" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">⛩️ دليل الحرمين والزوار (تطبيق المعتمر) ↗</a>
           </div>
         </div>
         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
@@ -361,16 +349,16 @@
       <div id="sup-comms-women-panel" hidden>
         <div class="card" style="margin-bottom:1.25rem;background:var(--women-bg);border-color:var(--women-border);">
           <div class="card-header" style="border-bottom-color:var(--women-border);">
-            <h3 class="card-title" style="color:var(--women-accent);" data-i18n="sup.women.title">🧕 لوحة تنسيق شؤون الأخوات وزيارة الروضة الشريفة</h3>
-            <span class="badge badge-women">دليل المعتمر وتنظيم نُسك</span>
+            <h3 class="card-title" style="color:var(--women-accent);" data-i18n="sup.women.title">🧕 رسائل الواتساب والردود السريعة لمجموعة الأخوات</h3>
+            <a href="/?tab=women-fiqh" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">📖 مرجع فقه المعتمرة الكامل ↗</a>
           </div>
           <p style="font-size:0.92rem;line-height:1.75;">
-            توجيهات المشرفة المرافقة للرد على طوارئ فقه المعتمرة وتنسيق دخول الروضة الشريفة وفق المواعيد المتاحة فعلياً في تطبيق «نُسك».
+            قوالب رسائل واتساب جاهزة لمجموعة الأخوات وردود فقهية مختصرة تُرسل بنقرة واحدة (التفاصيل والمصادر الموسعة مخصصة في تطبيق المعتمرة).
           </p>
         </div>
 
         <div class="card" style="margin-bottom:1.25rem;">
-          <div class="card-header"><h3 class="card-title">💬 رسائل واتساب محدثة لمجموعة الأخوات</h3></div>
+          <div class="card-header"><h3 class="card-title">💬 منشورات التجمع والإحرام للأخوات</h3></div>
           <div class="grid-2" style="margin-bottom:0;">
             <div>
               <div class="whatsapp-box" id="post-women-ihram"></div>
@@ -383,33 +371,12 @@
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">🕌 تنظيم دخول الروضة الشريفة للنساء (نُسك)</h3>
-              <span class="badge badge-success">حسب تصريح التطبيق</span>
-            </div>
-            <div class="info-box-neutral" style="margin-bottom:0.75rem;">
-              <strong>⏰ المواعيد والبوابات:</strong><br>
-              تُحدد فترات دخول النساء بدقة داخل تطبيق <strong>«نُسك»</strong> وقد تتغير بين المواسم؛ غالباً ما يتم التوجيه عبر <strong>باب عثمان بن عفان (رقم 25)</strong> وممرات الساحات الشمالية/الشرقية (24–26 أو نقاط 32/37 حسب تنظيم الحشود).
-            </div>
-            <div class="info-box-warn">
-              <strong>توجيهات المشرفة:</strong><br>
-              1. الحضور قبل موعد التصريح بـ 15–30 دقيقة والتقيد باللوحات الإرشادية.<br>
-              2. حفظ لقطة شاشة واضحة للـ QR كاحتياط لضعف الشبكة، مع إبقاء التطبيق مفتوحاً.<br>
-              3. تجربة خيار <strong>«المسار الفوري»</strong> في نُسك عند التواجد داخل المدينة وتفعيل GPS.
-            </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📲 ردود واتساب فورية لاستفسارات الأخوات (نسخ أو إرسال)</h3>
+            <span class="badge badge-women">دون تكرار موسوعة المعتمرة</span>
           </div>
-
-          <div class="card">
-            <div class="card-header"><h3 class="card-title">⚖️ الرد الفوري على طوارئ فقه المعتمرة</h3></div>
-            <div style="display:flex;flex-direction:column;gap:0.65rem;font-size:0.88rem;">
-              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>حاضت عند الميقات:</strong> تحرم وجوباً وتلبي، وتنتظر بمكة حتى تطهر وتغتسل ثم تطوف وتسعى (البخاري 1650 / مسلم 1211).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>حاضت بعد الطواف وقبل السعي:</strong> تسعى فوراً وهي حائض وتقصر وتتحلل، وعمرتها صحيحة («دليل المعتمر» ص 44).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>دم الاستحاضة (غير الحيض):</strong> لا يمنع الصلاة ولا الطواف؛ تتحفظ وتتوضأ لكل صلاة أو طواف (البخاري 306).</div>
-              <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);"><strong>مس خمار السدل للوجه:</strong> جائز بلا فدية، ووضع العصابة أو تخصيص الأبيض/الأخضر لا أصل له (أبو داود 1833).</div>
-            </div>
-          </div>
+          <div id="women-quick-replies-grid" class="grid-2" style="margin-bottom:0;"></div>
         </div>
       </div>
     </section>
@@ -421,8 +388,8 @@
           <h2 class="card-title" data-i18n="sup.sos.title">🚨 غرفة متابعة بلاغات التائهين (GPS + خرائط)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-danger">حساب المسافة للفندق</span>
-            <button type="button" id="btn-open-add-sos" class="btn btn-danger" style="min-height:38px;padding:0.25rem 0.75rem;font-size:0.82rem;">🆘 تسجيل بلاغ نشط</button>
-            <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary" style="min-height:38px;padding:0.25rem 0.7rem;font-size:0.82rem;" data-i18n="sup.sos.pullBtn">☁️ تحديث من D1</button>
+            <button type="button" id="btn-open-add-sos" class="btn btn-danger btn-compact">🆘 تسجيل بلاغ نشط</button>
+            <button type="button" id="btn-pull-cloud-sos" class="btn btn-secondary btn-compact" data-i18n="sup.sos.pullBtn">☁️ تحديث من D1</button>
           </div>
         </div>
 
@@ -467,8 +434,8 @@
         <div class="card-header">
           <h2 class="card-title" data-i18n="sup.luggage.title">🧳 نظام فرز وتوصيل أمتعة الفوج (بعدادات حية)</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
-            <button type="button" id="btn-open-add-bag" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">➕ إضافة حقيبة</button>
-            <button type="button" id="btn-open-luggage-print" class="btn btn-secondary" style="min-height:40px;font-size:0.84rem;">🖨️ طباعة بطاقات الأمتعة + QR</button>
+            <button type="button" id="btn-open-add-bag" class="btn btn-primary btn-compact">➕ إضافة حقيبة</button>
+            <button type="button" id="btn-open-luggage-print" class="btn btn-secondary btn-compact">🖨️ طباعة بطاقات الأمتعة + QR</button>
           </div>
         </div>
 
@@ -501,7 +468,7 @@
           <h2 class="card-title">♿ السجل الطبي ورعاية كبار السن</h2>
           <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-warning" id="medical-count-badge">0 حالات</span>
-            <button type="button" id="btn-open-add-med" class="btn btn-primary" style="min-height:40px;font-size:0.84rem;">➕ إضافة حالة طبية</button>
+            <button type="button" id="btn-open-add-med" class="btn btn-primary btn-compact">➕ إضافة حالة طبية</button>
           </div>
         </div>
 
@@ -522,22 +489,28 @@
 
   <!-- Shared Mobile & Tablet Operations & Tools Popover -->
   <div id="sup-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">عمليات وإعدادات المشرف</div>
+    <div style="font-weight:800;margin-bottom:0.55rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">عمليات وإعدادات المشرف</div>
     <nav class="more-popover-grid" aria-label="أقسام وأدوات إضافية للمشرف">
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ والموارد الرسمية</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج النشط</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
-      <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" style="justify-content:flex-start;" data-i18n="tools.sync">☁️ مزامنة السحابة (D1)</button>
-      <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" style="justify-content:flex-start;" data-i18n="sup.board.pullBtn">☁️ سحب من السحابة (D1)</button>
+      <div class="popover-section-label">العرض والأمان</div>
+      <div class="popover-quick-grid">
+        <button type="button" class="btn btn-secondary" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
+        <button type="button" class="btn btn-secondary" data-lang-toggle>🌐 English</button>
+      </div>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn>🔒 تفعيل قفل الخصوصية (PIN)</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now hidden>🔐 قفل الشاشة الآن</button>
-      <button type="button" id="btn-export-backup-json" class="btn btn-secondary" style="justify-content:flex-start;">💾 حفظ نسخة احتياطية (JSON)</button>
-      <label for="input-restore-backup-json" class="btn btn-secondary" style="justify-content:flex-start;cursor:pointer;">
-        📤 استعادة نسخة (JSON)
-        <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
-      </label>
+      <div class="popover-section-label">المزامنة والنسخ الاحتياطي</div>
+      <div class="popover-quick-grid">
+        <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" data-i18n="tools.sync">☁️ رفع للسحابة</button>
+        <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" data-i18n="sup.board.pullBtn">☁️ سحب من D1</button>
+        <button type="button" id="btn-export-backup-json" class="btn btn-secondary">💾 تصدير JSON</button>
+        <label for="input-restore-backup-json" class="btn btn-secondary" style="cursor:pointer;">
+          📤 استعادة JSON
+          <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
+        </label>
+      </div>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo>🔄 استعادة البيانات الافتراضية</button>
       <a href="/" class="btn btn-gold" style="text-decoration:none;" data-i18n="tools.pilgrimApp">🤲 معاينة تطبيق المعتمر</a>
     </nav>
@@ -627,7 +600,7 @@
     <div id="pay-quick-presets" class="quick-preset-row" aria-label="مبالغ سريعة مقترحة"></div>
     <form id="payment-form">
       <div class="form-inline-grid">
-        <div><label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label><input id="pay-amount" type="number" min="1" step="0.01" class="field-input" required></div>
+        <div><label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label><input id="pay-amount" type="number" inputmode="decimal" min="1" step="0.01" class="field-input" required></div>
         <div>
           <label for="pay-method" class="field-label">وسيلة الدفع:</label>
           <select id="pay-method" class="field-input">
@@ -749,7 +722,7 @@
           </select>
         </div>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة للفوج والسجل</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-pilgrim-modal">إلغاء</button>
       </div>
@@ -763,7 +736,7 @@
     </div>
     <form id="add-room-form">
       <div class="form-inline-grid">
-        <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" class="field-input" placeholder="508" required></div>
+        <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" inputmode="numeric" class="field-input" placeholder="508" required></div>
         <div>
           <label for="new-room-type" class="field-label">نوع الغرفة:</label>
           <select id="new-room-type" class="field-input">
@@ -852,22 +825,22 @@
             <option value="FULL_CASH">سداد نقدي كامل</option>
           </select>
         </div>
-        <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" value="40000" min="100" class="field-input" required></div>
+        <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" inputmode="decimal" value="40000" min="100" class="field-input" required></div>
         <div id="gam-down-wrap">
           <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
-          <input id="new-gam-down" name="downPayment" type="number" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
+          <input id="new-gam-down" name="downPayment" type="number" inputmode="decimal" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
           <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
         </div>
-        <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" value="6" min="1" max="48" class="field-input"></div>
-        <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" value="1" min="1" max="48" class="field-input" disabled></div>
+        <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" inputmode="numeric" value="6" min="1" max="48" class="field-input"></div>
+        <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" inputmode="numeric" value="1" min="1" max="48" class="field-input" disabled></div>
         <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
         <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
-          <input type="checkbox" id="new-gam-mark-paid" style="width:20px;height:20px;">
+          <input type="checkbox" id="new-gam-mark-paid">
           <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
         </div>
       </div>
       <div id="gameya-plan-preview" class="info-box-neutral" role="status" style="margin-bottom:0.9rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة المشترك</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-gameya-modal">إلغاء</button>
       </div>
@@ -900,7 +873,7 @@
     <form id="add-bag-form">
       <div class="form-inline-grid">
         <div><label for="new-bag-name" class="field-label">اسم المعتمر:</label><input id="new-bag-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-        <div><label for="new-bag-room" class="field-label">رقم الغرفة:</label><input id="new-bag-room" class="field-input" placeholder="502" required></div>
+        <div><label for="new-bag-room" class="field-label">رقم الغرفة:</label><input id="new-bag-room" inputmode="numeric" class="field-input" placeholder="502" required></div>
         <div>
           <label for="new-bag-type" class="field-label">النوع:</label>
           <select id="new-bag-type" class="field-input">
@@ -925,7 +898,7 @@
     <form id="add-med-form">
       <div class="form-inline-grid">
         <div><label for="new-med-name" class="field-label">اسم المعتمر:</label><input id="new-med-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-        <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" class="field-input" placeholder="504"></div>
+        <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" inputmode="numeric" class="field-input" placeholder="504"></div>
         <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" class="field-input"></div>
         <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" type="tel" dir="ltr" class="field-input"></div>
         <div class="field-span-wide"><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" class="field-input" placeholder="ضغط / سكري / عربة"></div>

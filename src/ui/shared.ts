@@ -184,6 +184,17 @@ export function closeDialogById(id: string): void {
 export function initStickyHeaders(): void {
   const sentinel = document.getElementById('sticky-header-sentinel');
   const stickyNav = document.querySelector<HTMLElement>('.sticky-bar-container');
+  if (stickyNav && 'ResizeObserver' in window) {
+    const syncHeaderHeight = () => {
+      const h = Math.ceil(stickyNav.getBoundingClientRect().height);
+      if (h > 0) {
+        document.documentElement.style.setProperty('--header-height', `${h}px`);
+      }
+    };
+    syncHeaderHeight();
+    const ro = new ResizeObserver(syncHeaderHeight);
+    ro.observe(stickyNav);
+  }
   if (!sentinel || !stickyNav || !('IntersectionObserver' in window)) return;
 
   const observer = new IntersectionObserver(
@@ -210,6 +221,10 @@ export function applyColorScheme(value: string | null): void {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
   const next = value === 'dark' || value === 'light' ? value : 'light dark';
   if (meta) meta.content = next;
+  const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (themeMeta) {
+    themeMeta.content = getResolvedTheme() === 'dark' ? '#0b1115' : '#064e3b';
+  }
   updateThemeButtonLabel();
 }
 

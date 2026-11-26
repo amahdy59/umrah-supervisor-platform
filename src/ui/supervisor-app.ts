@@ -41,8 +41,8 @@ import {
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
 import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
-import { getCurrentLanguage, initLanguage, toggleLanguage } from './i18n.js';
-import { renderEditorialMethodologyHtml, renderReferencePillsHtml } from './references-ui.js';
+import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
+import { renderReferencePillsHtml } from './references-ui.js';
 import {
   pushGroupWorkspaceToCloud,
   pullGroupWorkspaceFromCloud,
@@ -665,9 +665,9 @@ function renderGroupsOverviewBoard(): void {
           👥 ${g.pilgrims.length} معتمر (${boarded} بالباص) • 💰 التحصيل: ${pct}%
         </div>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-          ${isCurrent ? '<span class="badge badge-warning">الفوج المحدد الآن ✓</span>' : `<button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.65rem;font-size:0.8rem;" data-select-group="${escapeHtml(g.id)}">فتح وإدارة الفوج</button>`}
-          ${allowedNext.map((ns) => `<button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-advance-group="${escapeHtml(g.id)}" data-next-stage="${ns}">⏭️ نقل إلى: ${escapeHtml(TRIP_STAGE_LABELS[ns])}</button>`).join('')}
-          <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-clone-group="${escapeHtml(g.id)}">📋 استنساخ للفوج التالي</button>
+          ${isCurrent ? '<span class="badge badge-warning">الفوج المحدد الآن ✓</span>' : `<button type="button" class="btn btn-primary btn-compact" data-select-group="${escapeHtml(g.id)}">فتح وإدارة الفوج</button>`}
+          ${allowedNext.map((ns) => `<button type="button" class="btn btn-secondary btn-compact" data-advance-group="${escapeHtml(g.id)}" data-next-stage="${ns}">⏭️ نقل إلى: ${escapeHtml(TRIP_STAGE_LABELS[ns])}</button>`).join('')}
+          <button type="button" class="btn btn-secondary btn-compact" data-clone-group="${escapeHtml(g.id)}">📋 استنساخ للفوج التالي</button>
         </div>
       </article>
     `;
@@ -796,19 +796,19 @@ function renderManifestTable(): void {
       return `
       <tr class="${p.boarded ? '' : 'row-pending'}">
         <th scope="row">${escapeHtml(p.fullName)}</th>
-        <td>${escapeHtml(p.passportNumber)}</td>
-        <td>${escapeHtml(p.roomNumber || 'غير مسكن')}</td>
-        <td><span class="badge ${p.nusukReady ? 'badge-success' : 'badge-warning'}">${p.nusukReady ? 'نُسك جاهز ✓' : 'معلق'}</span></td>
-        <td>
-          <button type="button" class="badge ${p.boarded ? 'badge-success' : 'badge-warning'}" style="border:none;cursor:pointer;min-height:36px;" data-toggle-board="${escapeHtml(p.id)}">
+        <td data-label="${escapeHtml(t('sup.col.passport'))}">${escapeHtml(p.passportNumber)}</td>
+        <td data-label="${escapeHtml(t('sup.col.room'))}">${escapeHtml(p.roomNumber || 'غير مسكن')}</td>
+        <td data-label="${escapeHtml(t('sup.col.nusuk'))}"><span class="badge ${p.nusukReady ? 'badge-success' : 'badge-warning'}">${p.nusukReady ? 'نُسك جاهز ✓' : 'معلق'}</span></td>
+        <td data-label="${escapeHtml(t('sup.col.bus'))}">
+          <button type="button" class="badge btn-compact ${p.boarded ? 'badge-success' : 'badge-warning'}" style="border:none;cursor:pointer;" data-toggle-board="${escapeHtml(p.id)}">
             ${p.boarded ? 'صعد الباص ✅' : 'لم يصعد بعد ⏳'}
           </button>
         </td>
-        <td>
+        <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            <a href="${waLink}" target="_blank" rel="noopener" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;text-decoration:none;">📲 واتساب</a>
-            <button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;" data-share-pilgrim="${escapeHtml(p.id)}">🔗 QR البطاقة</button>
-            <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;color:var(--danger);" data-delete-pilgrim="${escapeHtml(p.id)}" aria-label="إزالة ${escapeHtml(p.fullName)}">🗑️</button>
+            <a href="${waLink}" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">📲 واتساب</a>
+            <button type="button" class="btn btn-primary btn-compact" data-share-pilgrim="${escapeHtml(p.id)}">🔗 QR البطاقة</button>
+            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-delete-pilgrim="${escapeHtml(p.id)}" aria-label="إزالة ${escapeHtml(p.fullName)}">🗑️</button>
           </div>
         </td>
       </tr>
@@ -1063,30 +1063,30 @@ function renderPeopleDirectory(): void {
       return `
       <tr class="${passportValid ? '' : 'row-pending'}">
         <th scope="row">${escapeHtml(p.fullName)}</th>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.passport'))}">
           <div>${escapeHtml(p.passportNumber)}</div>
           <div style="font-size:0.78rem;color:${passportValid ? 'var(--text-muted)' : 'var(--danger)'};font-weight:${passportValid ? '500' : '700'};">
             ${p.passportExpiryDate ? `ينتهي: ${escapeHtml(p.passportExpiryDate)}` : 'بدون تاريخ انتهاء'}
             ${passportValid ? '' : ' ⚠️ أقل من 6 أشهر!'}
           </div>
         </td>
-        <td dir="ltr">${escapeHtml(p.phone)}</td>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.phone'))}" dir="ltr">${escapeHtml(p.phone)}</td>
+        <td data-label="${escapeHtml(t('sup.col.health'))}">
           ${p.requiresWheelchair ? '<span class="badge badge-danger">كرسي</span> ' : ''}
           ${p.requiresInsulinRefrigeration ? '<span class="badge badge-danger">إنسولين</span> ' : ''}
           ${!p.requiresWheelchair && !p.requiresInsulinRefrigeration ? '<span class="badge badge-success">سليم</span>' : ''}
         </td>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.trips'))}">
           <div style="font-size:0.82rem;">${p.pastTrips.length > 0 ? escapeHtml(p.pastTrips.join('، ')) : 'أول رحلة'}</div>
         </td>
-        <td>
+        <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
             ${
               alreadyInActive
                 ? '<span class="badge badge-primary">مدرج بالفوج ✓</span>'
-                : `<button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-enroll-person="${escapeHtml(p.id)}">➕ إدراج بالفوج النشط</button>`
+                : `<button type="button" class="btn btn-primary btn-compact" data-enroll-person="${escapeHtml(p.id)}">➕ إدراج بالفوج النشط</button>`
             }
-            <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;color:var(--danger);" data-del-person="${escapeHtml(p.id)}" aria-label="حذف سجل ${escapeHtml(p.fullName)}">🗑️</button>
+            <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-person="${escapeHtml(p.id)}" aria-label="حذف سجل ${escapeHtml(p.fullName)}">🗑️</button>
           </div>
         </td>
       </tr>
@@ -1149,10 +1149,6 @@ function renderWhatsAppHub(): void {
   const s = getActiveGroup().settings;
   const isEn = getCurrentLanguage() === 'en';
   const container = document.getElementById('whatsapp-posts-container');
-  const methBox = document.getElementById('sup-editorial-methodology-box');
-  if (methBox) {
-    methBox.innerHTML = renderEditorialMethodologyHtml(isEn);
-  }
   if (!container) return;
 
   const params = {
@@ -1390,10 +1386,10 @@ function openScheduleModalForMember(m: GameyaRecord): void {
       return `
       <tr>
         <th scope="row">${escapeHtml(it.labelAr || `قسط ${it.installmentNumber}`)}</th>
-        <td>${it.dueDate.toLocaleDateString('ar-EG')}</td>
-        <td>${it.amountDue.toDecimal().toLocaleString('ar-EG')} ج.م</td>
-        <td>${it.amountPaid.toDecimal().toLocaleString('ar-EG')} ج.م</td>
-        <td><span class="badge ${badgeCls}">${badgeText}</span></td>
+        <td data-label="${escapeHtml(t('sup.col.dueDate'))}">${it.dueDate.toLocaleDateString('ar-EG')}</td>
+        <td data-label="${escapeHtml(t('sup.col.dueAmount'))}">${it.amountDue.toDecimal().toLocaleString('ar-EG')} ج.م</td>
+        <td data-label="${escapeHtml(t('sup.col.paidAmount'))}">${it.amountPaid.toDecimal().toLocaleString('ar-EG')} ج.م</td>
+        <td data-label="${escapeHtml(t('sup.col.status'))}"><span class="badge ${badgeCls}">${badgeText}</span></td>
       </tr>
     `;
     })
@@ -1413,8 +1409,8 @@ function openScheduleModalForMember(m: GameyaRecord): void {
                  <span style="color:var(--text-muted);"> • ${escapeHtml(p.dateIso)}</span>
                </div>
                <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-                 <button type="button" class="btn btn-secondary" style="min-height:34px;padding:0.2rem 0.55rem;font-size:0.76rem;" data-copy-receipt="${escapeHtml(p.id)}">📋 نسخ إيصال</button>
-                 <button type="button" class="btn btn-secondary" style="min-height:34px;padding:0.2rem 0.55rem;font-size:0.76rem;color:var(--danger);" data-void-payment="${escapeHtml(p.id)}">↩️ تراجع</button>
+                 <button type="button" class="btn btn-secondary btn-compact" data-copy-receipt="${escapeHtml(p.id)}">📋 نسخ إيصال</button>
+                 <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-void-payment="${escapeHtml(p.id)}">↩️ تراجع</button>
                </div>
              </div>
            `
@@ -1727,34 +1723,34 @@ function renderGameyaTable(): void {
       <tr>
         <th scope="row">
           <div>${escapeHtml(m.name)}</div>
-          ${m.phone ? `<div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;" dir="ltr">${escapeHtml(m.phone)}</div>` : ''}
+          ${m.phone ? `<div style="font-size:0.78rem;color:var(--text-muted);font-weight:500;" dir="ltr">${escapeHtml(m.phone)}</div>` : ''}
         </th>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.plan'))}">
           <div><span class="badge badge-primary">${escapeHtml(PLAN_LABELS[m.planType])}</span></div>
-          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.76rem;color:var(--text-muted);margin-top:0.2rem;">الدور: شهر ${m.turnMonth}</div>` : ''}
+          ${m.planType === GameyaType.ROTATING_ROSCA ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">الدور: شهر ${m.turnMonth}</div>` : ''}
         </td>
-        <td>
-          <div style="font-weight:700;margin-bottom:0.25rem;">${m.totalTarget.toLocaleString('ar-EG')} ج.م <span style="font-size:0.75rem;color:var(--primary-ink);">(${pct}%)</span></div>
+        <td data-label="${escapeHtml(t('sup.col.total'))}">
+          <div style="font-weight:700;margin-bottom:0.25rem;">${m.totalTarget.toLocaleString('ar-EG')} ج.م <span style="font-size:0.78rem;color:var(--primary-ink);">(${pct}%)</span></div>
           <progress class="umrah-progress" max="100" value="${pct}" aria-label="سداد ${m.name} ${pct}%"></progress>
         </td>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.paidRemaining'))}">
           <div style="font-weight:700;color:var(--success);">${m.totalPaid.toLocaleString('ar-EG')} ج.م</div>
-          <div style="font-size:0.76rem;color:var(--gold-dark);font-weight:600;">متبقي: ${remaining.toLocaleString('ar-EG')} ج.م</div>
+          <div style="font-size:0.78rem;color:var(--gold-dark);font-weight:600;">متبقي: ${remaining.toLocaleString('ar-EG')} ج.م</div>
         </td>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.nextDue'))}">
           <div>${escapeHtml(nextDueLabel)}</div>
-          ${nextDueDateStr ? `<div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(nextDueDateStr)}</div>` : ''}
+          ${nextDueDateStr ? `<div style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(nextDueDateStr)}</div>` : ''}
         </td>
-        <td>
+        <td data-label="${escapeHtml(t('sup.col.status'))}">
           <span class="badge ${remaining === 0 ? 'badge-success' : summary.overdueCount > 0 ? 'badge-danger' : 'badge-warning'}">
             ${remaining === 0 ? 'مكتمل السداد 🎉' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount}) ⚠️` : 'قيد السداد'}
           </span>
         </td>
-        <td>
+        <td class="table-actions-cell">
           <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            ${remaining > 0 ? `<button type="button" class="btn btn-primary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-open-pay="${escapeHtml(m.id)}">💳 دفعة</button>` : ''}
-            <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;" data-view-schedule="${escapeHtml(m.id)}">📅 الجدول</button>
-            <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;text-decoration:none;">📲 واتساب</a>
+            ${remaining > 0 ? `<button type="button" class="btn btn-primary btn-compact" data-open-pay="${escapeHtml(m.id)}">💳 دفعة</button>` : ''}
+            <button type="button" class="btn btn-secondary btn-compact" data-view-schedule="${escapeHtml(m.id)}">📅 الجدول</button>
+            <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">📲 واتساب</a>
           </div>
         </td>
       </tr>
@@ -1887,8 +1883,8 @@ function renderSOSTab(): void {
       </div>
       <div style="font-size:0.85rem;margin-bottom:0.45rem;">${escapeHtml(a.notes)} • ${escapeHtml(a.createdAt)}</div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-        <a href="https://maps.google.com/?q=${a.latitude},${a.longitude}" target="_blank" rel="noopener" class="btn btn-secondary" style="min-height:36px;font-size:0.8rem;text-decoration:none;">📍 الخريطة</a>
-        ${!a.resolved ? `<button type="button" class="btn btn-primary" style="min-height:36px;font-size:0.8rem;" data-resolve-sos="${escapeHtml(a.id)}">✅ تم العثور عليه</button>` : ''}
+        <a href="https://maps.google.com/?q=${a.latitude},${a.longitude}" target="_blank" rel="noopener" class="btn btn-secondary btn-compact" style="text-decoration:none;">📍 الخريطة</a>
+        ${!a.resolved ? `<button type="button" class="btn btn-primary btn-compact" data-resolve-sos="${escapeHtml(a.id)}">✅ تم العثور عليه</button>` : ''}
       </div>
     </div>
   `
@@ -1912,13 +1908,16 @@ function renderOfficialResourcesInSup(): void {
   const isEn = getCurrentLanguage() === 'en';
   const container = document.getElementById('sup-official-resources');
   if (!container) return;
-  container.innerHTML = OFFICIAL_SAUDI_RESOURCES.map((r) => {
+  const fieldEmergencyResources = OFFICIAL_SAUDI_RESOURCES.filter(
+    (r) => r.category === 'EMERGENCY' || r.id === 'nusuk-app'
+  );
+  container.innerHTML = fieldEmergencyResources.map((r) => {
     const en = OFFICIAL_RESOURCES_EN[r.id];
     return `
     <a href="${escapeHtml(r.urlOrTel)}" ${r.urlOrTel.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} class="btn btn-secondary" style="justify-content:flex-start;text-decoration:none;text-align:${isEn ? 'left' : 'right'};">
       <div>
         <div style="font-size:0.86rem;font-weight:800;">${escapeHtml(isEn && en ? en.titleEn : r.titleAr)}</div>
-        <div style="font-size:0.76rem;color:var(--text-muted);font-weight:500;">${escapeHtml(isEn && en ? en.actionEn : r.actionLabelAr)}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);font-weight:500;">${escapeHtml(isEn && en ? en.actionEn : r.actionLabelAr)}</div>
       </div>
     </a>
   `;
@@ -1926,7 +1925,7 @@ function renderOfficialResourcesInSup(): void {
 }
 
 // =========================================================================
-// TAB 6: WOMEN'S GUIDANCE (DYNAMICALLY SYNCED TO ACTIVE GROUP)
+// TAB 6: WOMEN'S MESSAGING & QUICK REPLIES (DYNAMICALLY SYNCED TO GROUP)
 // =========================================================================
 function renderWomenGuidanceSynced(): void {
   const s = getActiveGroup().settings;
@@ -1949,6 +1948,55 @@ function renderWomenGuidanceSynced(): void {
 📍 الاتجاه لبوابة عثمان بن عفان (بوابة 25) أو المسار المحدد ميدانياً (32 / 37).
 📱 تجهيز تصريح نُسك والهوية الأصلية ورفع سطوع الشاشة.
 للتنسيق: ${s.supervisorName} (${s.supervisorPhone})`;
+  }
+
+  const quickRepliesGrid = document.getElementById('women-quick-replies-grid');
+  if (quickRepliesGrid) {
+    const replies = [
+      {
+        id: 'qr-haid-miqat',
+        title: 'حاضت عند الميقات',
+        text: `أختنا الكريمة في (${s.tripTitle})، إذا نزل الحيض عند الميقات أو قبله: تعقدين نية العمرة وتلبّين وتلتزمين بمحظورات الإحرام، ثم تنتظرين بمكة حتى الطهر والاغتسال، بعدها تطوفين وتسعين وتقصرين وعمرتك صحيحة (البخاري 1650 / مسلم 1211).`,
+      },
+      {
+        id: 'qr-haid-sai',
+        title: 'حاضت بعد الطواف وقبل السعي',
+        text: `أختنا الكريمة في (${s.tripTitle})، من طافت طاهرة ثم حاضت قبل السعي: السعي لا يُشترط له الطهارة من الحيض، فتكملين السعي بين الصفا والمروة وتقصرين وتتحللين من إحرامك (دليل المعتمر).`,
+      },
+      {
+        id: 'qr-istihadah',
+        title: 'دم الاستحاضة (غير الحيض)',
+        text: `أختنا الكريمة، دم الاستحاضة لا يمنع الصلاة ولا الطواف ولا قراءة القرآن؛ تتحفظين وتتوضئين لكل صلاة أو طواف (صحيح البخاري 306).`,
+      },
+      {
+        id: 'qr-rawdah-entry',
+        title: 'ضوابط دخول الروضة (نُسك)',
+        text: `تذكير دخول الروضة الشريفة للأخوات: الحضور قبل الموعد بـ 20 دقيقة عند بوابة عثمان (رقم 25) أو المسارات المحددة (32/37)، مع إبقاء تطبيق نُسك مفتوحاً ولقطة QR جاهزة أوفلاين.`,
+      },
+    ];
+    quickRepliesGrid.innerHTML = replies
+      .map(
+        (r) => `
+      <div class="info-box-neutral" style="border-inline-start:4px solid var(--women-border);display:flex;flex-direction:column;justify-content:space-between;gap:0.55rem;">
+        <div>
+          <strong style="color:var(--women-accent);display:block;margin-bottom:0.25rem;">${escapeHtml(r.title)}</strong>
+          <p id="${escapeHtml(r.id)}" style="font-size:0.86rem;line-height:1.65;">${escapeHtml(r.text)}</p>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-compact" data-copy-box="${escapeHtml(r.id)}">📋 نسخ الرد</button>
+          <a href="${buildWhatsAppUrl(r.text)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">📲 إرسال بالواتساب</a>
+        </div>
+      </div>
+    `
+      )
+      .join('');
+
+    quickRepliesGrid.querySelectorAll<HTMLElement>('[data-copy-box]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.dataset.copyBox!);
+        if (el) void copyToClipboard(el.textContent || '', '✅ تم نسخ الرد الجاهز');
+      });
+    });
   }
 }
 
@@ -1988,13 +2036,13 @@ function renderLuggageSection(): void {
             return `
             <tr>
               <th scope="row" style="font-family:monospace;">${escapeHtml(bag.tagCode)}</th>
-              <td>${escapeHtml(bag.pilgrimName)}</td>
-              <td>${escapeHtml(bag.roomNumber)}</td>
-              <td><span class="badge ${st.cls}">${st.label}</span></td>
-              <td>
+              <td data-label="${escapeHtml(t('sup.col.pilgrim'))}">${escapeHtml(bag.pilgrimName)}</td>
+              <td data-label="${escapeHtml(t('sup.col.room'))}">${escapeHtml(bag.roomNumber)}</td>
+              <td data-label="${escapeHtml(t('sup.col.status'))}"><span class="badge ${st.cls}">${st.label}</span></td>
+              <td class="table-actions-cell">
                 <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-                  <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.6rem;font-size:0.78rem;" data-cycle-bag="${escapeHtml(bag.id)}">تغيير الحالة 🔁</button>
-                  <button type="button" class="btn btn-secondary" style="min-height:36px;padding:0.25rem 0.55rem;font-size:0.78rem;color:var(--danger);" data-del-bag="${escapeHtml(bag.id)}">🗑️</button>
+                  <button type="button" class="btn btn-secondary btn-compact" data-cycle-bag="${escapeHtml(bag.id)}">تغيير الحالة 🔁</button>
+                  <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-bag="${escapeHtml(bag.id)}">🗑️</button>
                 </div>
               </td>
             </tr>
@@ -2076,7 +2124,7 @@ function renderMedicalSection(): void {
             <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:0.35rem;">${escapeHtml(m.notes)}</p>
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;font-size:0.85rem;">
               <span>مرافق الطوارئ: <strong>${escapeHtml(m.emergencyContactName)}</strong> (<span dir="ltr">${escapeHtml(m.emergencyContactPhone)}</span>)</span>
-              <button type="button" class="btn btn-secondary" style="min-height:34px;padding:0.2rem 0.55rem;font-size:0.78rem;color:var(--danger);" data-del-med="${escapeHtml(m.id)}">حذف</button>
+              <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-del-med="${escapeHtml(m.id)}">حذف</button>
             </div>
           </div>
         `
@@ -2873,9 +2921,10 @@ window.addEventListener('DOMContentLoaded', () => {
     showToast(`✅ تم تسجيل دفعة ${effectiveAmount.toLocaleString('ar-EG')} ج.م (${PAYMENT_METHOD_LABELS[method]})`);
   });
 
-  // Print Center
+  // Print Center & Direct Entity Print Triggers
   document.getElementById('btn-open-wristband')?.addEventListener('click', openWristbandPreview);
   document.getElementById('btn-open-agreement')?.addEventListener('click', openAgreementPreview);
+  document.getElementById('btn-gameya-print-agreement')?.addEventListener('click', openAgreementPreview);
   document.getElementById('btn-open-luggage-print')?.addEventListener('click', openLuggagePrintModal);
   document.querySelectorAll<HTMLElement>('.btn-print-active').forEach((b) => {
     b.addEventListener('click', () => window.print());

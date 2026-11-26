@@ -130,68 +130,6 @@ const HOTEL_PRESETS: Record<
   },
 };
 
-const STAGE_RELEVANCE: Record<
-  TripStatus,
-  { hintAr: string; hintEn: string; targetTab: string; ctaAr: string; ctaEn: string }
-> = {
-  [TripStatus.DRAFT]: {
-    hintAr: 'تحقق من جاهزية جواز السفر (صلاحية > 6 أشهر) وقائمة الحقيبة.',
-    hintEn: 'Verify passport validity (> 6 months) and complete your packing checklist.',
-    targetTab: 'wallet',
-    ctaAr: '🧳 افتح حقيبتي ونُسك',
-    ctaEn: '🧳 Open Trip Wallet',
-  },
-  [TripStatus.REGISTRATION_OPEN]: {
-    hintAr: 'تأكد من تفعيل تطبيق نُسك وحفظ تصاريح العمرة والروضة.',
-    hintEn: 'Ensure your Nusuk account is active and save screenshots of your Umrah & Rawdah permits.',
-    targetTab: 'wallet',
-    ctaAr: '📲 محفظة نُسك والحقيبة',
-    ctaEn: '📲 Nusuk Wallet',
-  },
-  [TripStatus.PRE_DEPARTURE]: {
-    hintAr: 'موعد التجهيز للسفر: راجع الحقيبة وتأكد من ارتداء الإحرام قبل صعود الطائرة.',
-    hintEn: 'Pre-departure checklist: review essentials and wear Ihram garments before boarding if flying via Miqat.',
-    targetTab: 'wallet',
-    ctaAr: '✅ راجع جاهزية الحقيبة',
-    ctaEn: '✅ Review Checklist',
-  },
-  [TripStatus.IN_TRANSIT]: {
-    hintAr: 'أنت في طريقك للميقات: راجع مواضع الإحرام والتلبية ومحظورات الإحرام.',
-    hintEn: 'En route to Miqat: review Ihram prohibitions, route guides, and Talbiyah.',
-    targetTab: 'ziyarat',
-    ctaAr: '🧭 دليل الميقات',
-    ctaEn: '🧭 Miqat Guide',
-  },
-  [TripStatus.IN_MAKKAH]: {
-    hintAr: 'أهلاً بك في مكة: استخدم عداد الطواف والسعي ودليل بوابات الحرم للعودة للفندق.',
-    hintEn: 'Welcome to Makkah: use the Tawaf & Sa’i counters and Haram gate wayfinder to return safely.',
-    targetTab: 'haram-atlas',
-    ctaAr: '⛩️ بوابات الحرم والعودة للفندق',
-    ctaEn: '⛩️ Gates & Wayfinder',
-  },
-  [TripStatus.IN_MADINAH]: {
-    hintAr: 'أهلاً بك في المدينة المنورة: راجع مزارات قباء وأحد وتصاريح الروضة الشريفة.',
-    hintEn: 'Welcome to Madinah: explore Quba & Uhud ziyarat guides and Rawdah Nusuk permit timing.',
-    targetTab: 'ziyarat',
-    ctaAr: '🌴 مزارات المدينة',
-    ctaEn: '🌴 Madinah Ziyarat',
-  },
-  [TripStatus.RETURN_TRANSIT]: {
-    hintAr: 'تذكير المغادرة: طواف الوداع، وضوابط عبوة زمزم (5 لتر) المغلفة بمطار جدة أو المدينة.',
-    hintEn: 'Departure reminder: review airport 5L Zamzam wrapping rules at Jeddah & Madinah terminals.',
-    targetTab: 'services',
-    ctaAr: '🛫 ضوابط زمزم والمطار',
-    ctaEn: '🛫 Zamzam Airport Rules',
-  },
-  [TripStatus.COMPLETED]: {
-    hintAr: 'تقبل الله عمرتكم! يمكنك طباعة شهادة إتمام العمرة التذكارية من بطاقتك.',
-    hintEn: 'May Allah accept your Umrah! View or print your commemorative completion certificate.',
-    targetTab: 'rituals',
-    ctaAr: '📜 عرض الشهادة',
-    ctaEn: '📜 View Certificate',
-  },
-};
-
 const STORAGE_KEYS = {
   PROFILE: 'umrah_pilgrim_profile_v2',
   TAWAF_LAP: 'umrah_tawaf_lap_v2',
@@ -424,18 +362,6 @@ function renderProfileUI(): void {
   setText('badge-sup-phone', profile.supervisorPhone);
   setText('sos-meeting-point', profile.meetingPoint);
   setText('header-trip-subtitle', `${profile.tripTitle} • ${getTripStageLabel(profile.tripStage)}`);
-
-  // Stage relevance strip
-  const rel = STAGE_RELEVANCE[profile.tripStage] || STAGE_RELEVANCE[TripStatus.IN_MAKKAH];
-  const stageBadge = document.getElementById('stage-banner-label');
-  const stageHint = document.getElementById('stage-banner-hint');
-  const stageCta = document.getElementById('stage-banner-cta') as HTMLButtonElement | null;
-  if (stageBadge) stageBadge.textContent = getTripStageLabel(profile.tripStage);
-  if (stageHint) stageHint.textContent = isEn ? rel.hintEn : rel.hintAr;
-  if (stageCta) {
-    stageCta.textContent = isEn ? rel.ctaEn : rel.ctaAr;
-    stageCta.dataset.jumpTab = rel.targetTab;
-  }
 
   const callSupLink = document.getElementById('call-supervisor-link') as HTMLAnchorElement | null;
   if (callSupLink) {
@@ -1950,11 +1876,6 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tabTarget) switchTab(btn.dataset.tabTarget);
     });
-  });
-
-  document.getElementById('stage-banner-cta')?.addEventListener('click', (e) => {
-    const target = (e.currentTarget as HTMLElement).dataset.jumpTab;
-    if (target) switchTab(target);
   });
 
   document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {

@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v15');
+    expect(swText).toContain('umrah-companion-v16');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -209,6 +209,8 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.click('[data-comms-subtab="WOMEN"]');
     await expect(page.locator('#sup-comms-women-panel')).toBeVisible();
     await expect(page.locator('#post-women-rawdah')).toContainText('بوابة 25');
+    await expect(page.locator('#women-quick-replies-grid [data-copy-box]').first()).toBeVisible();
+    await expect(page.locator('#tab-whatsapp a[href="/?tab=women-fiqh"]')).toBeVisible();
 
     // Reset confirmation modal guard from popover (open via evaluate or trigger)
     await page.evaluate(() => {
