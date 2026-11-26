@@ -40,10 +40,6 @@
 
     .header-tools { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
 
-    @media (max-width: 767px) {
-      .prayer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-    }
-
     .stage-relevance-strip {
       display: flex;
       justify-content: space-between;
@@ -58,49 +54,234 @@
       margin-bottom: 1rem;
     }
 
-    .prayer-bar-card {
-      background: linear-gradient(90deg, #022c22 0%, #064e3b 100%);
+    /* ── Prayer Timer Cards (wa-zaker style) ── */
+    .prayer-section-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Hero countdown card */
+    .prayer-hero-card {
+      background: linear-gradient(135deg, #022c22 0%, #064e3b 60%, #065f46 100%);
       color: #ffffff;
       border-radius: var(--radius);
-      padding: 1.1rem 1.2rem;
-      margin-bottom: 1.25rem;
+      padding: 1.2rem 1.4rem 1rem;
       box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
     }
-
-    .prayer-bar-top {
+    .prayer-hero-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top right, rgba(253,230,138,0.08) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .prayer-hero-top-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-bottom: 0.85rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-      padding-bottom: 0.7rem;
+      gap: 0.6rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+    }
+    .prayer-hero-date-block { display: flex; flex-direction: column; gap: 0.15rem; }
+    .prayer-hero-hijri { font-size: 0.8rem; color: #fde68a; font-weight: 700; }
+    .prayer-hero-city-row { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+    .prayer-city-btn {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 0.38rem 0.85rem;
+      font-size: 0.82rem;
+    }
+    .prayer-city-btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+    .prayer-city-btn[aria-pressed="true"],
+    .prayer-city-btn[aria-pressed="true"]:hover {
+      background: #fef3c7;
+      color: #78350f;
+      border: 2px solid #fde68a;
+      font-weight: 800;
     }
 
-    .prayer-grid {
+    .prayer-hero-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0.4rem 0 0.6rem;
+    }
+    .prayer-hero-next-label {
+      font-size: 0.78rem;
+      color: #a7f3d0;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.25rem;
+    }
+    .prayer-hero-next-name {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
+    }
+    .prayer-hero-countdown {
+      font-size: clamp(2.1rem, 7vw, 2.9rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: #fde68a;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 0.65rem;
+      font-family: ui-monospace, 'Courier New', monospace;
+    }
+    progress.prayer-hero-progress {
+      appearance: none;
+      border: 0 solid;
+      overflow: clip;
+      display: block;
+      width: 100%;
+      max-width: 340px;
+      height: 8px;
+      border-radius: 1e5px;
+      background: rgba(255, 255, 255, 0.22);
+      margin: 0 auto 0.55rem;
+    }
+    progress.prayer-hero-progress::-webkit-progress-bar {
+      background: transparent;
+    }
+    progress.prayer-hero-progress::-webkit-progress-value {
+      background: linear-gradient(90deg, #fde68a 0%, #f59e0b 100%);
+      border-radius: 1e5px;
+      transition: inline-size 0.3s ease;
+    }
+    progress.prayer-hero-progress::-moz-progress-bar {
+      background: linear-gradient(90deg, #fde68a 0%, #f59e0b 100%);
+      border-radius: 1e5px;
+      transition: inline-size 0.3s ease;
+    }
+    .prayer-hero-sub {
+      font-size: 0.8rem;
+      color: #d1fae5;
+      font-weight: 600;
+    }
+
+    /* 6-card prayer grid */
+    .prayer-cards-grid {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 0.55rem;
+      gap: 0.5rem;
+    }
+    @media (max-width: 600px) {
+      .prayer-cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .prayer-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem 0.4rem 0.55rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
     }
-
-    .prayer-pill {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 0.55rem 0.35rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
+    .prayer-card.active {
+      border-color: light-dark(#b45309, #f59e0b);
+      background: light-dark(#fffbeb, #1c1407);
+      box-shadow: 0 0 0 3px light-dark(rgba(180, 83, 9, 0.16), rgba(245, 158, 11, 0.24)), var(--shadow);
     }
-
-    .prayer-pill.active {
-      background: #92400e;
-      border-color: #fde68a;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    .prayer-card.passed {
+      background: var(--surface-muted);
+      border-color: var(--border);
     }
-
-    .prayer-pill-name { font-size: 0.78rem; color: #d1fae5; margin-bottom: 0.15rem; }
-    .prayer-pill.active .prayer-pill-name { color: #ffffff; font-weight: 800; }
-    .prayer-pill-time { font-size: 0.98rem; font-weight: 800; }
+    .prayer-card.passed .prayer-card-name,
+    .prayer-card.passed .prayer-card-time {
+      color: var(--text-muted);
+    }
+    .prayer-card-icon { font-size: 1.3rem; line-height: 1; }
+    .prayer-card-name {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--primary-ink);
+      white-space: nowrap;
+    }
+    .prayer-card-time {
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .prayer-card.active .prayer-card-time { color: var(--gold-dark); }
+    .prayer-card-badge {
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 0.14rem 0.45rem;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prayer-card.active .prayer-card-badge {
+      background: #fef3c7;
+      color: #78350f;
+    }
+    .prayer-card.passed .prayer-card-badge {
+      background: light-dark(#e2e8f0, #0f172a);
+      color: var(--text-muted);
+    }
+    .prayer-card-progress-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--border);
+    }
+    .prayer-card-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #b45309, #f59e0b);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .prayer-card.passed .prayer-card-progress-bar { background: #64748b; width: 100% !important; }
+    @media (prefers-reduced-motion: reduce) {
+      progress.prayer-hero-progress::-webkit-progress-value { transition: none; }
+      progress.prayer-hero-progress::-moz-progress-bar { transition: none; }
+      .prayer-card-progress-bar { transition: none; }
+    }
+    @media (forced-colors: active) {
+      .prayer-hero-card,
+      .prayer-card {
+        border: 1px solid CanvasText;
+      }
+      .prayer-card.active,
+      .prayer-city-btn[aria-pressed="true"] {
+        outline: 2px solid Highlight;
+      }
+      progress.prayer-hero-progress {
+        border: 1px solid CanvasText;
+      }
+      progress.prayer-hero-progress::-webkit-progress-value {
+        background: Highlight;
+      }
+      progress.prayer-hero-progress::-moz-progress-bar {
+        background: Highlight;
+      }
+    }
 
     .audio-btn {
       background: light-dark(#ecfdf5, #052e16);
@@ -244,33 +425,43 @@
       <button type="button" id="stage-banner-cta" class="btn btn-secondary" style="min-height:38px;font-size:0.82rem;"></button>
     </div>
 
-    <!-- Live Seasonal Prayer Bar -->
-    <section class="prayer-bar-card" aria-label="مواقيت الصلاة">
-      <div class="prayer-bar-top">
-        <div style="display:flex;align-items:center;gap:0.6rem;">
-          <span style="font-size:1.5rem;" aria-hidden="true">🕌</span>
-          <div>
-            <div style="font-size:1rem;font-weight:800;" id="prayer-city-title">مواقيت الصلاة في المسجد الحرام</div>
-            <div style="font-size:0.78rem;color:#fde68a;" id="prayer-hijri-date">جاري تحميل التاريخ الهجري...</div>
-            <div style="font-size:0.82rem;color:#a7f3d0;font-weight:700;" id="prayer-countdown-text">جاري الحساب بتوقيت مكة...</div>
+    <!-- Prayer Timer Cards (wa-zaker style) -->
+    <section class="prayer-section-wrap" aria-label="مواقيت الصلاة">
+
+      <!-- Hero countdown card -->
+      <div class="prayer-hero-card" id="prayer-hero">
+        <div class="prayer-hero-top-row">
+          <div class="prayer-hero-date-block">
+            <div class="prayer-hero-hijri" id="prayer-hijri-date">جاري تحميل التاريخ الهجري...</div>
+            <div id="prayer-city-title" style="font-size:0.78rem;color:#a7f3d0;font-weight:700;">مواقيت الصلاة في المسجد الحرام</div>
+          </div>
+          <div class="prayer-hero-city-row">
+            <button type="button" id="btn-city-makkah" class="btn prayer-city-btn" aria-pressed="true" data-i18n="prayer.makkahBtn">🕋 مكة</button>
+            <button type="button" id="btn-city-madinah" class="btn prayer-city-btn" aria-pressed="false" data-i18n="prayer.madinahBtn">🕌 المدينة</button>
           </div>
         </div>
-        <div style="display:flex;gap:0.45rem;">
-          <button type="button" id="btn-city-makkah" class="btn btn-secondary" aria-pressed="true" style="min-height:38px;padding:0.35rem 0.75rem;font-size:0.82rem;" data-i18n="prayer.makkahBtn">🕋 مكة</button>
-          <button type="button" id="btn-city-madinah" class="btn btn-secondary" aria-pressed="false" style="min-height:38px;padding:0.35rem 0.75rem;font-size:0.82rem;" data-i18n="prayer.madinahBtn">🕌 المدينة</button>
+
+        <div class="prayer-hero-body">
+          <div class="prayer-hero-next-label" id="prayer-hero-label">الصلاة القادمة</div>
+          <div class="prayer-hero-next-name" id="prayer-hero-name">...</div>
+          <div class="prayer-hero-countdown" id="prayer-hero-countdown" role="timer" dir="ltr">00:00:00</div>
+          <progress class="prayer-hero-progress" id="prayer-hero-progress" max="100" value="0" aria-labelledby="prayer-hero-label"></progress>
+          <div class="prayer-hero-sub" id="prayer-hero-sub"></div>
         </div>
       </div>
 
-      <div class="prayer-grid">
-        <div class="prayer-pill" data-prayer="fajr" data-name-ar="الفجر"><div class="prayer-pill-name">الفجر</div><div class="prayer-pill-time">--:--</div></div>
-        <div class="prayer-pill" data-prayer="sunrise" data-name-ar="الشروق"><div class="prayer-pill-name">الشروق</div><div class="prayer-pill-time">--:--</div></div>
-        <div class="prayer-pill" data-prayer="dhuhr" data-name-ar="الظهر"><div class="prayer-pill-name">الظهر</div><div class="prayer-pill-time">--:--</div></div>
-        <div class="prayer-pill" data-prayer="asr" data-name-ar="العصر"><div class="prayer-pill-name">العصر</div><div class="prayer-pill-time">--:--</div></div>
-        <div class="prayer-pill" data-prayer="maghrib" data-name-ar="المغرب"><div class="prayer-pill-name">المغرب</div><div class="prayer-pill-time">--:--</div></div>
-        <div class="prayer-pill" data-prayer="isha" data-name-ar="العشاء"><div class="prayer-pill-name">العشاء</div><div class="prayer-pill-time">--:--</div></div>
+      <!-- 6 individual prayer cards -->
+      <div class="prayer-cards-grid" id="prayer-cards-grid" role="list" aria-label="مواقيت الصلوات والشروق">
+        <div class="prayer-card" role="listitem" data-prayer="fajr"   data-name-ar="الفجر"   data-icon="🌅"><div class="prayer-card-icon" aria-hidden="true">🌅</div><div class="prayer-card-name">الفجر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        <div class="prayer-card" role="listitem" data-prayer="sunrise" data-name-ar="الشروق" data-icon="🌄"><div class="prayer-card-icon" aria-hidden="true">🌄</div><div class="prayer-card-name">الشروق</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        <div class="prayer-card" role="listitem" data-prayer="dhuhr"  data-name-ar="الظهر"   data-icon="☀️"><div class="prayer-card-icon" aria-hidden="true">☀️</div><div class="prayer-card-name">الظهر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        <div class="prayer-card" role="listitem" data-prayer="asr"    data-name-ar="العصر"   data-icon="🌤️"><div class="prayer-card-icon" aria-hidden="true">🌤️</div><div class="prayer-card-name">العصر</div>  <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        <div class="prayer-card" role="listitem" data-prayer="maghrib" data-name-ar="المغرب" data-icon="🌇"><div class="prayer-card-icon" aria-hidden="true">🌇</div><div class="prayer-card-name">المغرب</div><div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
+        <div class="prayer-card" role="listitem" data-prayer="isha"   data-name-ar="العشاء"  data-icon="🌙"><div class="prayer-card-icon" aria-hidden="true">🌙</div><div class="prayer-card-name">العشاء</div> <div class="prayer-card-time" dir="ltr">--:--</div><div class="prayer-card-badge">--</div><div class="prayer-card-progress-wrap" aria-hidden="true"><div class="prayer-card-progress-bar"></div></div></div>
       </div>
 
-      <div id="mataf-warning-banner" role="alert" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:0.7rem 1rem;border-radius:10px;margin-top:0.85rem;font-size:0.86rem;font-weight:700;"></div>
+      <!-- Mataf crowd warning (kept) -->
+      <div id="mataf-warning-banner" role="alert" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:0.7rem 1rem;border-radius:10px;font-size:0.86rem;font-weight:700;"></div>
     </section>
 
     <!-- TAB 1: RITUALS & BADGE -->

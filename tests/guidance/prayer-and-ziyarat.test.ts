@@ -37,6 +37,29 @@ describe('Prayer Times & Haramain Countdown Engine', () => {
     expect(nextPrayer.minutesRemaining).toBe(10);
     expect(nextPrayer.matafWarning).toContain('إخلاء صحن المطاف');
   });
+
+  it('provides full 6-card schedule state with seconds countdown and post-Isha wrap to tomorrow Fajr', () => {
+    const engine = new PrayerTimesEngine();
+    const afternoon = new Date('2026-02-24T14:00:30+03:00');
+    const midDayState = engine.getPrayerScheduleState(CityLocation.MAKKAH, afternoon);
+
+    expect(midDayState.cards).toHaveLength(6);
+    expect(midDayState.next.key).toBe('asr');
+    expect(midDayState.next.isTomorrow).toBe(false);
+    expect(midDayState.next.secondsRemaining).toBeGreaterThan(60);
+    expect(midDayState.next.progressPercent).toBeGreaterThanOrEqual(0);
+    expect(midDayState.next.progressPercent).toBeLessThanOrEqual(100);
+    expect(midDayState.cards.find((c) => c.key === 'dhuhr')?.status).toBe('passed');
+    expect(midDayState.cards.find((c) => c.key === 'asr')?.status).toBe('active');
+    expect(midDayState.cards.find((c) => c.key === 'isha')?.status).toBe('upcoming');
+
+    const lateNight = new Date('2026-02-24T23:30:00+03:00');
+    const nightState = engine.getPrayerScheduleState(CityLocation.MADINAH, lateNight);
+    expect(nightState.next.key).toBe('fajr');
+    expect(nightState.next.isTomorrow).toBe(true);
+    expect(nightState.cards.find((c) => c.key === 'fajr')?.status).toBe('active');
+    expect(nightState.cards.find((c) => c.key === 'isha')?.status).toBe('passed');
+  });
 });
 
 describe('Ziyarat & Holy Historical Sites Catalog', () => {

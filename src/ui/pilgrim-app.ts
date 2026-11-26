@@ -529,15 +529,48 @@ function setPrayerCity(city: CityLocation, notify: boolean = true): void {
   document.getElementById('btn-city-madinah')?.setAttribute('aria-pressed', String(city === CityLocation.MADINAH));
   updatePrayerUI();
   if (notify) {
-    showToast(`تم التبديل لمواقيت ${city === CityLocation.MAKKAH ? 'مكة المكرمة' : 'المدينة المنورة'}`);
+    const isEn = getCurrentLanguage() === 'en';
+    showToast(
+      isEn
+        ? `Switched prayer times to ${city === CityLocation.MAKKAH ? 'Makkah' : 'Madinah'}`
+        : `تم التبديل لمواقيت ${city === CityLocation.MAKKAH ? 'مكة المكرمة' : 'المدينة المنورة'}`
+    );
   }
+}
+
+function formatCompactRemaining(totalMinutes: number, isEn: boolean): string {
+  const hrs = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  const DurationFormatCtor = (
+    Intl as {
+      DurationFormat?: new (
+        locale: string,
+        opts: { style: 'long' | 'short' | 'narrow' | 'digital' }
+      ) => { format(d: { hours?: number; minutes?: number }): string };
+    }
+  ).DurationFormat;
+
+  if (DurationFormatCtor) {
+    try {
+      const df = new DurationFormatCtor(isEn ? 'en' : 'ar-SA', { style: 'narrow' });
+      const formatted = df.format({
+        ...(hrs > 0 ? { hours: hrs } : {}),
+        minutes: mins,
+      });
+      if (formatted) return formatted;
+    } catch {
+      // fall through
+    }
+  }
+  if (isEn) return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  return hrs > 0 ? `${hrs}س ${mins}د` : `${mins}د`;
 }
 
 function updatePrayerUI(): void {
   const isEn = getCurrentLanguage() === 'en';
   const now = new Date();
-  const times = prayerEngine.getPrayerTimes(activePrayerCity, now);
-  const next = prayerEngine.getNextPrayer(activePrayerCity, now);
+  const schedule = prayerEngine.getPrayerScheduleState(activePrayerCity, now);
+  const { times, next, cards } = schedule;
 
   const cityTitle = document.getElementById('prayer-city-title');
   if (cityTitle) {
@@ -575,55 +608,103 @@ function updatePrayerUI(): void {
     }
   }
 
-  const map: Record<string, string> = {
-    fajr: times.fajr,
-    sunrise: times.sunrise,
-    dhuhr: times.dhuhr,
-    asr: times.asr,
-    maghrib: times.maghrib,
-    isha: times.isha,
-  };
-  const namesEn: Record<string, string> = {
-    fajr: 'Fajr',
-    sunrise: 'Sunrise',
-    dhuhr: 'Dhuhr',
-    asr: 'Asr',
-    maghrib: 'Maghrib',
-    isha: 'Isha',
-  };
+  const heroLabel = document.getElementById('prayer-hero-label');
+  if (heroLabel) {
+    const baseLabel = next.key === 'sunrise' ? t('prayer.nextSunrise') : t('prayer.nextLabel');
+    heroLabel.textContent = next.isTomorrow
+      ? isEn
+        ? `${baseLabel} (Tomorrow)`
+        : `${baseLabel} (غداً)`
+      : baseLabel;
+  }
 
-  document.querySelectorAll<HTMLElement>('.prayer-pill').forEach((pill) => {
-    pill.classList.remove('active');
-    const key = pill.dataset.prayer;
-    if (key && map[key]) {
-      const timeNode = pill.querySelector('.prayer-pill-time');
-      if (timeNode) timeNode.textContent = map[key];
-      const nameNode = pill.querySelector('.prayer-pill-name');
-      const baseNameAr = pill.dataset.nameAr || '';
-      const displayBase = isEn ? namesEn[key] || baseNameAr : baseNameAr;
-      if (nameNode) {
-        if (baseNameAr === next.nameAr) {
-          pill.classList.add('active');
-          nameNode.textContent = `${displayBase} ⏳`;
-        } else {
-          nameNode.textContent = displayBase;
-        }
+  const heroName = document.getElementById('prayer-hero-name');
+  if (heroName) {
+    const iconMap: Record<string, string> = {
+      fajr: '🌅',
+      sunrise: '🌄',
+      dhuhr: '☀️',
+      asr: '🌤️',
+      maghrib: '🌇',
+      isha: '🌙',
+    };
+    const nextTitle = isEn ? next.nameEn : next.nameAr;
+    heroName.textContent = `${iconMap[next.key] || '🕌'} ${nextTitle} — ${next.prayerTime}`;
+  }
+
+  const heroCountdown = document.getElementById('prayer-hero-countdown');
+  if (heroCountdown) {
+    const hrs = Math.floor(next.secondsRemaining / 3600);
+    const mins = Math.floor((next.secondsRemaining % 3600) / 60);
+    const secs = next.secondsRemaining % 60;
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+    heroCountdown.textContent = `${pad2(hrs)}:${pad2(mins)}:${pad2(secs)}`;
+  }
+
+  const heroProgress = document.getElementById('prayer-hero-progress') as HTMLProgressElement | null;
+  if (heroProgress) {
+    heroProgress.value = next.progressPercent;
+  }
+
+  const heroSub = document.getElementById('prayer-hero-sub');
+  if (heroSub) {
+    const cityLabel =
+      activePrayerCity === CityLocation.MAKKAH
+        ? isEn
+          ? 'Makkah time'
+          : 'بتوقيت مكة'
+        : isEn
+          ? 'Madinah time'
+          : 'بتوقيت المدينة';
+    const nextLabel = isEn ? next.nameEn : next.nameAr;
+    heroSub.textContent = isEn
+      ? `${nextLabel} at ${next.prayerTime} (${cityLabel}) • ${next.progressPercent}% of interval elapsed`
+      : `أذان ${nextLabel} الساعة ${next.prayerTime} (${cityLabel}) • انقضى ${next.progressPercent}% من الفترة`;
+  }
+
+  const cardsGrid = document.getElementById('prayer-cards-grid');
+  if (cardsGrid) {
+    cardsGrid.setAttribute('aria-label', t('prayer.gridLabel'));
+  }
+
+  const cardByKey = new Map(cards.map((c) => [c.key, c]));
+  document.querySelectorAll<HTMLElement>('.prayer-card').forEach((cardEl) => {
+    const key = cardEl.dataset.prayer as (typeof cards)[number]['key'] | undefined;
+    const state = key ? cardByKey.get(key) : undefined;
+    if (!state) return;
+
+    cardEl.classList.toggle('active', state.status === 'active');
+    cardEl.classList.toggle('passed', state.status === 'passed');
+
+    const nameNode = cardEl.querySelector('.prayer-card-name');
+    if (nameNode) {
+      nameNode.textContent = isEn ? state.nameEn : state.nameAr;
+    }
+
+    const timeNode = cardEl.querySelector('.prayer-card-time');
+    if (timeNode) {
+      timeNode.textContent = state.timeStr;
+    }
+
+    const badgeNode = cardEl.querySelector('.prayer-card-badge');
+    if (badgeNode) {
+      if (state.status === 'passed') {
+        badgeNode.textContent = t('prayer.passed');
+      } else if (state.status === 'active') {
+        const remShort = formatCompactRemaining(state.minutesUntil, isEn);
+        badgeNode.textContent = state.isTomorrow
+          ? `${t('prayer.tomorrow')} • ${remShort}`
+          : `${t('prayer.nextBadge')} • ${remShort}`;
+      } else {
+        badgeNode.textContent = t('prayer.upcoming');
       }
     }
+
+    const barNode = cardEl.querySelector<HTMLElement>('.prayer-card-progress-bar');
+    if (barNode) {
+      barNode.style.width = `${state.progressPercent}%`;
+    }
   });
-
-  const hrs = Math.floor(next.minutesRemaining / 60);
-  const mins = next.minutesRemaining % 60;
-  const countdownText = isEn
-    ? hrs > 0
-      ? `Next: ${next.nameEn} Adhan (${next.prayerTime} Makkah time) in ${hrs}h ${mins}m`
-      : `Next: ${next.nameEn} Adhan (${next.prayerTime} Makkah time) in ${mins}m`
-    : hrs > 0
-      ? `متبقي على أذان ${next.nameAr} (${next.prayerTime} بتوقيت مكة): ${hrs} ساعة و ${mins} دقيقة`
-      : `متبقي على أذان ${next.nameAr} (${next.prayerTime} بتوقيت مكة): ${mins} دقيقة`;
-
-  const cdEl = document.getElementById('prayer-countdown-text');
-  if (cdEl) cdEl.textContent = countdownText;
 
   const warningBanner = document.getElementById('mataf-warning-banner');
   if (warningBanner) {
@@ -1598,7 +1679,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateSeniorButtonLabel();
   updateWakeButtonLabel();
   updateTalbiyahButtonUi();
-  window.setInterval(updatePrayerUI, 60000);
+  window.setInterval(updatePrayerUI, 1000);
   if (initialTab) switchTab(initialTab);
 
   try {

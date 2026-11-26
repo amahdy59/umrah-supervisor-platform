@@ -69,6 +69,13 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   // Prayer Bar & Badge
   'prayer.makkahBtn': { ar: '🕋 مكة', en: '🕋 Makkah' },
   'prayer.madinahBtn': { ar: '🕌 المدينة', en: '🕌 Madinah' },
+  'prayer.nextLabel': { ar: 'الصلاة القادمة', en: 'Next Prayer' },
+  'prayer.nextSunrise': { ar: 'موعد الشروق القادم', en: 'Upcoming Sunrise' },
+  'prayer.passed': { ar: '✓ انتهى', en: '✓ Passed' },
+  'prayer.upcoming': { ar: 'قادم', en: 'Upcoming' },
+  'prayer.tomorrow': { ar: '⏳ غداً', en: '⏳ Tomorrow' },
+  'prayer.nextBadge': { ar: '⏳ القادم', en: '⏳ Next' },
+  'prayer.gridLabel': { ar: 'مواقيت الصلوات والشروق', en: 'Daily Prayer & Sunrise Times' },
   'badge.cardTitle': { ar: 'بطاقة معتمر رقمية', en: 'Digital Pilgrim Badge' },
   'badge.editBtn': { ar: '✏️ تعديل بياناتي', en: '✏️ Edit Profile' },
   'badge.hotelLabel': { ar: 'الفندق بمكة:', en: 'Makkah Hotel:' },

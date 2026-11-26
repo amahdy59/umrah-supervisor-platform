@@ -32,7 +32,20 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v10');
+    expect(swText).toContain('umrah-companion-v11');
+
+    // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
+    await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
+    const prayerProgressVal = await page.locator('#prayer-hero-progress').evaluate((el) => (el as HTMLProgressElement).value);
+    expect(prayerProgressVal).toBeGreaterThanOrEqual(0);
+    expect(prayerProgressVal).toBeLessThanOrEqual(100);
+    await expect(page.locator('.prayer-card')).toHaveCount(6);
+    await expect(page.locator('.prayer-card.active')).toHaveCount(1);
+    const firstCardTime = await page.locator('.prayer-card-time').first().textContent();
+    expect(firstCardTime).toMatch(/^\d{2}:\d{2}$/);
+    await page.click('#btn-city-madinah');
+    await expect(page.locator('#prayer-city-title')).toContainText('المدينة');
+    await page.click('#btn-city-makkah');
 
     // Tawaf Focus Ritual mode opens, advances lap, and syncs counter
     await page.click('#btn-focus-tawaf');
