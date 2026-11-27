@@ -286,6 +286,30 @@ body {
   }
 }
 
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+body.senior-mode {
+  font-size: 1.2rem !important;
+  line-height: 1.85;
+}
+body.senior-mode .btn {
+  padding: 0.95rem 1.3rem !important;
+  font-size: 1.12rem !important;
+}
+body.senior-mode .lap-display {
+  font-size: 4.8rem !important;
+}
+body.senior-mode .dua-arabic {
+  font-size: 1.48rem !important;
+  line-height: 2.2 !important;
+}
+
 :where(a:any-link, button, input, select, textarea, summary):focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
@@ -424,6 +448,23 @@ body {
 .header-chip-btn.header-chip-danger:hover {
   background: #b91c1c;
 }
+.header-chip-btn.header-chip-utility {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(253, 230, 138, 0.45);
+  color: #ffffff;
+}
+.header-chip-btn.header-chip-utility:hover {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(253, 230, 138, 0.8);
+}
+.header-utility-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-inline-start: 0.45rem;
+  margin-inline-start: 0.1rem;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.24);
+}
 
 /* Adaptive Navigation */
 .top-primary-nav {
@@ -478,6 +519,19 @@ body {
   .desktop-only-tools { display: none; }
   .tablet-secondary-tab { display: none; }
   .tablet-only-more { display: inline-flex; }
+  .top-primary-nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .top-primary-nav::-webkit-scrollbar { display: none; }
+  .nav-list-inline {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+  .mode-btn {
+    padding: 0.38rem 0.68rem;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 767px) {
@@ -487,6 +541,19 @@ body {
   footer { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px)); }
   .grid-2 { grid-template-columns: 1fr !important; }
   .toast { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important; }
+  .header-tools,
+  .group-switcher-bar {
+    gap: 0.32rem;
+  }
+  .header-chip-btn {
+    padding: 0.34rem 0.56rem;
+    font-size: 0.76rem;
+  }
+  .header-utility-group {
+    gap: 0.28rem;
+    padding-inline-start: 0.32rem;
+    margin-inline-start: 0;
+  }
 
   .mobile-bottom-nav {
     position: fixed;
@@ -1784,6 +1851,88 @@ footer {
   font-weight: 700;
   text-decoration: underline;
   padding: 0.2rem 0.3rem;
+}
+
+/* Dedicated Accessibility & Settings Dialogs (separated from toolbars and <nav>) */
+.prefs-intro {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin-block-end: 0.9rem;
+}
+
+.prefs-section {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  border-radius: 14px;
+  padding: 0.85rem;
+  margin-block-end: 0.85rem;
+}
+
+.prefs-section-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--primary-ink);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.prefs-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.prefs-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.prefs-option-copy {
+  flex: 1 1 200px;
+  min-inline-size: 0;
+}
+
+.prefs-option-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.prefs-option-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-block-start: 0.12rem;
+}
+
+.prefs-action-btn {
+  min-inline-size: 132px;
+  justify-content: center;
+}
+
+.prefs-action-btn[aria-pressed="true"],
+.prefs-action-btn.active {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+}
+
+.prefs-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

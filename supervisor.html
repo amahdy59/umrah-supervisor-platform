@@ -120,12 +120,13 @@
         <label for="active-group-switcher" class="sr-only">اختر الفوج النشط</label>
         <select id="active-group-switcher" class="group-select"></select>
         <button type="button" id="btn-new-group" class="header-chip-btn header-chip-accent" data-i18n="tools.newGroup">➕ فوج جديد</button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج</button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">🌙 <span>الوضع الليلي</span></button>
         <button type="button" id="btn-cloud-sync-now" class="header-chip-btn desktop-only-tools" data-i18n="tools.sync">☁️ مزامنة</button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-lang-toggle>🌐 English</button>
         <button type="button" class="header-chip-btn desktop-only-tools" data-pin-lock-now data-i18n="tools.pinLock" hidden>🔒 قفل</button>
         <a href="/" class="header-chip-btn desktop-only-tools" data-i18n="tools.pilgrimApp">🤲 تطبيق المعتمر</a>
+        <div class="header-utility-group" role="group" aria-label="الإعدادات وسهولة الوصول">
+          <button type="button" id="btn-open-accessibility" class="header-chip-btn header-chip-utility" aria-haspopup="dialog" aria-controls="accessibility-modal" data-i18n="tools.a11yBtn">♿ الوصول</button>
+          <button type="button" id="btn-open-settings" class="header-chip-btn header-chip-utility" data-open-settings aria-haspopup="dialog" aria-controls="settings-modal" data-i18n="tools.settingsBtn">⚙️ الإعدادات</button>
+        </div>
       </div>
     </div>
 
@@ -135,12 +136,9 @@
         <button type="button" class="mode-btn" data-tab-target="people" data-i18n="sup.nav.people">👥 سجل الأشخاص</button>
         <button type="button" class="mode-btn" data-tab-target="gameya" data-i18n="sup.nav.gameya">💰 الأقساط والجمعية</button>
         <button type="button" class="mode-btn" data-tab-target="whatsapp" data-i18n="sup.nav.whatsapp">💬 رسائل الواتساب</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
-        <button type="button" class="mode-btn tablet-secondary-tab" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ</button>
+        <button type="button" class="mode-btn" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
+        <button type="button" class="mode-btn" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ</button>
       </div>
-      <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="sup-more-popover" data-i18n="nav.more">
-        ⚙️ الأدوات
-      </button>
     </nav>
   </header>
 
@@ -478,48 +476,53 @@
 
   </main>
 
-  <!-- Mobile Bottom Bar (5 spacious slots) -->
+  <!-- Mobile Bottom Bar (Strictly pure navigation — Settings & Accessibility live in dedicated modals) -->
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع للمشرف">
     <button type="button" class="mobile-nav-btn active" data-tab-target="manifest" aria-current="page"><span aria-hidden="true">🚌</span><span data-i18n="sup.nav.mobile.manifest">الأفواج</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="people"><span aria-hidden="true">👥</span><span data-i18n="sup.nav.mobile.people">الأشخاص</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="gameya"><span aria-hidden="true">💰</span><span data-i18n="sup.nav.mobile.gameya">الأقساط</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="whatsapp"><span aria-hidden="true">💬</span><span data-i18n="sup.nav.mobile.whatsapp">الواتساب</span></button>
-    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">⚙️</span><span data-i18n="nav.mobile.more">الأدوات</span></button>
+    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="sup-more-popover"><span aria-hidden="true">🧭</span><span data-i18n="sup.nav.moreMobile">المزيد</span></button>
   </nav>
 
-  <!-- Shared Mobile & Tablet Operations & Tools Popover -->
+  <!-- Secondary Navigation Popover for Mobile Only (Pure Navigation Destinations) -->
   <div id="sup-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.55rem;color:var(--primary-ink);" data-i18n="sup.popoverTitle">عمليات وإعدادات المشرف</div>
-    <nav class="more-popover-grid" aria-label="أقسام وأدوات إضافية للمشرف">
+    <div style="font-weight:800;margin-bottom:0.55rem;color:var(--primary-ink);" data-i18n="sup.popoverNavTitle">أقسام لوحة المشرف الإضافية</div>
+    <nav class="more-popover-grid" aria-label="أقسام إضافية للمشرف">
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="logistics-health" data-i18n="sup.nav.logistics">🧳 الأمتعة والطب والطباعة</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="sos" data-i18n="sup.nav.sos">🚨 الطوارئ والموارد الرسمية</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-open-settings data-i18n="tools.settings">⚙️ إعدادات الفوج النشط</button>
-      <div class="popover-section-label" data-i18n="sup.popover.displaySec">العرض والأمان</div>
-      <div class="popover-quick-grid">
-        <button type="button" class="btn btn-secondary" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
-        <button type="button" class="btn btn-secondary" data-lang-toggle>🌐 English</button>
-      </div>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-setup-btn data-i18n="sup.popover.pinSetup">🔒 تفعيل قفل الخصوصية (PIN)</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-pin-lock-now data-i18n="sup.popover.pinLockNow" hidden>🔐 قفل الشاشة الآن</button>
-      <div class="popover-section-label" data-i18n="sup.popover.syncSec">المزامنة والنسخ الاحتياطي</div>
-      <div class="popover-quick-grid">
-        <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" data-i18n="tools.sync">☁️ رفع للسحابة</button>
-        <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" data-i18n="sup.board.pullBtn">☁️ سحب من D1</button>
-        <button type="button" id="btn-export-backup-json" class="btn btn-secondary" data-i18n="sup.popover.exportJson">💾 تصدير JSON</button>
-        <label for="input-restore-backup-json" class="btn btn-secondary" style="cursor:pointer;">
-          <span data-i18n="sup.popover.restoreJson">📤 استعادة JSON</span>
-          <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
-        </label>
-      </div>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-reset-demo data-i18n="sup.popover.resetDemo">🔄 استعادة البيانات الافتراضية</button>
-      <a href="https://wa.me/201040414659" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="justify-content:flex-start;text-decoration:none;" data-i18n="tools.whatsappSheikh">💬 واتساب الشيخ</a>
-      <a href="/" class="btn btn-gold" style="text-decoration:none;" data-i18n="tools.pilgrimApp">🤲 معاينة تطبيق المعتمر</a>
+      <a href="/" class="btn btn-gold" style="justify-content:flex-start;text-decoration:none;" data-i18n="tools.pilgrimApp">🤲 معاينة تطبيق المعتمر</a>
     </nav>
   </div>
 
   <footer id="app-brand-footer"></footer>
 
   <!-- NATIVE DIALOGS -->
+  <dialog id="accessibility-modal" closedby="any" aria-labelledby="a11y-modal-title">
+    <div class="dialog-header">
+      <h2 id="a11y-modal-title" style="font-size:1.15rem;" data-i18n="prefs.a11yTitle">♿ خيارات سهولة الوصول والقراءة</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="accessibility-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <p class="prefs-intro" data-i18n="prefs.a11yIntro">خيارات مخصصة لتكبير الخط وثبات الشاشة وتقليل الحركة، مفصولة بالكامل عن شريط الأدوات والتنقل.</p>
+    <section class="prefs-section" aria-labelledby="a11y-modal-title">
+      <div class="prefs-option-list">
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="tools.senior">وضع كبار السن</span>
+            <span class="prefs-option-desc" data-i18n="prefs.seniorDesc">تكبير حجم النصوص والأزرار وأدعية الطواف لتسهيل القراءة داخل الحرم.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn senior-toggle-btn" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
+        </div>
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.motionLabel">تقليل الحركة والتأثيرات</span>
+            <span class="prefs-option-desc" data-i18n="prefs.motionDesc">تعطيل الانزلاق والحركات البصرية لراحة العين والحساسية البصرية.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-motion-toggle aria-pressed="false">🕊️ تقليل الحركة والتأثيرات</button>
+        </div>
+      </div>
+    </section>
+  </dialog>
   <dialog id="new-group-modal" closedby="any" aria-labelledby="ng-modal-title">
     <div class="dialog-header">
       <h2 id="ng-modal-title" style="font-size:1.15rem;">➕ إنشاء فوج جديد (متزامن أو تالي)</h2>
@@ -549,49 +552,89 @@
 
   <dialog id="settings-modal" closedby="any" aria-labelledby="settings-title">
     <div class="dialog-header">
-      <h2 id="settings-title" style="font-size:1.15rem;">⚙️ إعدادات الفوج النشط</h2>
+      <h2 id="settings-title" style="font-size:1.15rem;" data-i18n="prefs.supSettingsTitle">⚙️ إعدادات المشرف والعرض والأمان</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="settings-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="settings-form">
-      <div class="form-inline-grid">
-        <div><label for="set-trip-title" class="field-label">اسم الرحلة:</label><input id="set-trip-title" class="field-input" required></div>
-        <div><label for="set-trip-code" class="field-label">كود الفوج:</label><input id="set-trip-code" class="field-input" required></div>
-        <div>
-          <label for="set-trip-stage" class="field-label">مرحلة الفوج الحالية:</label>
-          <select id="set-trip-stage" class="field-input">
-            <option value="DRAFT">مسودة الإعداد</option>
-            <option value="REGISTRATION_OPEN">باب التسجيل مفتوح</option>
-            <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
-            <option value="IN_TRANSIT">في الطريق / الميقات</option>
-            <option value="IN_MAKKAH">في مكة المكرمة</option>
-            <option value="IN_MADINAH">في المدينة المنورة</option>
-            <option value="RETURN_TRANSIT">الاستعداد للعودة</option>
-            <option value="COMPLETED">رحلة مكتملة (أرشيف)</option>
-          </select>
+
+    <section class="prefs-section" aria-labelledby="sup-display-sec-title">
+      <h3 id="sup-display-sec-title" class="prefs-section-title" data-i18n="prefs.displaySec">المظهر واللغة</h3>
+      <div class="prefs-option-list">
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.themeTitle">مظهر الشاشة (نهاري / ليلي)</span>
+            <span class="prefs-option-desc" data-i18n="prefs.themeDesc">التبديل بين الوضع النهاري الواضح والوضع الليلي المريح للإضاءة المنخفضة.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
         </div>
-        <div><label for="set-bus-num" class="field-label">رقم الباص:</label><input id="set-bus-num" class="field-input"></div>
-        <div>
-          <label for="set-hotel-key" class="field-label">فندق مكة المعتمد:</label>
-          <select id="set-hotel-key" class="field-input">
-            <option value="kiswah">فندق أبراج الكسوة (جرول)</option>
-            <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
-            <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
-            <option value="ghazza">فنادق الغزة وريع بخش</option>
-          </select>
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.langTitle">لغة التطبيق والاتجاه</span>
+            <span class="prefs-option-desc" data-i18n="prefs.langDesc">تغيير لغة الواجهة واتجاه القراءة بالكامل (العربية RTL / English LTR).</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-lang-toggle>🌐 English</button>
         </div>
-        <div><label for="set-sup-name" class="field-label">اسم المشرف:</label><input id="set-sup-name" class="field-input" required></div>
-        <div><label for="set-sup-phone" class="field-label">واتساب المشرف:</label><input id="set-sup-phone" type="tel" dir="ltr" class="field-input" required></div>
       </div>
-      <div style="margin-bottom:1rem;">
-        <label for="set-meeting" class="field-label">نقطة التجمع المعتمدة بالحرم:</label>
-        <input id="set-meeting" class="field-input">
+    </section>
+
+    <section class="prefs-section" aria-labelledby="sup-security-sync-title">
+      <h3 id="sup-security-sync-title" class="prefs-section-title" data-i18n="sup.prefs.securitySyncSec">الأمان والمزامنة والنسخ الاحتياطي</h3>
+      <div class="prefs-quick-grid">
+        <button type="button" class="btn btn-secondary" data-pin-setup-btn data-i18n="sup.popover.pinSetup">🔒 تفعيل قفل الخصوصية (PIN)</button>
+        <button type="button" class="btn btn-secondary" data-pin-lock-now data-i18n="sup.popover.pinLockNow" hidden>🔐 قفل الشاشة الآن</button>
+        <button type="button" id="btn-cloud-sync-popover" class="btn btn-secondary" data-i18n="tools.sync">☁️ رفع للسحابة</button>
+        <button type="button" id="btn-pull-cloud-popover" class="btn btn-secondary" data-i18n="sup.board.pullBtn">☁️ سحب من D1</button>
+        <button type="button" id="btn-export-backup-json" class="btn btn-secondary" data-i18n="sup.popover.exportJson">💾 تصدير JSON</button>
+        <label for="input-restore-backup-json" class="btn btn-secondary" style="cursor:pointer;">
+          <span data-i18n="sup.popover.restoreJson">📤 استعادة JSON</span>
+          <input type="file" id="input-restore-backup-json" accept="application/json" class="sr-only">
+        </label>
+        <button type="button" class="btn btn-secondary" data-reset-demo data-i18n="sup.popover.resetDemo" style="grid-column:1 / -1;">🔄 استعادة البيانات الافتراضية</button>
       </div>
-      <div style="margin-bottom:1rem;">
-        <label for="set-sync-token" class="field-label">رمز مصادقة المزامنة السحابية D1 (SYNC_SECRET - اختياري):</label>
-        <input id="set-sync-token" type="password" dir="ltr" autocomplete="off" class="field-input" placeholder="Bearer token إذا كان مفعّلاً على Cloudflare Pages">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق</button>
-    </form>
+    </section>
+
+    <section class="prefs-section" aria-labelledby="sup-group-settings-title" style="margin-bottom:0;">
+      <h3 id="sup-group-settings-title" class="prefs-section-title" data-i18n="sup.prefs.groupTabBtn">🚌 تعديل إعدادات الفوج النشط</h3>
+      <form id="settings-form">
+        <div class="form-inline-grid">
+          <div><label for="set-trip-title" class="field-label">اسم الرحلة:</label><input id="set-trip-title" class="field-input" required></div>
+          <div><label for="set-trip-code" class="field-label">كود الفوج:</label><input id="set-trip-code" class="field-input" required></div>
+          <div>
+            <label for="set-trip-stage" class="field-label">مرحلة الفوج الحالية:</label>
+            <select id="set-trip-stage" class="field-input">
+              <option value="DRAFT">مسودة الإعداد</option>
+              <option value="REGISTRATION_OPEN">باب التسجيل مفتوح</option>
+              <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
+              <option value="IN_TRANSIT">في الطريق / الميقات</option>
+              <option value="IN_MAKKAH">في مكة المكرمة</option>
+              <option value="IN_MADINAH">في المدينة المنورة</option>
+              <option value="RETURN_TRANSIT">الاستعداد للعودة</option>
+              <option value="COMPLETED">رحلة مكتملة (أرشيف)</option>
+            </select>
+          </div>
+          <div><label for="set-bus-num" class="field-label">رقم الباص:</label><input id="set-bus-num" class="field-input"></div>
+          <div>
+            <label for="set-hotel-key" class="field-label">فندق مكة المعتمد:</label>
+            <select id="set-hotel-key" class="field-input">
+              <option value="kiswah">فندق أبراج الكسوة (جرول)</option>
+              <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
+              <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
+              <option value="ghazza">فنادق الغزة وريع بخش</option>
+            </select>
+          </div>
+          <div><label for="set-sup-name" class="field-label">اسم المشرف:</label><input id="set-sup-name" class="field-input" required></div>
+          <div><label for="set-sup-phone" class="field-label">واتساب المشرف:</label><input id="set-sup-phone" type="tel" dir="ltr" class="field-input" required></div>
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label for="set-meeting" class="field-label">نقطة التجمع المعتمدة بالحرم:</label>
+          <input id="set-meeting" class="field-input">
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label for="set-sync-token" class="field-label">رمز مصادقة المزامنة السحابية D1 (SYNC_SECRET - اختياري):</label>
+          <input id="set-sync-token" type="password" dir="ltr" autocomplete="off" class="field-input" placeholder="Bearer token إذا كان مفعّلاً على Cloudflare Pages">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق</button>
+      </form>
+    </section>
   </dialog>
 
   <dialog id="payment-modal" closedby="any" aria-labelledby="pay-modal-title">

@@ -657,3 +657,99 @@ export function initImageLightbox(): void {
     if (!dialog.open) dialog.showModal();
   });
 }
+
+const SENIOR_MODE_STORAGE_KEY = 'umrah_senior_mode_v2';
+const REDUCE_MOTION_STORAGE_KEY = 'umrah_reduce_motion_v1';
+
+let isSeniorModeEnabled = false;
+let isReduceMotionEnabled = false;
+
+export function updateSeniorButtonLabel(): void {
+  const label = isSeniorModeEnabled ? t('tools.seniorActive') : t('tools.senior');
+  document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {
+    btn.classList.toggle('active', isSeniorModeEnabled);
+    btn.setAttribute('aria-pressed', String(isSeniorModeEnabled));
+    btn.innerHTML = `<span aria-hidden="true">👵</span> <span>${escapeHtml(label)}</span>`;
+  });
+}
+
+export function applySeniorMode(enabled: boolean): void {
+  isSeniorModeEnabled = enabled;
+  document.body.classList.toggle('senior-mode', enabled);
+  updateSeniorButtonLabel();
+}
+
+export function toggleSeniorMode(): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const next = !isSeniorModeEnabled;
+  applySeniorMode(next);
+  try {
+    localStorage.setItem(SENIOR_MODE_STORAGE_KEY, next ? '1' : '0');
+  } catch {
+    // ignore
+  }
+  showToast(
+    next
+      ? isEn
+        ? 'Senior Mode (Large Text) Enabled'
+        : 'تم تفعيل وضع كبار السن (خط كبير)'
+      : isEn
+        ? 'Returned to standard text size'
+        : 'تم الرجوع للخط المعتاد'
+  );
+}
+
+export function initSeniorMode(): void {
+  let saved = false;
+  try {
+    saved = localStorage.getItem(SENIOR_MODE_STORAGE_KEY) === '1';
+  } catch {
+    saved = false;
+  }
+  applySeniorMode(saved);
+}
+
+export function updateMotionButtonLabel(): void {
+  const label = isReduceMotionEnabled ? t('prefs.motionActive') : t('prefs.motionLabel');
+  document.querySelectorAll<HTMLElement>('[data-motion-toggle]').forEach((btn) => {
+    btn.classList.toggle('active', isReduceMotionEnabled);
+    btn.setAttribute('aria-pressed', String(isReduceMotionEnabled));
+    btn.innerHTML = `<span aria-hidden="true">🕊️</span> <span>${escapeHtml(label)}</span>`;
+  });
+}
+
+export function applyReduceMotion(enabled: boolean): void {
+  isReduceMotionEnabled = enabled;
+  document.body.classList.toggle('reduce-motion', enabled);
+  updateMotionButtonLabel();
+}
+
+export function toggleReduceMotion(): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const next = !isReduceMotionEnabled;
+  applyReduceMotion(next);
+  try {
+    localStorage.setItem(REDUCE_MOTION_STORAGE_KEY, next ? '1' : '0');
+  } catch {
+    // ignore
+  }
+  showToast(
+    next
+      ? isEn
+        ? 'Reduced animations enabled'
+        : 'تم تفعيل وضع تقليل الحركة لراحة العين'
+      : isEn
+        ? 'Standard interface motion restored'
+        : 'تم الرجوع للحركة الافتراضية'
+  );
+}
+
+export function initReduceMotion(): void {
+  let saved = false;
+  try {
+    saved = localStorage.getItem(REDUCE_MOTION_STORAGE_KEY) === '1';
+  } catch {
+    saved = false;
+  }
+  applyReduceMotion(saved);
+}

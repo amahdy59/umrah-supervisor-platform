@@ -32,7 +32,8 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'nav.mobile.fiqh': { ar: 'الفقه', en: 'Fiqh' },
   'nav.mobile.packing': { ar: 'حقيبتي', en: 'Wallet' },
   'nav.mobile.gates': { ar: 'الحرمين', en: 'Haramain' },
-  'nav.mobile.more': { ar: 'الأدوات', en: 'Tools' },
+  'nav.mobile.abshirou': { ar: 'أبشروا', en: 'Abshirou' },
+  'nav.mobile.more': { ar: 'المزيد', en: 'More' },
 
   // Supervisor Navigation (Consolidated 6 Hubs)
   'sup.nav.manifest': { ar: '🚌 الأفواج والتسكين', en: '🚌 Groups & Rooming' },
@@ -339,6 +340,46 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.lug.rooms': { ar: 'سُلّمت للغرف', en: 'Delivered' },
   'sup.sos.officialTitle': { ar: '🏛️ أرقام الطوارئ ومنصات المملكة الرسمية', en: '🏛️ Official Saudi Emergency & Nusuk Hotlines' },
   'tools.whatsappSheikh': { ar: '💬 واتساب الشيخ', en: '💬 WhatsApp Sheikh' },
+  'tools.a11yBtn': { ar: '♿ الوصول', en: '♿ Access' },
+  'tools.settingsBtn': { ar: '⚙️ الإعدادات', en: '⚙️ Settings' },
+  'prefs.a11yTitle': { ar: '♿ خيارات سهولة الوصول والقراءة', en: '♿ Accessibility & Reading Options' },
+  'prefs.a11yIntro': {
+    ar: 'خيارات مخصصة لتكبير الخط وثبات الشاشة وتقليل الحركة، مفصولة بالكامل عن شريط الأدوات والتنقل.',
+    en: 'Dedicated controls for large text, screen wake lock, and reduced motion—separated cleanly from toolbars and navigation.',
+  },
+  'prefs.seniorDesc': {
+    ar: 'تكبير حجم النصوص والأزرار وأدعية الطواف لتسهيل القراءة داخل الحرم.',
+    en: 'Increase font scale, buttons, and supplication typography for easier reading.',
+  },
+  'prefs.wakeDesc': {
+    ar: 'إبقاء شاشة الهاتف مضاءة تلقائياً أثناء الطواف والسعي دون قفل.',
+    en: 'Keep screen awake automatically while tracking Tawaf and Sa’i.',
+  },
+  'prefs.motionLabel': { ar: 'تقليل الحركة والتأثيرات', en: 'Reduce Animations' },
+  'prefs.motionActive': { ar: 'تقليل الحركة: مُفعّل ✓', en: 'Reduced Motion: ON ✓' },
+  'prefs.motionDesc': {
+    ar: 'تعطيل الانزلاق والحركات البصرية لراحة العين والحساسية البصرية.',
+    en: 'Disable slide transitions and motion effects for calmer visual comfort.',
+  },
+  'prefs.settingsTitle': { ar: '⚙️ إعدادات التطبيق والعرض', en: '⚙️ Display & App Settings' },
+  'prefs.supSettingsTitle': { ar: '⚙️ إعدادات المشرف والعرض والأمان', en: '⚙️ Supervisor Display, Group & Security Settings' },
+  'prefs.displaySec': { ar: 'المظهر واللغة', en: 'Appearance & Language' },
+  'prefs.themeTitle': { ar: 'مظهر الشاشة (نهاري / ليلي)', en: 'Color Theme (Light / Dark)' },
+  'prefs.themeDesc': {
+    ar: 'التبديل بين الوضع النهاري الواضح والوضع الليلي المريح للإضاءة المنخفضة.',
+    en: 'Switch between high-contrast Light mode and low-glare Dark mode.',
+  },
+  'prefs.langTitle': { ar: 'لغة التطبيق والاتجاه', en: 'Interface Language & Direction' },
+  'prefs.langDesc': {
+    ar: 'تغيير لغة الواجهة واتجاه القراءة بالكامل (العربية RTL / English LTR).',
+    en: 'Switch complete interface language and layout direction (Arabic RTL / English LTR).',
+  },
+  'prefs.profileSec': { ar: 'بيانات المعتمر والرحلة', en: 'Pilgrim Card & Group Info' },
+  'prefs.profileBtn': { ar: '✏️ تعديل بياناتي وبطاقة الفوج', en: '✏️ Edit Pilgrim Profile & Group Card' },
+  'sup.popoverNavTitle': { ar: 'أقسام لوحة المشرف الإضافية', en: 'Additional Supervisor Views' },
+  'sup.nav.moreMobile': { ar: 'المزيد', en: 'More' },
+  'sup.prefs.groupTabBtn': { ar: '🚌 تعديل إعدادات الفوج النشط', en: '🚌 Active Group Settings' },
+  'sup.prefs.securitySyncSec': { ar: 'الأمان والمزامنة والنسخ الاحتياطي', en: 'Privacy Lock, Cloud Sync & Backups' },
   'sos.whatsappBtn': { ar: '💬 واتساب مباشر للشيخ', en: '💬 Direct WhatsApp' },
   'brand.zoomAvatarAria': {
     ar: 'تكبير صورة الشيخ مصطفى فليفل في المسجد النبوي',

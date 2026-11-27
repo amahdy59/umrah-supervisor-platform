@@ -75,18 +75,39 @@ test.describe('Sheikh Mostafa Flefel & Abshirou Branding E2E', () => {
       .analyze();
     expect(lightAxe.violations).toEqual([]);
 
-    // Dark Mode toggle + settled CSS transition check
-    await page.locator('.desktop-only-tools[data-theme-toggle]').click();
+    // Settings & Accessibility options must stay cleanly separated from navigation and header toolbars
+    await expect(
+      page.locator(
+        '.header-tools [data-senior-toggle], .header-tools [data-theme-toggle], .header-tools [data-wake-toggle], .header-tools [data-lang-toggle], nav [data-senior-toggle], nav [data-theme-toggle], nav [data-lang-toggle]'
+      )
+    ).toHaveCount(0);
+
+    // WCAG 2.1 AA audit on Accessibility modal
+    await page.click('#btn-open-accessibility');
+    await expect(page.locator('#accessibility-modal')).toBeVisible();
+    const a11yAxe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+    expect(a11yAxe.violations).toEqual([]);
+    await page.click('#accessibility-modal [data-close-dialog="accessibility-modal"]');
+
+    // Dark Mode toggle via separated Settings modal + settled CSS transition check
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await page.locator('#settings-modal [data-theme-toggle]').click();
     await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'dark');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
     await page.waitForTimeout(450);
     const darkAxe = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();
     expect(darkAxe.violations).toEqual([]);
 
-    // Switch back light + English LTR and verify consistent translation across header & brand tab
-    await page.locator('.desktop-only-tools[data-theme-toggle]').click();
-    await page.locator('.desktop-only-tools[data-lang-toggle]').click();
+    // Switch back light + English LTR via separated Settings modal and verify translation across header & brand tab
+    await page.click('#btn-open-settings');
+    await page.locator('#settings-modal [data-theme-toggle]').click();
+    await page.locator('#settings-modal [data-lang-toggle]').click();
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await expect(page.locator('#header-trip-subtitle')).toContainText('Shaaban Blessed Umrah Group');

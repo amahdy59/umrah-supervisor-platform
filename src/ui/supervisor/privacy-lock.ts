@@ -72,7 +72,7 @@ export function enforcePrivacyLockIfConfigured(): void {
 
 export function lockSupervisorSessionNow(): void {
   if (!hasPinProtection()) {
-    showToast('قم بتعيين رمز قفل (PIN) أولاً من القائمة');
+    showToast('قم بتعيين رمز قفل (PIN) أولاً من الإعدادات');
     return;
   }
   try {
@@ -80,6 +80,8 @@ export function lockSupervisorSessionNow(): void {
   } catch {
     // ignore
   }
+  closeDialogById('settings-modal');
+  closeDialogById('accessibility-modal');
   const main = document.getElementById('main-content');
   if (main) main.setAttribute('inert', '');
   openDialogById('pin-unlock-modal');
@@ -123,6 +125,7 @@ export function wirePrivacyLockHandlers(): void {
 
   document.querySelectorAll<HTMLElement>('[data-pin-setup-btn]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      closeDialogById('settings-modal');
       const configured = hasPinProtection();
       const removeBtn = document.getElementById('btn-pin-remove');
       if (removeBtn) removeBtn.hidden = !configured;

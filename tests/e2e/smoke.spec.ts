@@ -76,8 +76,27 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#my-installments-modal')).toBeVisible();
     await page.click('[data-close-dialog="my-installments-modal"]');
 
-    // Complete AR -> EN -> AR switching including Atlas, Fiqh, Wallet (Packing & Taxi) cards
-    await page.click('.header-tools [data-lang-toggle]');
+    // Verify Settings & Accessibility controls are separated from toolbar and navigation
+    await expect(
+      page.locator(
+        '.header-tools [data-senior-toggle], .header-tools [data-theme-toggle], .header-tools [data-wake-toggle], .header-tools [data-lang-toggle], nav [data-senior-toggle], nav [data-theme-toggle], nav [data-lang-toggle]'
+      )
+    ).toHaveCount(0);
+
+    // Accessibility dialog opens independently
+    await page.click('#btn-open-accessibility');
+    await expect(page.locator('#accessibility-modal')).toBeVisible();
+    await page.click('#accessibility-modal [data-senior-toggle]');
+    await expect(page.locator('body')).toHaveClass(/senior-mode/);
+    await page.click('#accessibility-modal [data-senior-toggle]');
+    await page.click('#accessibility-modal [data-close-dialog="accessibility-modal"]');
+    await expect(page.locator('#accessibility-modal')).toBeHidden();
+
+    // Complete AR -> EN -> AR switching via separated Settings dialog including Atlas, Fiqh, Wallet cards
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await page.click('#settings-modal [data-lang-toggle]');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await page.click('[data-tab-target="haram-atlas"]');
@@ -87,7 +106,9 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#taxi-routes-list')).toContainText('Haramain Train Station');
     await page.click('[data-tab-target="fiqh"]');
     await expect(page.locator('#fiqh-rulings-list')).toContainText('Losing Wudu Mid-Tawaf');
-    await page.click('.header-tools [data-lang-toggle]');
+    await page.click('#btn-open-settings');
+    await page.click('#settings-modal [data-lang-toggle]');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 
@@ -172,15 +193,27 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.click('#action-toast-undo-btn');
     await expect(page.locator('#manifest-tbody tr')).toHaveCount(initialCount);
 
-    // Edit CRM Person modal & English supervisor localization toggle
+    // Verify Supervisor toolbar & navigation stay cleanly separated from Display/Accessibility controls
+    await expect(
+      page.locator(
+        '.group-switcher-bar [data-theme-toggle], .group-switcher-bar [data-lang-toggle], nav [data-theme-toggle], nav [data-lang-toggle], nav [data-senior-toggle]'
+      )
+    ).toHaveCount(0);
+
+    // Edit CRM Person modal & English supervisor localization toggle via separated Settings modal
     await page.click('.top-primary-nav [data-tab-target="people"]');
     await page.locator('#people-tbody [data-edit-person]').first().click();
     await expect(page.locator('#add-person-modal')).toBeVisible();
     await page.click('#add-person-modal [data-close-dialog="add-person-modal"] >> nth=0');
-    await page.click('.group-switcher-bar [data-lang-toggle]');
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await page.click('#settings-modal [data-lang-toggle]');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
     await expect(page.locator('.manifest-table thead')).toContainText('Pilgrim Name');
     await expect(page.locator('#people-tbody [data-edit-person]').first()).toContainText('Edit');
-    await page.click('.group-switcher-bar [data-lang-toggle]');
+    await page.click('#btn-open-settings');
+    await page.click('#settings-modal [data-lang-toggle]');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
 
     await page.click('.top-primary-nav [data-tab-target="gameya"]');
     await expect(page.locator('#gameya-summary-strip')).toBeVisible();
@@ -247,21 +280,21 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await expect(page.locator('#women-quick-replies-grid [data-copy-box]').first()).toBeVisible();
     await expect(page.locator('#tab-whatsapp a[href="/?tab=women-fiqh"]')).toBeVisible();
 
-    // Reset confirmation modal guard from popover (open via evaluate or trigger)
-    await page.evaluate(() => {
-      (document.querySelector('[data-reset-demo]') as HTMLElement | null)?.click();
-    });
+    // Reset confirmation modal guard from separated Settings modal
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await page.click('#settings-modal [data-reset-demo]');
     const resetModal = page.locator('#confirm-reset-modal');
     await expect(resetModal).toBeVisible();
+    await expect(page.locator('#settings-modal')).toBeHidden();
     const modalAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(modalAxe.violations).toEqual([]);
     await page.click('#confirm-reset-modal [data-cancel-reset]');
     await expect(resetModal).toBeHidden();
 
-    // Confirm restore default
-    await page.evaluate(() => {
-      (document.querySelector('[data-reset-demo]') as HTMLElement | null)?.click();
-    });
+    // Confirm restore default from separated Settings modal
+    await page.click('#btn-open-settings');
+    await page.click('#settings-modal [data-reset-demo]');
     await expect(resetModal).toBeVisible();
     await page.click('#btn-confirm-reset-yes');
     await expect(resetModal).toBeHidden();
@@ -298,14 +331,25 @@ test.describe('Mobile Viewport (390x844): Navigation & WCAG 2 AA', () => {
     await firstWomenItem.locator('.ref-disclosure summary').click();
     await expect(firstWomenItem.locator('.ref-disclosure')).toHaveAttribute('open', '');
 
-    // Open mobile More popover for tools, then use mobile bottom bar directly for Haram Atlas
-    await page.click('.more-trigger-mobile');
-    await expect(page.locator('#pilgrim-more-popover')).toBeVisible();
-    await expect(page.locator('#pilgrim-more-popover [data-senior-toggle]')).toBeVisible();
-    await page.click('.more-trigger-mobile');
+    // Mobile bottom bar holds all 5 pure navigation pillars; Accessibility & Settings live in dedicated header triggers
+    await expect(page.locator('.mobile-bottom-nav [data-tab-target]')).toHaveCount(5);
+    await expect(
+      page.locator('.mobile-bottom-nav [data-senior-toggle], .mobile-bottom-nav [data-theme-toggle]')
+    ).toHaveCount(0);
+
+    await page.click('#btn-open-accessibility');
+    await expect(page.locator('#accessibility-modal')).toBeVisible();
+    await expect(page.locator('#accessibility-modal [data-senior-toggle]')).toBeVisible();
+    await page.click('#accessibility-modal [data-close-dialog="accessibility-modal"]');
+    await expect(page.locator('#accessibility-modal')).toBeHidden();
+
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
+    await expect(page.locator('#settings-modal')).toBeHidden();
+
     await page.click('.mobile-bottom-nav [data-tab-target="haram-atlas"]');
     await expect(page.locator('#tab-haram-atlas')).toBeVisible();
-    await expect(page.locator('#pilgrim-more-popover')).toBeHidden();
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth + 2
@@ -321,8 +365,23 @@ test.describe('Mobile Viewport (390x844): Navigation & WCAG 2 AA', () => {
     await expect(page.locator('.mobile-bottom-nav')).toBeVisible();
     await expect(page.locator('.top-primary-nav')).toBeHidden();
 
+    // Secondary mobile popover contains strictly navigation destinations (zero settings/toggles)
+    await page.click('.more-trigger-mobile');
+    await expect(page.locator('#sup-more-popover')).toBeVisible();
+    await expect(page.locator('#sup-more-popover [data-tab-target="logistics-health"]')).toBeVisible();
+    await expect(page.locator('#sup-more-popover [data-tab-target="sos"]')).toBeVisible();
+    await expect(
+      page.locator('#sup-more-popover [data-theme-toggle], #sup-more-popover [data-lang-toggle], #sup-more-popover [data-senior-toggle]')
+    ).toHaveCount(0);
+    await page.click('.more-trigger-mobile');
+    await expect(page.locator('#sup-more-popover')).toBeHidden();
+
     await page.click('.mobile-bottom-nav [data-tab-target="gameya"]');
     await expect(page.locator('#tab-gameya')).toBeVisible();
+
+    await page.click('#btn-open-accessibility');
+    await expect(page.locator('#accessibility-modal')).toBeVisible();
+    await page.click('#accessibility-modal [data-close-dialog="accessibility-modal"]');
 
     const axeResults = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(axeResults.violations).toEqual([]);
@@ -348,9 +407,8 @@ test.describe('Dark Mode: WCAG 2 AA Contrast & Modal Audits', () => {
     const baseAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(baseAxe.violations).toEqual([]);
 
-    await page.evaluate(() => {
-      (document.querySelector('[data-reset-demo]') as HTMLElement | null)?.click();
-    });
+    await page.click('#btn-open-settings');
+    await page.click('#settings-modal [data-reset-demo]');
     await expect(page.locator('#confirm-reset-modal')).toBeVisible();
     const modalAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(modalAxe.violations).toEqual([]);

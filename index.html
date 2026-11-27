@@ -28,12 +28,6 @@
       :root { --header-height: 7.25rem; }
     }
 
-    /* Senior Citizen Easy Mode */
-    body.senior-mode { font-size: 1.22rem !important; line-height: 1.85; }
-    body.senior-mode .btn { padding: 1rem 1.35rem !important; font-size: 1.18rem !important; }
-    body.senior-mode .lap-display { font-size: 4.8rem !important; }
-    body.senior-mode .dua-arabic { font-size: 1.5rem !important; line-height: 2.2 !important; }
-
     .sticky-bar-container {
       background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
     }
@@ -430,17 +424,11 @@
         <button type="button" id="btn-header-sos" class="header-chip-btn header-chip-danger">
           <span aria-hidden="true">🆘</span> <span data-i18n="tools.sos">طوارئ</span>
         </button>
-        <button type="button" class="header-chip-btn senior-toggle-btn desktop-only-tools" data-senior-toggle aria-pressed="false">
-          <span aria-hidden="true">👵</span> <span>وضع كبار السن</span>
-        </button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-theme-toggle aria-pressed="false">
-          <span aria-hidden="true">🌙</span> <span>الوضع الليلي</span>
-        </button>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-wake-toggle aria-pressed="false">
-          <span aria-hidden="true">🔆</span> <span data-i18n="tools.wake">منع إغلاق الشاشة</span>
-        </button>
-        <a href="https://wa.me/201040414659" target="_blank" rel="noopener noreferrer" class="header-chip-btn desktop-only-tools" style="background:rgba(21,128,61,0.75);border-color:rgba(134,239,172,0.65);" data-i18n="tools.whatsappSheikh">💬 واتساب الشيخ</a>
-        <button type="button" class="header-chip-btn desktop-only-tools" data-lang-toggle>🌐 English</button>
+        <a href="https://wa.me/201040414659" target="_blank" rel="noopener noreferrer" id="header-wa-sheikh-btn" class="header-chip-btn desktop-only-tools" style="background:#166534;border-color:rgba(134,239,172,0.7);" data-i18n="tools.whatsappSheikh">💬 واتساب الشيخ</a>
+        <div class="header-utility-group" role="group" aria-label="الإعدادات وسهولة الوصول">
+          <button type="button" id="btn-open-accessibility" class="header-chip-btn header-chip-utility" aria-haspopup="dialog" aria-controls="accessibility-modal" data-i18n="tools.a11yBtn">♿ الوصول</button>
+          <button type="button" id="btn-open-settings" class="header-chip-btn header-chip-utility" aria-haspopup="dialog" aria-controls="settings-modal" data-i18n="tools.settingsBtn">⚙️ الإعدادات</button>
+        </div>
       </div>
     </div>
 
@@ -452,9 +440,6 @@
         <button type="button" class="mode-btn" data-tab-target="wallet" data-i18n="nav.packing">🧳 حقيبتي والخدمات</button>
         <button type="button" class="mode-btn" data-tab-target="abshirou" data-i18n="nav.abshirou">✨ أبشروا والتواصل</button>
       </div>
-      <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="pilgrim-more-popover" data-i18n="nav.more">
-        ⚙️ الأدوات
-      </button>
     </nav>
   </header>
 
@@ -905,33 +890,83 @@
     </section>
   </main>
 
-  <!-- Sticky Mobile Bottom Bar (4 core pillars + Tools popover — zero buried tabs!) -->
+  <!-- Sticky Mobile Bottom Bar (All 5 pure navigation pillars — Settings & Accessibility stay separated) -->
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع للجوال">
     <button type="button" class="mobile-nav-btn active" data-tab-target="rituals" aria-current="page"><span aria-hidden="true">🤲</span><span data-i18n="nav.mobile.rituals">مناسكي</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="haram-atlas"><span aria-hidden="true">⛩️</span><span data-i18n="nav.mobile.gates">الحرمين</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="fiqh"><span aria-hidden="true">📖</span><span data-i18n="nav.mobile.fiqh">الفقه</span></button>
     <button type="button" class="mobile-nav-btn" data-tab-target="wallet"><span aria-hidden="true">🧳</span><span data-i18n="nav.mobile.packing">حقيبتي</span></button>
-    <button type="button" class="mobile-nav-btn more-trigger-mobile" popovertarget="pilgrim-more-popover"><span aria-hidden="true">⚙️</span><span data-i18n="nav.mobile.more">الأدوات</span></button>
+    <button type="button" class="mobile-nav-btn" data-tab-target="abshirou"><span aria-hidden="true">✨</span><span data-i18n="nav.mobile.abshirou">أبشروا</span></button>
   </nav>
-
-  <!-- Shared Mobile & Tablet Tools Popover -->
-  <div id="pilgrim-more-popover" class="more-popover" popover="auto">
-    <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="nav.popoverTitle">إعدادات العرض واللغة والوصول</div>
-    <nav class="more-popover-grid" aria-label="إعدادات وأدوات">
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="abshirou" data-i18n="nav.abshirou">✨ أبشروا والتواصل</button>
-      <a href="https://wa.me/201040414659" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="justify-content:flex-start;text-decoration:none;" data-i18n="tools.whatsappSheikh">💬 واتساب الشيخ</a>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-wake-toggle aria-pressed="false">🔆 منع إغلاق الشاشة</button>
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-lang-toggle>🌐 English</button>
-      <button type="button" id="btn-jump-sources" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="fiqh">📚 المراجع ومنهجية التوثيق</button>
-    </nav>
-  </div>
 
   <footer id="app-brand-footer">
     <span data-i18n="app.pilgrim.footer">أبشروا — الشيخ مصطفى فليفل (غرناطة للسياحة ترخيص ١٠٩٤) • يعمل بدون إنترنت •</span>
     <a href="/supervisor" style="color:var(--text-muted);text-decoration:underline;" data-i18n="app.pilgrim.supervisorLink">دخول بوابة المشرفين</a>
   </footer>
+
+  <!-- SEPARATED ACCESSIBILITY & SETTINGS DIALOGS -->
+  <dialog id="accessibility-modal" closedby="any" aria-labelledby="a11y-modal-title">
+    <div class="dialog-header">
+      <h2 id="a11y-modal-title" style="font-size:1.15rem;" data-i18n="prefs.a11yTitle">♿ خيارات سهولة الوصول والقراءة</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="accessibility-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <p class="prefs-intro" data-i18n="prefs.a11yIntro">خيارات مخصصة لتكبير الخط وثبات الشاشة وتقليل الحركة، مفصولة بالكامل عن شريط الأدوات والتنقل.</p>
+    <section class="prefs-section" aria-labelledby="a11y-modal-title">
+      <div class="prefs-option-list">
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="tools.senior">وضع كبار السن</span>
+            <span class="prefs-option-desc" data-i18n="prefs.seniorDesc">تكبير حجم النصوص والأزرار وأدعية الطواف لتسهيل القراءة داخل الحرم.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn senior-toggle-btn" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
+        </div>
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="tools.wake">منع إغلاق الشاشة</span>
+            <span class="prefs-option-desc" data-i18n="prefs.wakeDesc">إبقاء شاشة الهاتف مضاءة تلقائياً أثناء الطواف والسعي دون قفل.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-wake-toggle aria-pressed="false">🔆 منع إغلاق الشاشة</button>
+        </div>
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.motionLabel">تقليل الحركة والتأثيرات</span>
+            <span class="prefs-option-desc" data-i18n="prefs.motionDesc">تعطيل الانزلاق والحركات البصرية لراحة العين والحساسية البصرية.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-motion-toggle aria-pressed="false">🕊️ تقليل الحركة والتأثيرات</button>
+        </div>
+      </div>
+    </section>
+  </dialog>
+
+  <dialog id="settings-modal" closedby="any" aria-labelledby="settings-modal-title">
+    <div class="dialog-header">
+      <h2 id="settings-modal-title" style="font-size:1.15rem;" data-i18n="prefs.settingsTitle">⚙️ إعدادات التطبيق والعرض</h2>
+      <button type="button" class="dialog-close-btn" data-close-dialog="settings-modal" aria-label="إغلاق">&times;</button>
+    </div>
+    <section class="prefs-section" aria-labelledby="settings-display-sec-title">
+      <h3 id="settings-display-sec-title" class="prefs-section-title" data-i18n="prefs.displaySec">المظهر واللغة</h3>
+      <div class="prefs-option-list">
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.themeTitle">مظهر الشاشة (نهاري / ليلي)</span>
+            <span class="prefs-option-desc" data-i18n="prefs.themeDesc">التبديل بين الوضع النهاري الواضح والوضع الليلي المريح للإضاءة المنخفضة.</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
+        </div>
+        <div class="prefs-option-row">
+          <div class="prefs-option-copy">
+            <span class="prefs-option-title" data-i18n="prefs.langTitle">لغة التطبيق والاتجاه</span>
+            <span class="prefs-option-desc" data-i18n="prefs.langDesc">تغيير لغة الواجهة واتجاه القراءة بالكامل (العربية RTL / English LTR).</span>
+          </div>
+          <button type="button" class="btn btn-secondary prefs-action-btn" data-lang-toggle>🌐 English</button>
+        </div>
+      </div>
+    </section>
+    <section class="prefs-section" aria-labelledby="settings-profile-sec-title" style="margin-bottom:0;">
+      <h3 id="settings-profile-sec-title" class="prefs-section-title" data-i18n="prefs.profileSec">بيانات المعتمر والرحلة</h3>
+      <button type="button" id="btn-settings-edit-profile" class="btn btn-primary" style="width:100%;" data-i18n="prefs.profileBtn">✏️ تعديل بياناتي وبطاقة الفوج</button>
+    </section>
+  </dialog>
 
   <!-- NATIVE DIALOGS -->
   <dialog id="taxi-modal" closedby="any" aria-labelledby="taxi-modal-title">

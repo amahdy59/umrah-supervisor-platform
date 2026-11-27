@@ -22,6 +22,12 @@ import {
   initThemeSync,
   toggleColorScheme,
   updateThemeButtonLabel,
+  initSeniorMode,
+  toggleSeniorMode,
+  updateSeniorButtonLabel,
+  initReduceMotion,
+  toggleReduceMotion,
+  updateMotionButtonLabel,
   initImageLightbox,
   updateNetworkStatusBadge,
   registerServiceWorkerAndNetworkStatus,
@@ -137,7 +143,6 @@ const STORAGE_KEYS = {
   TAWAF_LAP: 'umrah_tawaf_lap_v2',
   SAI_LAP: 'umrah_sai_lap_v2',
   PACKING: 'umrah_packing_checked',
-  SENIOR: 'umrah_senior_mode_v2',
   RATES: 'umrah_sar_egp_rate_v2',
   NUSUK_UMRAH_IMG: 'umrah_nusuk_umrah_img_v2',
   NUSUK_RAWDAH_IMG: 'umrah_nusuk_rawdah_img_v2',
@@ -153,7 +158,6 @@ const currencyService = new CurrencyAndTaxiService();
 
 let profile: PilgrimProfile = { ...DEFAULT_PROFILE };
 let activePrayerCity: CityLocation = CityLocation.MAKKAH;
-let isSeniorMode = false;
 let isTalbiyahPlaying = false;
 let talbiyahTimer: number | null = null;
 let talbiyahAudio: HTMLAudioElement | null = null;
@@ -971,36 +975,6 @@ async function toggleWakeLock(): Promise<void> {
   }
 }
 
-function updateSeniorButtonLabel(): void {
-  const label = isSeniorMode ? t('tools.seniorActive') : t('tools.senior');
-  document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {
-    btn.classList.toggle('active', isSeniorMode);
-    btn.setAttribute('aria-pressed', String(isSeniorMode));
-    btn.innerHTML = `<span aria-hidden="true">👵</span> <span>${escapeHtml(label)}</span>`;
-  });
-}
-
-function toggleSeniorMode(): void {
-  const isEn = getCurrentLanguage() === 'en';
-  isSeniorMode = !isSeniorMode;
-  document.body.classList.toggle('senior-mode', isSeniorMode);
-  updateSeniorButtonLabel();
-  try {
-    localStorage.setItem(STORAGE_KEYS.SENIOR, isSeniorMode ? '1' : '0');
-  } catch {
-    // ignore
-  }
-  showToast(
-    isSeniorMode
-      ? isEn
-        ? 'Senior Mode (Large Text) Enabled'
-        : 'تم تفعيل وضع كبار السن (خط كبير)'
-      : isEn
-        ? 'Returned to standard text size'
-        : 'تم الرجوع للخط المعتاد'
-  );
-}
-
 function restoreCounters(): void {
   try {
     const savedTawaf = Number(localStorage.getItem(STORAGE_KEYS.TAWAF_LAP) || '1');
@@ -1800,17 +1774,7 @@ function switchTab(rawTab: string): void {
     }
   });
 
-  // Close mobile/tablet More popover if open
-  const morePop = document.getElementById('pilgrim-more-popover') as HTMLElement & { hidePopover?: () => void };
-  const wasInPopover = Boolean(morePop && document.activeElement && morePop.contains(document.activeElement));
-  if (morePop && morePop.matches(':popover-open') && morePop.hidePopover) {
-    morePop.hidePopover();
-  }
-  if (wasInPopover) {
-    document.getElementById('main-content')?.focus({ preventScroll: true });
-  }
-
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || document.body.classList.contains('reduce-motion');
   window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
 }
 
@@ -1818,6 +1782,8 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
   initLanguage();
   updateThemeButtonLabel();
+  initSeniorMode();
+  initReduceMotion();
   setupDialogs();
   initAccessibleFormValidation();
   initImageLightbox();
@@ -1877,7 +1843,6 @@ window.addEventListener('DOMContentLoaded', () => {
   renderCurrencyAndTaxi();
   updatePrayerUI();
   updateNetworkStatusBadge();
-  updateSeniorButtonLabel();
   updateWakeButtonLabel();
   updateTalbiyahButtonUi();
   window.setInterval(updatePrayerUI, 1000);
@@ -1887,22 +1852,24 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   if (initialTab) switchTab(initialTab);
 
-  try {
-    if (localStorage.getItem(STORAGE_KEYS.SENIOR) === '1') {
-      toggleSeniorMode();
-    }
-  } catch {
-    // ignore
-  }
-
   document.querySelectorAll<HTMLButtonElement>('[data-tab-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tabTarget) switchTab(btn.dataset.tabTarget);
     });
   });
 
+  document.getElementById('btn-open-accessibility')?.addEventListener('click', () => openDialogById('accessibility-modal'));
+  document.getElementById('btn-open-settings')?.addEventListener('click', () => openDialogById('settings-modal'));
+  document.getElementById('btn-settings-edit-profile')?.addEventListener('click', () => {
+    closeDialogById('settings-modal');
+    openProfileEditModal();
+  });
+
   document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {
     btn.addEventListener('click', toggleSeniorMode);
+  });
+  document.querySelectorAll<HTMLElement>('[data-motion-toggle]').forEach((btn) => {
+    btn.addEventListener('click', toggleReduceMotion);
   });
   document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', toggleColorScheme);
@@ -1917,6 +1884,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const next = toggleLanguage();
       updateThemeButtonLabel();
       updateSeniorButtonLabel();
+      updateMotionButtonLabel();
       updateWakeButtonLabel();
       updateTalbiyahButtonUi();
       updateNetworkStatusBadge();
@@ -1925,11 +1893,11 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTawafUI();
       renderSaiUI();
       renderZiyaratAndFieldGuides();
-  renderBrandViews(() => switchTab('abshirou'), {
-    fullName: profile.fullName,
-    tripCode: profile.tripCode,
-    tripTitle: profile.tripTitle,
-  });
+      renderBrandViews(() => switchTab('abshirou'), {
+        fullName: profile.fullName,
+        tripCode: profile.tripCode,
+        tripTitle: profile.tripTitle,
+      });
       renderFiqhSection();
       renderWomenFiqhSection();
       renderPackingChecklist();

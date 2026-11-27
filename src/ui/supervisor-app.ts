@@ -46,6 +46,12 @@ import {
   initThemeSync,
   toggleColorScheme,
   updateThemeButtonLabel,
+  initSeniorMode,
+  toggleSeniorMode,
+  updateSeniorButtonLabel,
+  initReduceMotion,
+  toggleReduceMotion,
+  updateMotionButtonLabel,
   initImageLightbox,
   updateNetworkStatusBadge,
   registerServiceWorkerAndNetworkStatus,
@@ -2736,6 +2742,8 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeSync();
   initLanguage();
   updateThemeButtonLabel();
+  initSeniorMode();
+  initReduceMotion();
   setupDialogs();
   initAccessibleFormValidation();
   initImageLightbox();
@@ -2759,6 +2767,15 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  document.getElementById('btn-open-accessibility')?.addEventListener('click', () => {
+    openDialogById('accessibility-modal');
+  });
+  document.querySelectorAll<HTMLElement>('[data-senior-toggle]').forEach((btn) => {
+    btn.addEventListener('click', toggleSeniorMode);
+  });
+  document.querySelectorAll<HTMLElement>('[data-motion-toggle]').forEach((btn) => {
+    btn.addEventListener('click', toggleReduceMotion);
+  });
   document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', toggleColorScheme);
   });
@@ -2767,6 +2784,8 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const next = toggleLanguage();
       updateThemeButtonLabel();
+      updateSeniorButtonLabel();
+      updateMotionButtonLabel();
       updateNetworkStatusBadge();
       renderAll();
       showToast(next === 'en' ? '🌐 Switched interface to English' : '🌐 تم التبديل للغة العربية');
@@ -2777,12 +2796,14 @@ window.addEventListener('DOMContentLoaded', () => {
     void syncActiveGroupToCloud(true);
   });
   document.getElementById('btn-cloud-sync-popover')?.addEventListener('click', () => {
+    closeDialogById('settings-modal');
     void syncActiveGroupToCloud(true);
   });
   document.getElementById('btn-pull-cloud-group')?.addEventListener('click', () => {
     void pullActiveGroupFromCloud();
   });
   document.getElementById('btn-pull-cloud-popover')?.addEventListener('click', () => {
+    closeDialogById('settings-modal');
     void pullActiveGroupFromCloud();
   });
   document.getElementById('btn-pull-cloud-sos')?.addEventListener('click', () => {
@@ -3431,6 +3452,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let resetConfirmDialog: HTMLDialogElement | null = null;
   const openResetConfirmDialog = () => {
+    closeDialogById('settings-modal');
     if (!resetConfirmDialog) {
       resetConfirmDialog = document.createElement('dialog');
       resetConfirmDialog.id = 'confirm-reset-modal';
