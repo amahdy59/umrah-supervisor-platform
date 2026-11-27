@@ -9,6 +9,8 @@ import {
   BRAND_STATS,
   MARKETING_BROADCAST_TEMPLATES,
   SHEIKH_BRAND,
+  WHATSAPP_DIRECT_INTENTS,
+  buildMostafaDirectWhatsAppUrl,
 } from '../../src/brand/sheikh-brand.js';
 
 const ROOT_DIR = process.cwd();
@@ -21,6 +23,9 @@ describe('Sheikh Mostafa Flefel / Abshirou Brand Data', () => {
     expect(SHEIKH_BRAND.contact.agencyPhoneDisplay).toBe('01041060008');
     expect(SHEIKH_BRAND.contact.whatsappGroupUrl).toBe(
       'https://chat.whatsapp.com/JKJgvqRVRAD0mJ4ThjkLVh'
+    );
+    expect(buildMostafaDirectWhatsAppUrl('السلام عليكم')).toContain(
+      'https://wa.me/201040414659?text='
     );
   });
 
@@ -38,18 +43,31 @@ describe('Sheikh Mostafa Flefel / Abshirou Brand Data', () => {
       BRAND_SOCIAL_LINKS,
       BRAND_FEATURED_VIDEOS,
       MARKETING_BROADCAST_TEMPLATES,
+      WHATSAPP_DIRECT_INTENTS,
     });
     expect(serialized).not.toContain('mustafa_flyfl');
     expect(serialized).not.toContain('mostafafelefl33');
     expect(serialized).not.toContain('tiktok.com/@apshro14');
   });
 
-  it('ensures every brand image exists locally under public/images/brand and is precached in sw.js', () => {
+  it('removes excluded women/girl image files and precaches only curated Sheikh & Haramain images', () => {
     const swContent = fs.readFileSync(path.join(ROOT_DIR, 'public/sw.js'), 'utf8');
     expect(swContent).toContain('umrah-companion-v17');
 
+    const excludedBrandFiles = [
+      'abshirou-fb-cover.jpg',
+      'abshirou-yt-avatar.jpg',
+      'sheikh-mostafa-ihram.jpg',
+      'sheikh-mostafa-haram-cover.jpg',
+    ];
+    excludedBrandFiles.forEach((fname) => {
+      expect(fs.existsSync(path.join(ROOT_DIR, 'public/images/brand', fname))).toBe(false);
+      expect(swContent).not.toContain(fname);
+      expect(JSON.stringify(BRAND_IMAGES)).not.toContain(fname);
+    });
+
     Object.values(BRAND_IMAGES).forEach((img) => {
-      expect(img.src.startsWith('/images/brand/')).toBe(true);
+      expect(img.src.startsWith('/images/')).toBe(true);
       expect(img.width).toBeGreaterThan(0);
       expect(img.height).toBeGreaterThan(0);
       expect(img.alt.ar.trim().length).toBeGreaterThan(5);
@@ -57,17 +75,25 @@ describe('Sheikh Mostafa Flefel / Abshirou Brand Data', () => {
 
       const diskPath = path.join(ROOT_DIR, 'public', img.src);
       expect(fs.existsSync(diskPath)).toBe(true);
-      expect(fs.statSync(diskPath).size).toBeGreaterThan(1000);
+      expect(fs.statSync(diskPath).size).toBeGreaterThan(10000);
       expect(swContent).toContain(img.src);
     });
   });
 
-  it('provides non-empty Arabic and English copy across stats, pillars, videos, and templates', () => {
+  it('provides non-empty Arabic and English copy across stats, intents, pillars, videos, and templates', () => {
     BRAND_STATS.forEach((stat) => {
       expect(stat.value.ar.trim().length).toBeGreaterThan(0);
       expect(stat.value.en.trim().length).toBeGreaterThan(0);
       expect(stat.label.ar.trim().length).toBeGreaterThan(0);
       expect(stat.label.en.trim().length).toBeGreaterThan(0);
+    });
+
+    expect(WHATSAPP_DIRECT_INTENTS.length).toBeGreaterThanOrEqual(4);
+    WHATSAPP_DIRECT_INTENTS.forEach((intent) => {
+      expect(intent.label.ar.trim().length).toBeGreaterThan(0);
+      expect(intent.label.en.trim().length).toBeGreaterThan(0);
+      expect(intent.template.ar.trim().length).toBeGreaterThan(10);
+      expect(intent.template.en.trim().length).toBeGreaterThan(10);
     });
 
     BRAND_PILLARS.forEach((p) => {

@@ -45,6 +45,8 @@ const DEFAULT_SUMMARY: PilgrimInstallmentSummary = {
   totalPaid: 27000,
   installmentCount: 6,
   startDateIso: '2026-01-15',
+  supervisorName: 'الشيخ مصطفى فليفل (أبو رضوى)',
+  supervisorPhone: '+201040414659',
 };
 
 let personalPlan: PilgrimInstallmentSummary = { ...DEFAULT_SUMMARY };

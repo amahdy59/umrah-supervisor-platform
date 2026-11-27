@@ -1,9 +1,10 @@
 /**
  * Centralized verified personal branding, licensing, community links,
- * media assets, and marketing copy for Sheikh Mostafa Flefel (Abshirou).
+ * curated zero-women visual assets, WhatsApp messaging presets, and
+ * marketing copy for Sheikh Mostafa Flefel (Abshirou).
  *
- * Every URL, phone number, handle, follower figure, and image asset here
- * corresponds strictly to verified public sources and local files in /images/brand/.
+ * Every URL, phone number, handle, follower count, and asset path matches
+ * strictly verified public profiles and local assets in /images/.
  */
 
 export interface BrandLocalizedText {
@@ -16,6 +17,7 @@ export interface BrandImageAsset {
   src: string;
   width: number;
   height: number;
+  orientation: 'portrait' | 'landscape' | 'square';
   caption: BrandLocalizedText;
   alt: BrandLocalizedText;
   sourceLabel: BrandLocalizedText;
@@ -47,6 +49,13 @@ export interface BrandMarketingTemplate {
   message: BrandLocalizedText;
 }
 
+export interface WhatsAppIntentPreset {
+  id: 'booking' | 'fiqh' | 'group' | 'join';
+  icon: string;
+  label: BrandLocalizedText;
+  template: BrandLocalizedText;
+}
+
 export const SHEIKH_BRAND = {
   brandName: {
     ar: 'أبشروا',
@@ -73,7 +82,7 @@ export const SHEIKH_BRAND = {
     en: 'Religious Tourism Supervisor (since April 13, 2025 – present)',
   },
   education: {
-    ar: 'الفقه والقانون — كلية الشريعة والقانون، جامعة الأزهر بطنطا',
+    ar: 'الفقه والقانون — كلية الشريعة والقانون، طنطا',
     en: 'Fiqh & Law — Faculty of Sharia & Law, Tanta',
   },
   agencyName: {
@@ -118,79 +127,102 @@ export const SHEIKH_BRAND = {
 } as const;
 
 export const BRAND_IMAGES: Record<
-  'haramCover' | 'ihramPortrait' | 'fbCover' | 'ytAvatar',
+  'avatar' | 'kaabaDua' | 'nabawiChamber' | 'kaabaDoor' | 'nabawiUmbrellas',
   BrandImageAsset
 > = {
-  ihramPortrait: {
-    id: 'ihram-portrait',
-    src: '/images/brand/sheikh-mostafa-ihram.jpg',
-    width: 200,
-    height: 200,
+  avatar: {
+    id: 'sheikh-avatar',
+    src: '/images/brand/sheikh-mostafa-avatar.jpg',
+    width: 512,
+    height: 519,
+    orientation: 'square',
     caption: {
-      ar: 'مرافقة الفوج منذ لحظة السفر',
-      en: 'Accompanying the group from departure',
+      ar: 'الشيخ مصطفى فليفل في المسجد النبوي الشريف',
+      en: 'Sheikh Mostafa Flefel at Al-Masjid an-Nabawi',
     },
     alt: {
-      ar: 'الشيخ مصطفى فليفل بملابس الإحرام برفقة المعتمرين أمام طائرة مصر للطيران',
-      en: 'Sheikh Mostafa Flefel in Ihram alongside pilgrims before an EgyptAir aircraft',
+      ar: 'صورة شخصية للشيخ مصطفى فليفل أمام مقصورة الحجرة الشريفة بالمسجد النبوي',
+      en: 'Portrait of Sheikh Mostafa Flefel in front of the Sacred Chamber grille in Masjid an-Nabawi',
     },
     sourceLabel: {
-      ar: 'صورة رسمية — رحلات أبشروا',
-      en: 'Official photo — Abshirou trips',
+      ar: 'الصورة التعريفية الرسمية — أبشروا',
+      en: 'Official verified profile portrait',
     },
   },
-  haramCover: {
-    id: 'haram-cover',
-    src: '/images/brand/sheikh-mostafa-haram-cover.jpg',
-    width: 720,
-    height: 960,
+  kaabaDua: {
+    id: 'kaaba-dua',
+    src: '/images/brand/sheikh-kaaba-dua.jpg',
+    width: 1000,
+    height: 1504,
+    orientation: 'portrait',
     caption: {
-      ar: 'من قلب المسجد الحرام أمام الكعبة المشرفة',
-      en: 'From Masjid al-Haram facing the Holy Kaaba',
+      ar: 'الدعاء في صحن المطاف أمام الكعبة المشرفة — مكة المكرمة',
+      en: 'Supplication in the Mataf before the Holy Kaaba — Makkah',
     },
     alt: {
-      ar: 'الشيخ مصطفى فليفل بملابس الإحرام في صحن المطاف أمام الكعبة المشرفة',
-      en: 'Sheikh Mostafa Flefel in white Ihram inside Masjid al-Haram facing the Kaaba',
+      ar: 'الشيخ مصطفى فليفل بملابس الإحرام رافعاً يديه بالدعاء أمام الكعبة المشرفة في المسجد الحرام',
+      en: 'Sheikh Mostafa Flefel in white Ihram raising his hands in dua before the Holy Kaaba in Makkah',
     },
     sourceLabel: {
-      ar: 'غلاف الصفحة الشخصية الموثقة',
-      en: 'Verified profile cover photo',
+      ar: 'الحساب الشخصي الموثق — مكة المكرمة',
+      en: 'Verified personal profile — Makkah',
     },
   },
-  ytAvatar: {
-    id: 'yt-avatar',
-    src: '/images/brand/abshirou-yt-avatar.jpg',
-    width: 400,
-    height: 400,
+  nabawiChamber: {
+    id: 'nabawi-chamber',
+    src: '/images/brand/sheikh-nabawi-rawdah.jpg',
+    width: 960,
+    height: 1536,
+    orientation: 'portrait',
     caption: {
-      ar: 'شعار أبشروا أمام كسوة الكعبة المشرفة',
-      en: 'Abshirou emblem at the Kiswah of the Kaaba',
+      ar: 'في رحاب الحجرة الشريفة بالمسجد النبوي — المدينة المنورة',
+      en: 'Inside Al-Masjid an-Nabawi by the Sacred Chamber — Madinah',
     },
     alt: {
-      ar: 'شعار وهوية قناة أبشروا أمام الكعبة المشرفة بمكة المكرمة',
-      en: 'Abshirou visual identity smiling while touching the Kiswah of the Holy Kaaba',
+      ar: 'الشيخ مصطفى فليفل بالزي الأبيض داخل المسجد النبوي أمام الشبك الذهبي للحجرة الشريفة',
+      en: 'Sheikh Mostafa Flefel inside Al-Masjid an-Nabawi beside the golden Sacred Chamber grille',
     },
     sourceLabel: {
-      ar: 'شعار قناة يوتيوب أبشروا',
-      en: 'Abshirou YouTube channel avatar',
+      ar: 'رحلات أبشروا — المدينة المنورة',
+      en: 'Abshirou journeys — Madinah',
     },
   },
-  fbCover: {
-    id: 'fb-cover',
-    src: '/images/brand/abshirou-fb-cover.jpg',
-    width: 720,
-    height: 960,
+  kaabaDoor: {
+    id: 'kaaba-door',
+    src: '/images/makkah/kaaba-door.webp',
+    width: 800,
+    height: 500,
+    orientation: 'landscape',
     caption: {
-      ar: 'أبشروا — طمأنينة القلوب في رحاب الحرمين',
-      en: 'Abshirou — Peace of heart in the Two Holy Mosques',
+      ar: 'باب الكعبة المشرفة ومقام إبراهيم عليه السلام',
+      en: 'Door of the Holy Kaaba & Maqam Ibrahim',
     },
     alt: {
-      ar: 'الغلاف الرسمي لصفحة أبشروا مصطفى فليفل في ساحات المسجد الحرام وساعة مكة',
-      en: 'Official Abshirou cover in the Masjid al-Haram courtyard with the Clock Tower',
+      ar: 'باب الكعبة المشرفة بكسوتها المذهبة ومقام إبراهيم عليه السلام في المسجد الحرام',
+      en: 'Door of the Holy Kaaba with golden calligraphy and Maqam Ibrahim in Masjid al-Haram',
     },
     sourceLabel: {
-      ar: 'غلاف صفحة أبشروا الموثقة (٨.٥ مليون)',
-      en: 'Abshirou verified Facebook page (8.5M)',
+      ar: 'معالم المسجد الحرام — مكة المكرمة',
+      en: 'Masjid al-Haram — Makkah',
+    },
+  },
+  nabawiUmbrellas: {
+    id: 'nabawi-umbrellas',
+    src: '/images/madinah/nabawi-umbrellas.webp',
+    width: 800,
+    height: 500,
+    orientation: 'landscape',
+    caption: {
+      ar: 'ساحات ومظلات المسجد النبوي والقبة الخضراء',
+      en: 'Al-Masjid an-Nabawi Courtyard Umbrellas & Green Dome',
+    },
+    alt: {
+      ar: 'مظلات ساحات المسجد النبوي الشريف والقبة الخضراء في المدينة المنورة عند الغروب',
+      en: 'Courtyard shade umbrellas and Green Dome of Al-Masjid an-Nabawi in Madinah',
+    },
+    sourceLabel: {
+      ar: 'معالم المسجد النبوي — المدينة المنورة',
+      en: 'Al-Masjid an-Nabawi — Madinah',
     },
   },
 };
@@ -198,23 +230,74 @@ export const BRAND_IMAGES: Record<
 export const BRAND_STATS = [
   {
     id: 'fb-page-followers',
-    value: { ar: '+٨.٥ مليون', en: '8.5M+' },
+    value: { ar: '+8.5 مليون', en: '8.5M+' },
     label: { ar: 'متابع لصفحة أبشروا الموثقة', en: 'Verified Abshirou FB Page' },
   },
   {
-    id: 'yt-views',
-    value: { ar: '+٢٥.١ مليون', en: '25.1M+' },
-    label: { ar: 'مشاهدة على يوتيوب أبشروا', en: 'Abshirou YouTube Views' },
+    id: 'fb-personal-followers',
+    value: { ar: '811 ألف', en: '811K' },
+    label: { ar: 'متابع لحساب الشيخ الموثق', en: 'Verified Personal Profile' },
   },
   {
-    id: 'yt-videos',
-    value: { ar: '١,٥١٦ فيديو', en: '1,516 Videos' },
-    label: { ar: 'محتوى دعوي ومناسك موثق', en: 'Documented Guidance & Duas' },
+    id: 'yt-views',
+    value: { ar: '+25.1 مليون', en: '25.1M+' },
+    label: { ar: 'مشاهدة على يوتيوب (@apopara14)', en: 'YouTube Views (@apopara14)' },
   },
   {
     id: 'license',
-    value: { ar: 'ترخيص ١٠٩٤', en: 'License #1094' },
-    label: { ar: 'شركة غرناطة للسياحة المعتمدة', en: 'Granada Tourism Official License' },
+    value: { ar: 'ترخيص 1094', en: 'License #1094' },
+    label: { ar: 'شركة غرناطة للسياحة المعتمدة', en: 'Granada Tourism Co.' },
+  },
+] as const;
+
+export const WHATSAPP_DIRECT_INTENTS: readonly WhatsAppIntentPreset[] = [
+  {
+    id: 'booking',
+    icon: '🕌',
+    label: {
+      ar: 'حجز واستفسار عمرة جديدة',
+      en: 'Book / Inquire New Umrah',
+    },
+    template: {
+      ar: 'السلام عليكم فضيلة الشيخ مصطفى فليفل، أرغب في معرفة مواعيد وأسعار أفواج العمرة القادمة مع مبادرة أبشروا وشركة غرناطة للسياحة (ترخيص 1094).',
+      en: 'As-salamu alaykum Sheikh Mostafa Flefel, I would like details on upcoming Abshirou & Granada Tourism (License #1094) Umrah packages and dates.',
+    },
+  },
+  {
+    id: 'fiqh',
+    icon: '📖',
+    label: {
+      ar: 'استشارة فقهية أو بالمناسك',
+      en: 'Fiqh & Ritual Question',
+    },
+    template: {
+      ar: 'السلام عليكم فضيلة الشيخ مصطفى فليفل، لديّ سؤال شرعي خاص بأحكام العمرة والمناسك وأرجو توجيهكم الكريم.',
+      en: 'As-salamu alaykum Sheikh Mostafa Flefel, I have a religious ruling question regarding Umrah rituals and would appreciate your guidance.',
+    },
+  },
+  {
+    id: 'group',
+    icon: '🧭',
+    label: {
+      ar: 'تنسيق ومتابعة داخل الفوج',
+      en: 'Active Group Coordination',
+    },
+    template: {
+      ar: 'السلام عليكم فضيلة الشيخ مصطفى، أتواصل معكم بخصوص تنسيق التجمع والانتقالات في الفوج الحالي.',
+      en: 'As-salamu alaykum Sheikh Mostafa, reaching out regarding gathering point and live group coordination.',
+    },
+  },
+  {
+    id: 'join',
+    icon: '👥',
+    label: {
+      ar: 'طلب الانضمام لجروب العمرة',
+      en: 'Join Official Umrah Group',
+    },
+    template: {
+      ar: 'السلام عليكم فضيلة الشيخ مصطفى فليفل، أود الانضمام لمتابعة رحلات العمرة وجروب المعتمرين على واتساب.',
+      en: 'As-salamu alaykum Sheikh Mostafa Flefel, I would like to follow your upcoming Umrah announcements and WhatsApp community.',
+    },
   },
 ] as const;
 
@@ -229,7 +312,7 @@ export const BRAND_PILLARS: Array<{
     icon: '⚖️',
     title: { ar: 'تأصيل شرعي أزهري موثوق', en: 'Verified Sharia Guidance' },
     desc: {
-      ar: 'توجيهات المناسك والأحكام العملية على منهج الفقه والقانون (خريج كلية الشريعة والقانون بطنطا) دون تعقيد أو تهويل.',
+      ar: 'توجيهات المناسك والأحكام العملية على منهج الفقه والقانون (خريج كلية الشريعة والقانون بطنطا) بيسر وطمأنينة.',
       en: 'Clear, accessible Fiqh guidance rooted in Sharia & Law scholarship (Faculty of Sharia & Law, Tanta).',
     },
   },
@@ -245,10 +328,10 @@ export const BRAND_PILLARS: Array<{
   {
     id: 'field',
     icon: '🧭',
-    title: { ar: 'مرافقة ميدانية من المطار للحرمين', en: 'End-to-End Field Companionship' },
+    title: { ar: 'مرافقة ميدانية وتواصل فوري', en: 'Field Care & Direct WhatsApp Access' },
     desc: {
-      ar: 'تجمع منظم، إرشاد صوتي وروحي في الطواف والسعي، مزارات المدينة والروضة الشريفة، ومتابعة فورية عبر رفيق المعتمر.',
-      en: 'Airport meet-up, live spiritual guidance during Tawaf & Sa’i, Madinah & Rawdah orientation, and offline digital care.',
+      ar: 'إرشاد خطوة بخطوة في الطواف والسعي والروضة الشريفة مع تواصل مباشر مع الشيخ مصطفى فليفل عبر واتساب أو بدون إنترنت.',
+      en: 'Step-by-step companionship across Makkah & Madinah plus direct WhatsApp access to Sheikh Mostafa Flefel.',
     },
   },
 ];
@@ -376,7 +459,7 @@ export const MARKETING_BROADCAST_TEMPLATES: readonly BrandMarketingTemplate[] = 
       en: 'Prospective pilgrims & inquiries',
     },
     message: {
-      ar: '✨ أبشروا لرحلات العمرة بإشراف الشيخ مصطفى فليفل (أبو رضوى)\n🏢 تحت مظلة شركة غرناطة للسياحة (ترخيص رقم 1094 — صلاح سالم، القاهرة)\n🤲 مرافقة علمية وروحية كاملة من لحظة السفر حتى العودة، وإرشاد ميداني في المسجد الحرام والمدينة المنورة.\n\n📲 لو نفسك في العمرة معانا كلمنا مباشرة على واتساب:\nwa.me/201040414659 (01040414659)\nأو هاتف الشركة: 01041060008\n🔗 جروب العمرة الرسمي: https://chat.whatsapp.com/JKJgvqRVRAD0mJ4ThjkLVh',
+      ar: '✨ أبشروا لرحلات العمرة بإشراف الشيخ مصطفى فليفل (أبو رضوى)\n🏢 تحت مظلة شركة غرناطة للسياحة (ترخيص رقم 1094 — صلاح سالم، القاهرة)\n🤲 مرافقة علمية وروحية كاملة من لحظة السفر حتى العودة، وإرشاد ميداني في المسجد الحرام والمدينة المنورة.\n\n📲 لو نفسك في العمرة معانا كلمنا مباشرة على واتساب:\nhttps://wa.me/201040414659 (01040414659)\nأو هاتف الشركة: 01041060008\n🔗 جروب العمرة الرسمي: https://chat.whatsapp.com/JKJgvqRVRAD0mJ4ThjkLVh',
       en: '✨ Abshirou Umrah Journeys supervised by Sheikh Mostafa Flefel (Abu Radwa)\n🏢 Licensed under Granada Tourism Co. (License #1094 — Salah Salem, Cairo)\n🤲 Complete Sharia guidance and on-ground support across Makkah & Madinah.\n\n📲 Message directly on WhatsApp to inquire or reserve:\nhttps://wa.me/201040414659 (+20 104 041 4659)\nAgency phone: +20 104 106 0008\n🔗 Official Umrah WhatsApp Group: https://chat.whatsapp.com/JKJgvqRVRAD0mJ4ThjkLVh',
     },
   },
@@ -391,8 +474,12 @@ export const MARKETING_BROADCAST_TEMPLATES: readonly BrandMarketingTemplate[] = 
       en: 'Registered group members & families',
     },
     message: {
-      ar: '🕋 أهلاً بكم في فوج أبشروا بإشراف الشيخ مصطفى فليفل (ترخيص غرناطة للسياحة 1094).\nيمكنكم متابعة مناسك الطواف والسعي، بوابات الحرم، أوقات الصلاة، والنداء المباشر للمشرف بدون إنترنت داخل الحرم عبر تطبيق «رفيق المعتمر».\n▶️ قناة أبشروا (يوتيوب): https://www.youtube.com/@apopara14\n📘 صفحة أبشروا (فيسبوك): https://www.facebook.com/share/1AEP9oRLcB\n📸 إنستجرام: https://www.instagram.com/apshro14/\n💬 استفسارات الواتساب: 01040414659',
-      en: '🕋 Welcome to the Abshirou Umrah Group supervised by Sheikh Mostafa Flefel (Granada Tourism License #1094).\nTrack your Tawaf/Sa’i rounds, Haram gates, prayer times, and instant supervisor SOS offline inside the Two Holy Mosques.\n▶️ Abshirou YouTube: https://www.youtube.com/@apopara14\n📘 Abshirou Facebook: https://www.facebook.com/share/1AEP9oRLcB\n📸 Instagram: https://www.instagram.com/apshro14/\n💬 Direct WhatsApp: +20 104 041 4659',
+      ar: '🕋 أهلاً بكم في فوج أبشروا بإشراف الشيخ مصطفى فليفل (ترخيص غرناطة للسياحة 1094).\nيمكنكم متابعة مناسك الطواف والسعي، بوابات الحرم، أوقات الصلاة، والتواصل المباشر مع المشرف بدون إنترنت داخل الحرم عبر تطبيق «رفيق المعتمر».\n▶️ قناة أبشروا (يوتيوب): https://www.youtube.com/@apopara14\n📘 صفحة أبشروا (فيسبوك): https://www.facebook.com/share/1AEP9oRLcB\n📸 إنستجرام: https://www.instagram.com/apshro14/\n💬 استفسارات الواتساب المباشر: https://wa.me/201040414659 (01040414659)',
+      en: '🕋 Welcome to the Abshirou Umrah Group supervised by Sheikh Mostafa Flefel (Granada Tourism License #1094).\nTrack your Tawaf/Sa’i rounds, Haram gates, prayer times, and instant WhatsApp support inside the Two Holy Mosques.\n▶️ Abshirou YouTube: https://www.youtube.com/@apopara14\n📘 Abshirou Facebook: https://www.facebook.com/share/1AEP9oRLcB\n📸 Instagram: https://www.instagram.com/apshro14/\n💬 Direct WhatsApp: https://wa.me/201040414659 (+20 104 041 4659)',
     },
   },
 ] as const;
+
+export function buildMostafaDirectWhatsAppUrl(text: string): string {
+  return `https://wa.me/${SHEIKH_BRAND.contact.umrahWhatsappDigits}?text=${encodeURIComponent(text)}`;
+}

@@ -363,11 +363,21 @@ function renderProfileUI(): void {
   setText('badge-bus', profile.busNumber);
   setText('badge-sup-phone', profile.supervisorPhone);
   setText('sos-meeting-point', profile.meetingPoint);
-  setText('header-trip-subtitle', `${profile.tripTitle} • ${getTripStageLabel(profile.tripStage)}`);
+  const localizedTripTitle =
+    isEn && profile.tripTitle === DEFAULT_PROFILE.tripTitle ? 'Shaaban Blessed Umrah Group' : profile.tripTitle;
+  setText('header-trip-subtitle', `${localizedTripTitle} • ${getTripStageLabel(profile.tripStage)}`);
 
   const callSupLink = document.getElementById('call-supervisor-link') as HTMLAnchorElement | null;
   if (callSupLink) {
     callSupLink.href = `tel:${profile.supervisorPhone.replace(/\s+/g, '')}`;
+  }
+
+  const waSupLink = document.getElementById('wa-supervisor-link') as HTMLAnchorElement | null;
+  if (waSupLink) {
+    const quickMsg = isEn
+      ? `As-salamu alaykum Sheikh ${profile.supervisorName}, ${profile.fullName} (${profile.tripCode}) contacting from Pilgrim Companion.`
+      : `السلام عليكم فضيلة ${profile.supervisorName}، معكم المعتمر ${profile.fullName} (${profile.tripCode}) من تطبيق رفيق المعتمر.`;
+    waSupLink.href = buildWhatsAppUrl(quickMsg, profile.supervisorPhone);
   }
 
   const hotelEnEl = document.getElementById('taxi-hotel-ar');
@@ -389,7 +399,7 @@ function renderProfileUI(): void {
   }
 
   setText('cert-pilgrim-name', profile.fullName);
-  setText('cert-trip-title', profile.tripTitle);
+  setText('cert-trip-title', localizedTripTitle);
   setText('cert-hijri-date', getMakkahHijriDate());
   setText(
     'cert-supervisor-name',
@@ -607,6 +617,11 @@ function handleProfileSave(e: Event): void {
 
   saveProfile();
   renderProfileUI();
+  renderBrandViews(() => switchTab('abshirou'), {
+    fullName: profile.fullName,
+    tripCode: profile.tripCode,
+    tripTitle: profile.tripTitle,
+  });
   closeDialogById('profile-modal');
   showToast('✅ تم حفظ بيانات بطاقتك وكارت الفندق على جهازك');
 }
@@ -1849,7 +1864,11 @@ window.addEventListener('DOMContentLoaded', () => {
   renderProfileUI();
   restoreCounters();
   renderZiyaratAndFieldGuides();
-  renderBrandViews(() => switchTab('abshirou'));
+  renderBrandViews(() => switchTab('abshirou'), {
+    fullName: profile.fullName,
+    tripCode: profile.tripCode,
+    tripTitle: profile.tripTitle,
+  });
   renderFiqhSection();
   renderWomenFiqhSection();
   renderPackingChecklist();
@@ -1906,7 +1925,11 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTawafUI();
       renderSaiUI();
       renderZiyaratAndFieldGuides();
-  renderBrandViews(() => switchTab('abshirou'));
+  renderBrandViews(() => switchTab('abshirou'), {
+    fullName: profile.fullName,
+    tripCode: profile.tripCode,
+    tripTitle: profile.tripTitle,
+  });
       renderFiqhSection();
       renderWomenFiqhSection();
       renderPackingChecklist();

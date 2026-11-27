@@ -21,7 +21,13 @@ import {
 } from '../financial/gameya.js';
 import { WhatsAppBroadcastManager, BroadcastPhase } from '../guidance/whatsapp-and-fiqh.js';
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
-import { MARKETING_BROADCAST_TEMPLATES } from '../brand/sheikh-brand.js';
+import {
+  BRAND_SOCIAL_LINKS,
+  MARKETING_BROADCAST_TEMPLATES,
+  SHEIKH_BRAND,
+  buildMostafaDirectWhatsAppUrl,
+} from '../brand/sheikh-brand.js';
+import { renderSharedBrandFooter } from './pilgrim/brand-view.js';
 import {
   TRIP_STAGE_LABELS,
   getTripStageLabel,
@@ -361,8 +367,8 @@ function createInitialState(): MultiGroupRootState {
       hotelPhone: '+966125718888',
       hotelLat: 21.4189,
       hotelLng: 39.8257,
-      supervisorName: 'الشيخ عمر الفاروق',
-      supervisorPhone: '+966509876543',
+      supervisorName: 'الشيخ مصطفى فليفل (أبو رضوى)',
+      supervisorPhone: '+201040414659',
       gatheringTime: 'قبل الإقلاع بـ 4 ساعات',
       meetingPoint: 'صالة السفر الدولية / ثم باب الملك عبد العزيز (1)',
     },
@@ -1391,7 +1397,44 @@ function renderWhatsAppHub(): void {
     `;
   }).join('');
 
-  container.innerHTML = stagePostsHtml + brandPostsHtml;
+  const directCommsCardHtml = `
+      <section class="card brand-spotlight-card" style="margin-bottom:1.25rem;" aria-labelledby="sup-direct-mostafa-title">
+        <div class="brand-spotlight-identity">
+          <div class="brand-spotlight-copy">
+            <div class="brand-badge-row" style="margin-block-end:0.35rem;">
+              <span class="brand-pill-hero-verified">✓ ${escapeHtml(isEn ? 'Abshirou Official Network' : 'شبكة أبشروا الرسمية')}</span>
+              <span class="brand-pill-hero-license">🏢 ${escapeHtml(isEn ? 'Granada Tourism • License #1094' : 'غرناطة للسياحة • ترخيص 1094')}</span>
+            </div>
+            <h3 id="sup-direct-mostafa-title" class="brand-spotlight-heading" style="font-size:1.05rem;">
+              ${escapeHtml(isEn ? 'Direct Channels & WhatsApp to Sheikh Mostafa Flefel' : 'التواصل المباشر وقنوات الشيخ مصطفى فليفل')}
+            </h3>
+            <p class="brand-spotlight-sub">
+              ${escapeHtml(isEn ? 'Quick access to Sheikh WhatsApp, Official Umrah Community Group, and verified Abshirou social channels.' : 'روابط مباشرة لواتساب الشيخ مصطفى، جروب العمرة الرسمي، وحسابات أبشروا الموثقة لتسهيل التواصل والرد على المعتمرين.')}
+            </p>
+          </div>
+        </div>
+        <div class="brand-spotlight-actions">
+          <a href="${escapeHtml(buildMostafaDirectWhatsAppUrl(isEn ? `Coordination from Supervisor Portal for (${s.tripTitle})` : `تنسيق عبر غرفة المشرف بخصوص (${s.tripTitle})`))}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="text-decoration:none;">
+            💬 ${escapeHtml(isEn ? `WhatsApp Mostafa (${SHEIKH_BRAND.contact.umrahWhatsappDisplay})` : `واتساب مصطفى (${SHEIKH_BRAND.contact.umrahWhatsappDisplay})`)}
+          </a>
+          <a href="${escapeHtml(SHEIKH_BRAND.contact.whatsappGroupUrl)}" target="_blank" rel="noopener noreferrer" class="btn brand-glass-btn" style="text-decoration:none;">
+            👥 ${escapeHtml(isEn ? 'Umrah WA Group' : 'جروب العمرة')}
+          </a>
+          <a href="tel:${escapeHtml(SHEIKH_BRAND.contact.agencyPhoneIntl)}" class="btn brand-glass-btn" style="text-decoration:none;">
+            📞 ${escapeHtml(SHEIKH_BRAND.contact.agencyPhoneDisplay)}
+          </a>
+          ${BRAND_SOCIAL_LINKS.filter((c) => c.id !== 'whatsapp-group')
+            .map(
+              (c) =>
+                `<a href="${escapeHtml(c.url)}" target="_blank" rel="noopener noreferrer" class="btn brand-glass-btn btn-compact" style="text-decoration:none;">${c.icon} ${escapeHtml(c.handle)}</a>`
+            )
+            .join('')}
+        </div>
+      </section>
+  `;
+
+  container.innerHTML = directCommsCardHtml + stagePostsHtml + brandPostsHtml;
+  renderSharedBrandFooter('supervisor');
 
   container.querySelectorAll<HTMLElement>('[data-copy-textarea]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -2026,6 +2069,7 @@ function openWristbandPreview(): void {
   const qrPayload = `UMRAH ${active.settings.tripCode}\nNAME: ${p.fullName}\nPP: ${p.passportNumber}\nHOTEL: ${active.settings.hotelNameEn}\nSUPERVISOR: ${active.settings.supervisorPhone}`;
   container.innerHTML = `
     <div style="border:2px solid #064e3b;border-radius:12px;padding:1.25rem;background:#ecfdf5;color:#022c22;text-align:center;">
+      <div style="font-size:0.78rem;font-weight:800;color:#065f46;margin-bottom:0.2rem;">أبشروا — شركة غرناطة للسياحة (ترخيص 1094)</div>
       <div style="font-size:1.15rem;font-weight:800;">${escapeHtml(active.settings.tripTitle)} 🕋 ${escapeHtml(active.settings.tripCode)}</div>
       <div style="font-size:1.1rem;font-weight:800;margin:0.4rem 0;">${escapeHtml(p.fullName)} (${escapeHtml(p.passportNumber)})</div>
       <div style="font-size:0.88rem;">${escapeHtml(active.settings.hotelNameAr)} — غرفة ${escapeHtml(p.roomNumber || '---')}</div>
@@ -2051,6 +2095,7 @@ function openAgreementPreview(): void {
 
   container.innerHTML = `
     <div style="border:1px solid #cbd5e1;border-radius:12px;padding:1.25rem;line-height:1.95;background:#f8fafc;color:#0f172a;">
+      <div style="text-align:center;font-size:0.82rem;font-weight:800;color:#047857;margin-bottom:0.25rem;">أبشروا — شركة غرناطة للسياحة (ترخيص 1094)</div>
       <h2 style="text-align:center;color:#064e3b;margin-bottom:0.75rem;font-size:1.15rem;">إقرار والتزام بسداد رحلة العمرة</h2>
       أقر أنا المشترك / المعتمر: <strong>${escapeHtml(m.name)}</strong><br>
       رقم الهاتف: <strong dir="ltr">${escapeHtml(m.phone)}</strong><br>

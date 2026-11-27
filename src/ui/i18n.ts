@@ -23,7 +23,7 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'nav.packing': { ar: '🧳 حقيبتي والخدمات', en: '🧳 Trip Wallet' },
   'nav.gates': { ar: '⛩️ الحرمين والمزارات', en: '⛩️ Haramain & Gates' },
   'nav.atlas': { ar: '⛩️ الحرمين والمزارات', en: '⛩️ Haramain & Gates' },
-  'nav.abshirou': { ar: '✨ أبشروا والمشرف', en: '✨ Abshirou & Brand' },
+  'nav.abshirou': { ar: '✨ أبشروا والتواصل', en: '✨ Abshirou & Contact' },
   'nav.ziyarat': { ar: '🕌 المزارات والميقات', en: '🕌 Ziyarat & Miqat' },
   'nav.women': { ar: '🧕 فقه المرأة', en: '🧕 Women Fiqh' },
   'nav.more': { ar: '⚙️ الأدوات', en: '⚙️ Tools' },
@@ -338,13 +338,15 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.lug.lobby': { ar: 'ببهو الاستقبال', en: 'Hotel Lobby' },
   'sup.lug.rooms': { ar: 'سُلّمت للغرف', en: 'Delivered' },
   'sup.sos.officialTitle': { ar: '🏛️ أرقام الطوارئ ومنصات المملكة الرسمية', en: '🏛️ Official Saudi Emergency & Nusuk Hotlines' },
+  'tools.whatsappSheikh': { ar: '💬 واتساب الشيخ', en: '💬 WhatsApp Sheikh' },
+  'sos.whatsappBtn': { ar: '💬 واتساب مباشر للشيخ', en: '💬 Direct WhatsApp' },
   'brand.zoomAvatarAria': {
-    ar: 'تكبير صورة الشيخ مصطفى فليفل في الإحرام',
-    en: 'Zoom photo of Sheikh Mostafa Flefel in Ihram',
+    ar: 'تكبير صورة الشيخ مصطفى فليفل في المسجد النبوي',
+    en: 'Zoom photo of Sheikh Mostafa Flefel at Masjid an-Nabawi',
   },
   'brand.openHubBtn': {
-    ar: '✨ نبذة أبشروا والقنوات الرسمية',
-    en: '✨ Abshirou Bio & Channels',
+    ar: '✨ صفحة أبشروا والتواصل المباشر',
+    en: '✨ Abshirou Hub & Direct Contact',
   },
 };
 
