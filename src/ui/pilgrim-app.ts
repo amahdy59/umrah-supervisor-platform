@@ -28,6 +28,7 @@ import {
 } from './shared.js';
 import { dataUrlToBlob, idbDeleteBlob, idbGetBlob, idbSetBlob } from './storage.js';
 import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
+import { renderBrandViews } from './pilgrim/brand-view.js';
 import { renderEditorialMethodologyHtml, renderReferencePillsHtml } from './references-ui.js';
 import {
   FIQH_RULINGS_EN,
@@ -87,8 +88,8 @@ const DEFAULT_PROFILE: PilgrimProfile = {
   roomNumber: '502 (الدور الخامس)',
   busNumber: 'باص رقم (1)',
   gender: 'MALE',
-  supervisorName: 'أبو عبد الرحمن',
-  supervisorPhone: '+966501234567',
+  supervisorName: 'الشيخ مصطفى فليفل (أبو رضوى)',
+  supervisorPhone: '+201040414659',
   meetingPoint: 'ساحة بوابة الملك عبد العزيز (بوابة 1) بجوار صيدلية برج الساعة',
   medicalNote: 'لا توجد حساسية أو حالات مزمنة مسجلة',
 };
@@ -1750,7 +1751,7 @@ function switchTab(rawTab: string): void {
     fiqhFilterOverride = 'WOMEN';
   }
 
-  const tabs = ['rituals', 'haram-atlas', 'fiqh', 'wallet'];
+  const tabs = ['rituals', 'haram-atlas', 'fiqh', 'wallet', 'abshirou'];
   if (!tabs.includes(tab)) return;
 
   if (atlasFilterOverride) {
@@ -1848,6 +1849,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderProfileUI();
   restoreCounters();
   renderZiyaratAndFieldGuides();
+  renderBrandViews(() => switchTab('abshirou'));
   renderFiqhSection();
   renderWomenFiqhSection();
   renderPackingChecklist();
@@ -1904,6 +1906,7 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTawafUI();
       renderSaiUI();
       renderZiyaratAndFieldGuides();
+  renderBrandViews(() => switchTab('abshirou'));
       renderFiqhSection();
       renderWomenFiqhSection();
       renderPackingChecklist();

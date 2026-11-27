@@ -21,6 +21,7 @@ import {
 } from '../financial/gameya.js';
 import { WhatsAppBroadcastManager, BroadcastPhase } from '../guidance/whatsapp-and-fiqh.js';
 import { OFFICIAL_SAUDI_RESOURCES } from '../guidance/official-resources.js';
+import { MARKETING_BROADCAST_TEMPLATES } from '../brand/sheikh-brand.js';
 import {
   TRIP_STAGE_LABELS,
   getTripStageLabel,
@@ -249,8 +250,8 @@ function createInitialState(): MultiGroupRootState {
       hotelPhone: '+966125300000',
       hotelLat: 21.4312,
       hotelLng: 39.8165,
-      supervisorName: 'أبو عبد الرحمن',
-      supervisorPhone: '+966501234567',
+      supervisorName: 'الشيخ مصطفى فليفل (أبو رضوى)',
+      supervisorPhone: '+201040414659',
       gatheringTime: 'بعد صلاة العصر بنصف ساعة',
       meetingPoint: 'بوابة الملك عبد العزيز (بوابة 1)',
     },
@@ -1341,7 +1342,7 @@ function renderWhatsAppHub(): void {
     meetingPoint: s.meetingPoint,
   };
 
-  container.innerHTML = broadcastManager
+  const stagePostsHtml = broadcastManager
     .getOrderedPhasesForStage(s.status)
     .map((phase: BroadcastPhase, idx: number) => {
       const post = broadcastManager.getFormattedPost(phase, params);
@@ -1367,6 +1368,30 @@ function renderWhatsAppHub(): void {
     `;
     })
     .join('');
+
+  const brandPostsHtml = MARKETING_BROADCAST_TEMPLATES.map((tpl, idx) => {
+    const textareaId = `wa-brand-post-${idx}`;
+    const title = isEn ? tpl.title.en : tpl.title.ar;
+    const audience = isEn ? tpl.audience.en : tpl.audience.ar;
+    const message = isEn ? tpl.message.en : tpl.message.ar;
+    return `
+      <div class="card surface-tint-card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+          <h3 class="card-title">${escapeHtml(title)}</h3>
+          <span class="badge badge-accent">✨ ${escapeHtml(isEn ? 'Abshirou • Granada #1094' : 'أبشروا • غرناطة ترخيص 1094')}</span>
+        </div>
+        <p style="font-size:0.84rem;color:var(--text-muted);margin:0 0 0.65rem;">${escapeHtml(audience)}</p>
+        <label for="${textareaId}" class="field-label">${isEn ? 'Marketing / Invitation Text (editable before sending):' : 'نص التسويق والدعوة (قابل للتعديل قبل الإرسال):'}</label>
+        <textarea id="${textareaId}" class="whatsapp-textarea" rows="9">${escapeHtml(message)}</textarea>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
+          <button type="button" class="btn btn-primary" data-copy-textarea="${textareaId}">📋 ${isEn ? 'Copy Marketing Message' : 'نسخ رسالة التسويق'}</button>
+          <button type="button" class="btn btn-gold" data-open-wa-textarea="${textareaId}">📲 ${isEn ? 'Share via WhatsApp' : 'مشاركة عبر واتساب'}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = stagePostsHtml + brandPostsHtml;
 
   container.querySelectorAll<HTMLElement>('[data-copy-textarea]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -2736,7 +2761,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const endDate = (document.getElementById('ng-end') as HTMLInputElement).value || startDate;
     const hotelKey = (document.getElementById('ng-hotel') as HTMLSelectElement).value;
     const supName = (document.getElementById('ng-sup-name') as HTMLInputElement).value.trim() || 'مشرف الفوج';
-    const supPhone = (document.getElementById('ng-sup-phone') as HTMLInputElement).value.trim() || '+966501234567';
+    const supPhone = (document.getElementById('ng-sup-phone') as HTMLInputElement).value.trim() || '+201040414659';
     if (!title) return;
     const preset = HOTEL_PRESETS[hotelKey] || HOTEL_PRESETS.kiswah;
     const newGrp: GroupWorkspace = {

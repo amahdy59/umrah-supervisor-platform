@@ -38,6 +38,10 @@ const PRECACHE_URLS = [
   '/images/madinah/mount-uhud.webp',
   '/images/madinah/qiblatayn-mosque.webp',
   '/images/madinah/baqi-cemetery.webp',
+  '/images/brand/sheikh-mostafa-ihram.jpg',
+  '/images/brand/sheikh-mostafa-haram-cover.jpg',
+  '/images/brand/abshirou-yt-avatar.jpg',
+  '/images/brand/abshirou-fb-cover.jpg',
 ];
 
 self.addEventListener('install', (event) => {

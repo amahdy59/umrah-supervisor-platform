@@ -5,24 +5,25 @@ const LANG_STORAGE_KEY = 'umrah_ui_lang';
 const DICTIONARY: Record<string, { ar: string; en: string }> = {
   // App Shell & Skip Link
   'nav.skip': { ar: 'تخطي إلى المحتوى الرئيسي', en: 'Skip to main content' },
-  'app.pilgrim.title': { ar: 'رفيق المعتمر (Pilgrim Companion)', en: 'Pilgrim Companion' },
-  'app.supervisor.title': { ar: 'غرفة عمليات مشرف العمرة (Mission Control)', en: 'Supervisor Mission Control' },
+  'app.pilgrim.title': { ar: 'أبشروا | رفيق المعتمر — الشيخ مصطفى فليفل', en: 'Abshirou | Pilgrim Companion — Sheikh Mostafa Flefel' },
+  'app.supervisor.title': { ar: 'أبشروا | غرفة عمليات المشرف — الشيخ مصطفى فليفل', en: 'Abshirou | Supervisor Mission Control — Sheikh Mostafa Flefel' },
   'app.supervisor.subtitle': {
-    ar: 'إدارة الأفواج المتزامنة والمتتابعة، سجل الأشخاص، والأقساط',
-    en: 'Multi-Group Operations, Pilgrim CRM & Flexible Installments',
+    ar: 'شركة غرناطة للسياحة (ترخيص ١٠٩٤) • إدارة الأفواج، سجل الأشخاص، والأقساط',
+    en: 'Granada Tourism (License #1094) • Multi-Group Operations, CRM & Installments',
   },
   'app.pilgrim.footer': {
-    ar: 'رفيق المعتمر • يعمل بدون إنترنت داخل الحرمين الشريفين •',
-    en: 'Pilgrim Companion • Works Offline Inside Al-Haramain •',
+    ar: 'أبشروا — الشيخ مصطفى فليفل (غرناطة للسياحة ترخيص ١٠٩٤) • يعمل بدون إنترنت •',
+    en: 'Abshirou — Sheikh Mostafa Flefel (Granada Tourism #1094) • Works Offline •',
   },
   'app.pilgrim.supervisorLink': { ar: 'دخول بوابة المشرفين', en: 'Supervisor Portal' },
 
-  // Pilgrim Navigation (Consolidated 4 Pillars + Tools Popover)
+  // Pilgrim Navigation (Consolidated 4 Pillars + Abshirou Brand Hub + Tools Popover)
   'nav.rituals': { ar: '🤲 مناسكي والرحلة', en: '🤲 My Umrah' },
   'nav.fiqh': { ar: '📖 الفقه والمصادر', en: '📖 Fiqh & Sources' },
   'nav.packing': { ar: '🧳 حقيبتي والخدمات', en: '🧳 Trip Wallet' },
   'nav.gates': { ar: '⛩️ الحرمين والمزارات', en: '⛩️ Haramain & Gates' },
   'nav.atlas': { ar: '⛩️ الحرمين والمزارات', en: '⛩️ Haramain & Gates' },
+  'nav.abshirou': { ar: '✨ أبشروا والمشرف', en: '✨ Abshirou & Brand' },
   'nav.ziyarat': { ar: '🕌 المزارات والميقات', en: '🕌 Ziyarat & Miqat' },
   'nav.women': { ar: '🧕 فقه المرأة', en: '🧕 Women Fiqh' },
   'nav.more': { ar: '⚙️ الأدوات', en: '⚙️ Tools' },
@@ -337,6 +338,14 @@ const DICTIONARY: Record<string, { ar: string; en: string }> = {
   'sup.lug.lobby': { ar: 'ببهو الاستقبال', en: 'Hotel Lobby' },
   'sup.lug.rooms': { ar: 'سُلّمت للغرف', en: 'Delivered' },
   'sup.sos.officialTitle': { ar: '🏛️ أرقام الطوارئ ومنصات المملكة الرسمية', en: '🏛️ Official Saudi Emergency & Nusuk Hotlines' },
+  'brand.zoomAvatarAria': {
+    ar: 'تكبير صورة الشيخ مصطفى فليفل في الإحرام',
+    en: 'Zoom photo of Sheikh Mostafa Flefel in Ihram',
+  },
+  'brand.openHubBtn': {
+    ar: '✨ نبذة أبشروا والقنوات الرسمية',
+    en: '✨ Abshirou Bio & Channels',
+  },
 };
 
 let currentLang: UiLanguage = 'ar';

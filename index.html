@@ -12,7 +12,7 @@
       }
     } catch (e) {}
   </script>
-  <title>رفيق المعتمر | تطبيق الحاج والمعتمر التفاعلي</title>
+  <title>أبشروا | رفيق المعتمر — الشيخ مصطفى فليفل</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -420,7 +420,7 @@
       <div class="logo-area">
         <div class="logo-icon" aria-hidden="true">🕋</div>
         <div class="app-title">
-          <h1 data-i18n="app.pilgrim.title">رفيق المعتمر (Pilgrim Companion)</h1>
+          <h1 data-i18n="app.pilgrim.title">أبشروا | رفيق المعتمر — الشيخ مصطفى فليفل</h1>
           <p id="header-trip-subtitle">فوج عمرة شعبان المبارك</p>
         </div>
       </div>
@@ -449,6 +449,7 @@
         <button type="button" class="mode-btn" data-tab-target="haram-atlas" data-i18n="nav.atlas">⛩️ الحرمين والمزارات</button>
         <button type="button" class="mode-btn" data-tab-target="fiqh" data-i18n="nav.fiqh">📖 الفقه والمصادر</button>
         <button type="button" class="mode-btn" data-tab-target="wallet" data-i18n="nav.packing">🧳 حقيبتي والخدمات</button>
+        <button type="button" class="mode-btn" data-tab-target="abshirou" data-i18n="nav.abshirou">✨ أبشروا والمشرف</button>
       </div>
       <button type="button" class="mode-btn tablet-only-more more-trigger-tablet" popovertarget="pilgrim-more-popover" data-i18n="nav.more">
         ⚙️ الأدوات
@@ -556,7 +557,7 @@
 
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
             <button type="button" id="btn-trigger-sos" class="btn btn-danger" style="flex:1;" data-i18n="sos.triggerBtn">🆘 أنا تائه — إرسال موقعي للمشرف</button>
-            <a id="call-supervisor-link" href="tel:+966501234567" class="btn btn-secondary" style="text-decoration:none;" data-i18n="sos.callBtn">📞 اتصال مباشر</a>
+            <a id="call-supervisor-link" href="tel:+201040414659" class="btn btn-secondary" style="text-decoration:none;" data-i18n="sos.callBtn">📞 اتصال مباشر</a>
           </div>
         </div>
       </div>
@@ -643,6 +644,7 @@
           </div>
         </div>
       </div>
+      <div id="pilgrim-brand-spotlight"></div>
     </section>
 
     <!-- TAB 2: HARAMAIN ATLAS, GATES COMPASS & ZIYARAT -->
@@ -893,6 +895,11 @@
         <div id="official-resources-grid" class="grid-2" style="margin-bottom:0;"></div>
       </div>
     </section>
+
+    <!-- Brand & Abshirou Hub Tab -->
+    <section id="tab-abshirou" class="tab-view" hidden>
+      <div id="abshirou-brand-container"></div>
+    </section>
   </main>
 
   <!-- Sticky Mobile Bottom Bar (4 core pillars + Tools popover — zero buried tabs!) -->
@@ -908,6 +915,7 @@
   <div id="pilgrim-more-popover" class="more-popover" popover="auto">
     <div style="font-weight:800;margin-bottom:0.6rem;color:var(--primary-ink);" data-i18n="nav.popoverTitle">إعدادات العرض واللغة والوصول</div>
     <nav class="more-popover-grid" aria-label="إعدادات وأدوات">
+      <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-tab-target="abshirou" data-i18n="nav.abshirou">✨ أبشروا والمشرف</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-senior-toggle aria-pressed="false">👵 وضع كبار السن</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
       <button type="button" class="btn btn-secondary" style="justify-content:flex-start;" data-wake-toggle aria-pressed="false">🔆 منع إغلاق الشاشة</button>
@@ -917,7 +925,7 @@
   </div>
 
   <footer>
-    <span data-i18n="app.pilgrim.footer">رفيق المعتمر • يعمل بدون إنترنت داخل الحرمين الشريفين •</span>
+    <span data-i18n="app.pilgrim.footer">أبشروا — الشيخ مصطفى فليفل (غرناطة للسياحة ترخيص ١٠٩٤) • يعمل بدون إنترنت •</span>
     <a href="/supervisor" style="color:var(--text-muted);text-decoration:underline;" data-i18n="app.pilgrim.supervisorLink">دخول بوابة المشرفين</a>
   </footer>
 
