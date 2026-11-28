@@ -8,15 +8,15 @@ pages_build_output_dir = "dist"
 # 1. Create the database:   npx wrangler d1 create umrah-db
 # 2. Copy the database_id output below, then uncomment the block.
 # 3. Apply migrations:      npx wrangler d1 migrations apply umrah-db --remote
-# 4. In Cloudflare Pages dashboard → Settings → Environment variables, add:
+# 4. In Cloudflare Pages dashboard → Settings → Variables and Secrets, add a Secret:
 #      SYNC_SECRET = <your strong secret token>
 #    DO NOT commit the real SYNC_SECRET value here.
 # ---------------------------------------------------------------------------
-# [[d1_databases]]
-# binding        = "DB"
-# database_name  = "umrah-db"
-# database_id    = ""         # <-- paste id from step 1
-# migrations_dir = "packages/database-schema/migrations"
+[[d1_databases]]
+binding        = "DB"
+database_name  = "umrah-db"
+database_id    = "5ec6a73f-0be7-4f64-9dd1-8df5d131210c"
+migrations_dir = "packages/database-schema/migrations"
 
 # ---------------------------------------------------------------------------
 # Public environment variables (non-secret, committed)
