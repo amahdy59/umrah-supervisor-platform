@@ -42,6 +42,8 @@ import {
   openDialogById,
   closeDialogById,
   initAccessibleFormValidation,
+  getRadioGroupValue,
+  setRadioGroupValue,
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
@@ -56,12 +58,13 @@ import {
   updateNetworkStatusBadge,
   registerServiceWorkerAndNetworkStatus,
 } from './shared.js';
-import { createSyncChannel, idbGetJson, idbSetJson } from './storage.js';
+import { createSyncChannel, idbAppendLedgerAudit, idbGetJson, idbSetJson } from './storage.js';
 import { getCurrentLanguage, initLanguage, t, toggleLanguage } from './i18n.js';
 import { renderReferencePillsHtml } from './references-ui.js';
 import {
   pushGroupWorkspaceToCloud,
   pullGroupWorkspaceFromCloud,
+  pushPeopleDirectoryToCloud,
   flushSyncOutbox,
   getSyncAuthToken,
   setSyncAuthToken,
@@ -71,6 +74,7 @@ import {
 } from './cloud-sync.js';
 import { OFFICIAL_RESOURCES_EN } from './guidance-en.js';
 import { enforcePrivacyLockIfConfigured, wirePrivacyLockHandlers } from './supervisor/privacy-lock.js';
+import { migrateRootState } from './supervisor/migrations.js';
 import type {
   PilgrimRecord,
   GameyaRecord,
@@ -429,12 +433,7 @@ const syncChannel = createSyncChannel((scope) => {
 });
 
 function normalizeRootState(parsed: Partial<MultiGroupRootState>): MultiGroupRootState {
-  const fallback = createInitialState();
-  return {
-    activeGroupId: parsed.activeGroupId || fallback.activeGroupId,
-    groups: Array.isArray(parsed.groups) && parsed.groups.length > 0 ? parsed.groups : fallback.groups,
-    people: Array.isArray(parsed.people) ? parsed.people : fallback.people,
-  };
+  return migrateRootState(parsed, createInitialState());
 }
 
 function loadState(): void {
@@ -459,7 +458,14 @@ async function hydrateFromIndexedDb(): Promise<void> {
   }
 }
 
-function saveState(broadcast: boolean = true): void {
+function saveState(broadcast: boolean = true, bumpVersion: boolean = true): void {
+  if (bumpVersion) {
+    const active = rootState.groups.find((g) => g.id === rootState.activeGroupId);
+    if (active) {
+      active.version = Math.max(1, (active.version || 1) + 1);
+      active.updatedAt = new Date().toISOString();
+    }
+  }
   let localOk = false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rootState));
@@ -834,9 +840,9 @@ function openPilgrimModal(p?: PilgrimRecord): void {
   const submitBtn = document.getElementById('btn-save-pilgrim-submit');
   const editIdEl = document.getElementById('pilgrim-edit-id') as HTMLInputElement | null;
   const nameEl = document.getElementById('new-pilgrim-name') as HTMLInputElement | null;
+  const formEl = document.getElementById('add-pilgrim-form') as HTMLFormElement | null;
   const passEl = document.getElementById('new-pilgrim-passport') as HTMLInputElement | null;
   const phoneEl = document.getElementById('new-pilgrim-phone') as HTMLInputElement | null;
-  const genderEl = document.getElementById('new-pilgrim-gender') as HTMLSelectElement | null;
   const nusukEl = document.getElementById('new-pilgrim-nusuk') as HTMLInputElement | null;
 
   if (p) {
@@ -846,12 +852,13 @@ function openPilgrimModal(p?: PilgrimRecord): void {
     if (nameEl) nameEl.value = p.fullName;
     if (passEl) passEl.value = p.passportNumber;
     if (phoneEl) phoneEl.value = p.phone;
-    if (genderEl) genderEl.value = p.gender;
+    if (formEl) setRadioGroupValue(formEl, 'newPilgrimGender', p.gender);
     if (nusukEl) nusukEl.checked = p.nusukReady;
   } else {
     if (titleEl) titleEl.textContent = isEn ? '➕ Add Pilgrim to Active Group' : '➕ إضافة معتمر للفوج النشط';
     if (submitBtn) submitBtn.textContent = isEn ? '✅ Save & Add to Group + CRM' : '✅ حفظ وإضافة للفوج والسجل';
-    (document.getElementById('add-pilgrim-form') as HTMLFormElement | null)?.reset();
+    formEl?.reset();
+    if (formEl) setRadioGroupValue(formEl, 'newPilgrimGender', Gender.MALE);
     if (editIdEl) editIdEl.value = '';
     if (nusukEl) nusukEl.checked = true;
   }
@@ -863,12 +870,12 @@ function openPersonModal(person?: PersonRecord): void {
   const isEn = getCurrentLanguage() === 'en';
   const titleEl = document.getElementById('add-person-modal-title');
   const submitBtn = document.getElementById('btn-save-person-submit');
+  const formEl = document.getElementById('add-person-form') as HTMLFormElement | null;
   const editIdEl = document.getElementById('crm-edit-id') as HTMLInputElement | null;
   const nameEl = document.getElementById('crm-name') as HTMLInputElement | null;
   const passEl = document.getElementById('crm-passport') as HTMLInputElement | null;
   const expEl = document.getElementById('crm-expiry') as HTMLInputElement | null;
   const phoneEl = document.getElementById('crm-phone') as HTMLInputElement | null;
-  const genderEl = document.getElementById('crm-gender') as HTMLSelectElement | null;
   const ecEl = document.getElementById('crm-ec-phone') as HTMLInputElement | null;
   const notesEl = document.getElementById('crm-notes') as HTMLInputElement | null;
   const wcEl = document.getElementById('crm-wheelchair') as HTMLInputElement | null;
@@ -882,7 +889,7 @@ function openPersonModal(person?: PersonRecord): void {
     if (passEl) passEl.value = person.passportNumber;
     if (expEl) expEl.value = person.passportExpiryDate || '';
     if (phoneEl) phoneEl.value = person.phone;
-    if (genderEl) genderEl.value = person.gender;
+    if (formEl) setRadioGroupValue(formEl, 'crmGender', person.gender);
     if (ecEl) ecEl.value = person.emergencyContactPhone || '';
     if (notesEl) notesEl.value = person.notes || '';
     if (wcEl) wcEl.checked = person.requiresWheelchair;
@@ -890,7 +897,8 @@ function openPersonModal(person?: PersonRecord): void {
   } else {
     if (titleEl) titleEl.textContent = isEn ? '👥 Add Persistent Person Record (CRM)' : '👥 إضافة سجل شخص دائم (CRM)';
     if (submitBtn) submitBtn.textContent = isEn ? '💾 Save to Persistent CRM' : '💾 حفظ بالسجل الدائم';
-    (document.getElementById('add-person-form') as HTMLFormElement | null)?.reset();
+    formEl?.reset();
+    if (formEl) setRadioGroupValue(formEl, 'crmGender', Gender.MALE);
     if (editIdEl) editIdEl.value = '';
   }
   openDialogById('add-person-modal');
@@ -1521,7 +1529,23 @@ function buildScheduleSummaryForMember(m: GameyaRecord, departureDateStr: string
 }
 
 function buildReceiptMessage(tripTitle: string, supervisorName: string, m: GameyaRecord, amountPaid?: number): string {
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const remaining = Math.max(0, m.totalTarget - m.totalPaid);
+  if (isEn) {
+    return [
+      `📋 *Official Payment Receipt - ${tripTitle}* 🕋`,
+      `Date: ${new Date().toLocaleDateString(loc)}`,
+      `Subscriber: *${m.name}*`,
+      `Plan: *${getPlanLabel(m.planType)}*`,
+      ...(amountPaid ? [`Payment Received: *${amountPaid.toLocaleString(loc)} ${curr}*`] : []),
+      `Total Paid: *${m.totalPaid.toLocaleString(loc)} ${curr}*`,
+      `Remaining Balance: *${remaining.toLocaleString(loc)} ${curr}*`,
+      `Status: *${remaining === 0 ? 'Paid in Full 🎉' : 'Active Installments ✅'}*`,
+      `_${supervisorName}_`,
+    ].join('\n');
+  }
   return [
     `📋 *إيصال سداد معتمد - ${tripTitle}* 🕋`,
     `التاريخ: ${new Date().toLocaleDateString('ar-EG')}`,
@@ -1537,11 +1561,33 @@ function buildReceiptMessage(tripTitle: string, supervisorName: string, m: Gamey
 
 function updatePaymentProjectionPreview(m: GameyaRecord, amountVal: number): void {
   const box = document.getElementById('pay-projection-preview');
-  if (!box) return;
+  const submitBtn = document.getElementById('btn-pay-submit') as HTMLButtonElement | null;
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const currentRemaining = Math.max(0, m.totalTarget - m.totalPaid);
   const clamped = Math.max(0, Math.min(amountVal || 0, currentRemaining));
   const projectedRemaining = Math.max(0, currentRemaining - clamped);
   const pct = Math.min(100, Math.round(((m.totalPaid + clamped) / Math.max(1, m.totalTarget)) * 100));
+
+  if (submitBtn) {
+    submitBtn.textContent =
+      clamped > 0
+        ? isEn
+          ? `✅ Confirm Payment (${clamped.toLocaleString(loc)} ${curr})`
+          : `✅ تأكيد تحصيل ${clamped.toLocaleString(loc)} ${curr}`
+        : isEn
+          ? '✅ Confirm Payment'
+          : '✅ تأكيد استلام الدفعة';
+  }
+  if (!box) return;
+  if (isEn) {
+    box.innerHTML =
+      clamped <= 0
+        ? 'Enter a valid payment amount to preview the remaining balance.'
+        : `💡 After recording <strong>${clamped.toLocaleString(loc)} ${curr}</strong>, total progress becomes <strong>${pct}%</strong> and remaining balance becomes <strong>${projectedRemaining.toLocaleString(loc)} ${curr}</strong>${projectedRemaining === 0 ? ' 🎉 (Settled in full)' : ''}.`;
+    return;
+  }
   box.innerHTML =
     clamped <= 0
       ? 'أدخل قيمة الدفعة لمعاينة الرصيد المتبقي بعد التحصيل.'
@@ -1550,6 +1596,9 @@ function updatePaymentProjectionPreview(m: GameyaRecord, amountVal: number): voi
 
 function openPaymentModalForMember(m: GameyaRecord): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   activePaymentMemberId = m.id;
   const { items, summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
   const rem = Math.max(0, m.totalTarget - m.totalPaid);
@@ -1561,8 +1610,13 @@ function openPaymentModalForMember(m: GameyaRecord): void {
 
   const memberBox = document.getElementById('pay-modal-member');
   if (memberBox) {
-    memberBox.textContent = `${m.name} — الإجمالي: ${m.totalTarget.toLocaleString('ar-EG')} ج.م • المسدد: ${m.totalPaid.toLocaleString('ar-EG')} ج.م • المتبقي: ${rem.toLocaleString('ar-EG')} ج.م`;
+    memberBox.textContent = isEn
+      ? `${m.name} — Total: ${m.totalTarget.toLocaleString(loc)} ${curr} • Paid: ${m.totalPaid.toLocaleString(loc)} ${curr} • Remaining: ${rem.toLocaleString(loc)} ${curr}`
+      : `${m.name} — الإجمالي: ${m.totalTarget.toLocaleString('ar-EG')} ج.م • المسدد: ${m.totalPaid.toLocaleString('ar-EG')} ج.م • المتبقي: ${rem.toLocaleString('ar-EG')} ج.م`;
   }
+
+  const payForm = document.getElementById('payment-form') as HTMLFormElement | null;
+  if (payForm) setRadioGroupValue(payForm, 'payMethod', PaymentMethod.INSTAPAY);
 
   const amountEl = document.getElementById('pay-amount') as HTMLInputElement | null;
   const dateEl = document.getElementById('pay-date') as HTMLInputElement | null;
@@ -1570,6 +1624,7 @@ function openPaymentModalForMember(m: GameyaRecord): void {
   if (amountEl) {
     amountEl.value = String(nextDue);
     amountEl.max = String(rem);
+    amountEl.setAttribute('aria-invalid', 'false');
   }
   if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
   if (refEl) refEl.value = '';
@@ -1578,16 +1633,28 @@ function openPaymentModalForMember(m: GameyaRecord): void {
   if (presetsEl) {
     const presets: Array<{ label: string; value: number }> = [];
     if (nextDue > 0 && nextDue < rem) {
-      presets.push({ label: `القسط القادم (${nextDue.toLocaleString('ar-EG')})`, value: nextDue });
+      presets.push({
+        label: isEn ? `Next Due (${nextDue.toLocaleString(loc)})` : `القسط القادم (${nextDue.toLocaleString('ar-EG')})`,
+        value: nextDue,
+      });
     }
     if (overdueSum > 0 && overdueSum !== nextDue && overdueSum <= rem) {
-      presets.push({ label: `تصفية المتأخرات (${overdueSum.toLocaleString('ar-EG')})`, value: overdueSum });
+      presets.push({
+        label: isEn ? `Settle Overdue (${overdueSum.toLocaleString(loc)})` : `تصفية المتأخرات (${overdueSum.toLocaleString('ar-EG')})`,
+        value: overdueSum,
+      });
     }
     const halfRem = Math.round(rem / 2);
     if (halfRem > 0 && halfRem !== nextDue && halfRem !== overdueSum) {
-      presets.push({ label: `نصف المتبقي (${halfRem.toLocaleString('ar-EG')})`, value: halfRem });
+      presets.push({
+        label: isEn ? `Half Balance (${halfRem.toLocaleString(loc)})` : `نصف المتبقي (${halfRem.toLocaleString('ar-EG')})`,
+        value: halfRem,
+      });
     }
-    presets.push({ label: `كامل المتبقي (${rem.toLocaleString('ar-EG')})`, value: rem });
+    presets.push({
+      label: isEn ? `Full Balance (${rem.toLocaleString(loc)})` : `كامل المتبقي (${rem.toLocaleString('ar-EG')})`,
+      value: rem,
+    });
 
     presetsEl.innerHTML = presets
       .map(
@@ -1598,7 +1665,10 @@ function openPaymentModalForMember(m: GameyaRecord): void {
     presetsEl.querySelectorAll<HTMLElement>('[data-pay-preset]').forEach((chip) => {
       chip.addEventListener('click', () => {
         const val = Number(chip.dataset.payPreset) || 0;
-        if (amountEl) amountEl.value = String(val);
+        if (amountEl) {
+          amountEl.value = String(val);
+          amountEl.setAttribute('aria-invalid', 'false');
+        }
         updatePaymentProjectionPreview(m, val);
       });
     });
@@ -1606,14 +1676,22 @@ function openPaymentModalForMember(m: GameyaRecord): void {
 
   updatePaymentProjectionPreview(m, nextDue);
   openDialogById('payment-modal');
+  window.requestAnimationFrame(() => amountEl?.focus());
 }
 
 function openScheduleModalForMember(m: GameyaRecord): void {
   const active = getActiveGroup();
+  const isEn = getCurrentLanguage() === 'en';
+  const loc = isEn ? 'en-US' : 'ar-EG';
+  const curr = isEn ? 'EGP' : 'ج.م';
   const { items, summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
   const title = document.getElementById('schedule-modal-title');
   const body = document.getElementById('schedule-modal-body');
-  if (title) title.textContent = `📅 جدول ودفعات: ${m.name} (${PLAN_LABELS[m.planType]})`;
+  if (title) {
+    title.textContent = isEn
+      ? `📅 Installments & Payments: ${m.name} (${getPlanLabel(m.planType)})`
+      : `📅 جدول ودفعات: ${m.name} (${getPlanLabel(m.planType)})`;
+  }
   if (!body) return;
 
   const pct = Math.min(100, Math.round((m.totalPaid / Math.max(1, m.totalTarget)) * 100));
@@ -1633,18 +1711,27 @@ function openScheduleModalForMember(m: GameyaRecord): void {
               : 'badge-primary';
       const badgeText =
         it.status === InstallmentStatus.PAID
-          ? 'مسدد ✅'
+          ? isEn
+            ? 'Paid ✅'
+            : 'مسدد ✅'
           : isOverdue
-            ? 'متأخر ⚠️'
+            ? isEn
+              ? 'Overdue ⚠️'
+              : 'متأخر ⚠️'
             : it.status === InstallmentStatus.PARTIALLY_PAID
-              ? 'جزئي'
-              : 'مستحق';
+              ? isEn
+                ? 'Partial'
+                : 'جزئي'
+              : isEn
+                ? 'Due'
+                : 'مستحق';
+      const label = isEn ? `Installment #${it.installmentNumber}` : it.labelAr || `قسط ${it.installmentNumber}`;
       return `
       <tr>
-        <th scope="row">${escapeHtml(it.labelAr || `قسط ${it.installmentNumber}`)}</th>
-        <td data-label="${escapeHtml(t('sup.col.dueDate'))}">${it.dueDate.toLocaleDateString('ar-EG')}</td>
-        <td data-label="${escapeHtml(t('sup.col.dueAmount'))}">${it.amountDue.toDecimal().toLocaleString('ar-EG')} ج.م</td>
-        <td data-label="${escapeHtml(t('sup.col.paidAmount'))}">${it.amountPaid.toDecimal().toLocaleString('ar-EG')} ج.م</td>
+        <th scope="row">${escapeHtml(label)}</th>
+        <td data-label="${escapeHtml(t('sup.col.dueDate'))}">${it.dueDate.toLocaleDateString(loc)}</td>
+        <td data-label="${escapeHtml(t('sup.col.dueAmount'))}">${it.amountDue.toDecimal().toLocaleString(loc)} ${curr}</td>
+        <td data-label="${escapeHtml(t('sup.col.paidAmount'))}">${it.amountPaid.toDecimal().toLocaleString(loc)} ${curr}</td>
         <td data-label="${escapeHtml(t('sup.col.status'))}"><span class="badge ${badgeCls}">${badgeText}</span></td>
       </tr>
     `;
@@ -1653,66 +1740,123 @@ function openScheduleModalForMember(m: GameyaRecord): void {
 
   const logHtml =
     m.payments.length > 0
-      ? `<h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;color:var(--primary-ink);">سجل المدفوعات الموثق (${m.payments.length})</h3>
+      ? `<h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;color:var(--primary-ink);">${
+          isEn ? `Verified Payment Ledger (${m.payments.length})` : `سجل المدفوعات الموثق (${m.payments.length})`
+        }</h3>
          <div style="display:flex;flex-direction:column;gap:0.45rem;">
            ${m.payments
              .map(
                (p) => `
              <div class="info-box-neutral" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.45rem;padding:0.55rem 0.75rem;font-size:0.84rem;">
                <div>
-                 <strong>${p.amount.toLocaleString(getCurrentLanguage() === 'en' ? 'en-US' : 'ar-EG')} ${getCurrentLanguage() === 'en' ? 'EGP' : 'ج.م'}</strong> — ${escapeHtml(getMethodLabel(p.method))}
-                 ${p.ref ? ` (مرجع: ${escapeHtml(p.ref)})` : ''}
+                 <strong>${p.amount.toLocaleString(loc)} ${curr}</strong> — ${escapeHtml(getMethodLabel(p.method))}
+                 ${p.ref ? ` (${isEn ? 'Ref' : 'مرجع'}: ${escapeHtml(p.ref)})` : ''}
                  <span style="color:var(--text-muted);"> • ${escapeHtml(p.dateIso)}</span>
                </div>
                <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-                 <button type="button" class="btn btn-secondary btn-compact" data-copy-receipt="${escapeHtml(p.id)}">📋 نسخ إيصال</button>
-                 <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-void-payment="${escapeHtml(p.id)}">↩️ تراجع</button>
+                 <button type="button" class="btn btn-secondary btn-compact" data-copy-receipt="${escapeHtml(p.id)}">${
+                   isEn ? '📋 Copy Receipt' : '📋 نسخ إيصال'
+                 }</button>
+                 <button type="button" class="btn btn-secondary btn-compact" style="color:var(--danger);" data-void-payment="${escapeHtml(p.id)}" data-confirm-step="0">${
+                   isEn ? '↩️ Reverse' : '↩️ تراجع'
+                 }</button>
                </div>
              </div>
            `
              )
              .join('')}
          </div>`
-      : `<div class="info-box-neutral" style="margin-top:0.85rem;font-size:0.86rem;color:var(--text-muted);">لم تُسجّل دفعات حتى الآن لهذا المشترك.</div>`;
+      : `<div class="info-box-neutral" style="margin-top:0.85rem;font-size:0.86rem;color:var(--text-muted);">${
+          isEn ? 'No payments recorded for this subscriber yet.' : 'لم تُسجّل دفعات حتى الآن لهذا المشترك.'
+        }</div>`;
 
   body.innerHTML = `
     <div class="info-box-neutral" style="margin-bottom:0.85rem;">
-      <progress class="umrah-progress" max="100" value="${pct}" aria-label="نسبة السداد ${pct}%" style="margin-bottom:0.55rem;"></progress>
+      <progress class="umrah-progress" max="100" value="${pct}" aria-label="${isEn ? `Payment progress ${pct}%` : `نسبة السداد ${pct}%`}" style="margin-bottom:0.55rem;"></progress>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.5rem;text-align:center;">
-        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">الإجمالي</div><strong>${m.totalTarget.toLocaleString('ar-EG')} ج.م</strong></div>
-        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">المسدد (${pct}%)</div><strong style="color:var(--success);">${m.totalPaid.toLocaleString('ar-EG')} ج.م</strong></div>
-        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">المتبقي (${summary.overdueCount} متأخر)</div><strong style="color:var(--gold-dark);">${rem.toLocaleString('ar-EG')} ج.م</strong></div>
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">${isEn ? 'Total' : 'الإجمالي'}</div><strong>${m.totalTarget.toLocaleString(loc)} ${curr}</strong></div>
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">${isEn ? `Paid (${pct}%)` : `المسدد (${pct}%)`}</div><strong style="color:var(--success);">${m.totalPaid.toLocaleString(loc)} ${curr}</strong></div>
+        <div style="background:var(--card-bg);padding:0.45rem;border-radius:8px;border:1px solid var(--border);"><div style="font-size:0.74rem;color:var(--text-muted);">${isEn ? `Remaining (${summary.overdueCount} overdue)` : `المتبقي (${summary.overdueCount} متأخر)`}</div><strong style="color:var(--gold-dark);">${rem.toLocaleString(loc)} ${curr}</strong></div>
       </div>
     </div>
-    <div class="table-wrapper" tabindex="0" role="region" aria-label="تفاصيل الأقساط">
-      <table class="schedule-table"><thead><tr><th>البند</th><th>الاستحقاق</th><th>المطلوب</th><th>المسدد</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+    <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="schedule-table-caption">
+      <table class="schedule-table">
+        <caption id="schedule-table-caption" class="sr-only">${isEn ? `Installment schedule for ${escapeHtml(m.name)}` : `جدول أقساط ${escapeHtml(m.name)}`}</caption>
+        <thead>
+          <tr>
+            <th scope="col">${isEn ? 'Item' : 'البند'}</th>
+            <th scope="col">${isEn ? 'Due Date' : 'الاستحقاق'}</th>
+            <th scope="col">${isEn ? 'Required' : 'المطلوب'}</th>
+            <th scope="col">${isEn ? 'Paid' : 'المسدد'}</th>
+            <th scope="col">${isEn ? 'Status' : 'الحالة'}</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
     </div>
     ${logHtml}
     <details class="ref-disclosure" style="margin-top:0.95rem;">
-      <summary><span>⚙️ تعديل الخطة أو إزالة المشترك</span><span aria-hidden="true">▾</span></summary>
-      <form id="edit-gam-member-form" style="margin-top:0.65rem;">
-        <div class="form-inline-grid" style="margin-bottom:0.65rem;">
-          <div>
-            <label for="edit-gam-plan" class="field-label">نظام السداد:</label>
-            <select id="edit-gam-plan" class="field-input">
-              ${Object.values(GameyaType)
-                .map((gt) => `<option value="${gt}" ${gt === m.planType ? 'selected' : ''}>${escapeHtml(PLAN_LABELS[gt])}</option>`)
-                .join('')}
-            </select>
+      <summary><span>${isEn ? '⚙️ Edit Plan or Remove Subscriber' : '⚙️ تعديل الخطة أو إزالة المشترك'}</span><span aria-hidden="true">▾</span></summary>
+      <form id="edit-gam-member-form" style="margin-top:0.65rem;" novalidate>
+        <div class="form-error-summary" role="alert" hidden></div>
+        <fieldset class="form-fieldset">
+          <legend>${isEn ? '📋 Plan Configuration' : '📋 تعديل معايير الخطة'}</legend>
+          <div class="form-inline-grid" style="margin-bottom:0.65rem;">
+            <div class="field-span-wide">
+              <label for="edit-gam-plan" class="field-label">${isEn ? 'Payment Plan:' : 'نظام السداد:'}</label>
+              <select id="edit-gam-plan" class="field-input">
+                ${Object.values(GameyaType)
+                  .map((gt) => `<option value="${gt}" ${gt === m.planType ? 'selected' : ''}>${escapeHtml(getPlanLabel(gt))}</option>`)
+                  .join('')}
+              </select>
+            </div>
+            <div>
+              <label for="edit-gam-target" class="field-label">${isEn ? 'Total Package' : 'الإجمالي'} (${curr}):<span class="req-star" aria-hidden="true">*</span></label>
+              <input id="edit-gam-target" type="number" inputmode="decimal" min="100" value="${m.totalTarget}" class="field-input" data-error="edit-gam-target-error" required>
+              <div id="edit-gam-target-error" class="field-error-msg">${isEn ? 'Enter total >= 100.' : 'أدخل إجمالي 100 ج.م على الأقل.'}</div>
+            </div>
+            <div><label for="edit-gam-down" class="field-label">${isEn ? 'Down Payment' : 'المقدم'} (${curr}):</label><input id="edit-gam-down" type="number" inputmode="decimal" min="0" value="${m.downPayment}" class="field-input"></div>
+            <div><label for="edit-gam-count" class="field-label">${isEn ? 'Installments:' : 'عدد الدفعات:'}</label><input id="edit-gam-count" type="number" inputmode="numeric" min="1" max="48" value="${m.installmentCount}" class="field-input"></div>
+            <div><label for="edit-gam-start" class="field-label">${isEn ? 'Start Date:' : 'تاريخ البدء:'}</label><input id="edit-gam-start" type="date" value="${escapeHtml(m.startDateIso)}" class="field-input"></div>
+            <div><label for="edit-gam-turn" class="field-label">${isEn ? 'ROSCA Turn:' : 'الدور (للجمعية):'}</label><input id="edit-gam-turn" type="number" inputmode="numeric" min="1" max="48" value="${m.turnMonth}" class="field-input"></div>
           </div>
-          <div><label for="edit-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="edit-gam-target" type="number" min="100" value="${m.totalTarget}" class="field-input" required></div>
-          <div><label for="edit-gam-down" class="field-label">المقدم (ج.م):</label><input id="edit-gam-down" type="number" min="0" value="${m.downPayment}" class="field-input"></div>
-          <div><label for="edit-gam-count" class="field-label">عدد الدفعات:</label><input id="edit-gam-count" type="number" min="1" max="48" value="${m.installmentCount}" class="field-input"></div>
-          <div><label for="edit-gam-start" class="field-label">تاريخ البدء:</label><input id="edit-gam-start" type="date" value="${escapeHtml(m.startDateIso)}" class="field-input"></div>
-          <div><label for="edit-gam-turn" class="field-label">الدور (للجمعية):</label><input id="edit-gam-turn" type="number" min="1" max="48" value="${m.turnMonth}" class="field-input"></div>
-        </div>
+          <div id="edit-gam-preview" class="info-box-neutral" role="status" aria-live="polite" style="font-size:0.84rem;padding:0.55rem 0.75rem;"></div>
+        </fieldset>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-          <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ تعديل الخطة</button>
-          <button type="button" id="btn-delete-gam-member" class="btn btn-danger" data-confirm-step="0">🗑️ حذف المشترك</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">${isEn ? '💾 Save Plan Updates' : '💾 حفظ تعديل الخطة'}</button>
+          <button type="button" id="btn-delete-gam-member" class="btn btn-danger" data-confirm-step="0">${isEn ? '🗑️ Remove Subscriber' : '🗑️ حذف المشترك'}</button>
         </div>
       </form>
     </details>
   `;
+
+  const editForm = body.querySelector<HTMLFormElement>('#edit-gam-member-form');
+  const updateEditPreview = (): boolean => {
+    if (!editForm) return true;
+    const plan = (editForm.querySelector('#edit-gam-plan') as HTMLSelectElement).value as GameyaType;
+    const targetVal = Number((editForm.querySelector('#edit-gam-target') as HTMLInputElement).value) || 0;
+    const downVal = Number((editForm.querySelector('#edit-gam-down') as HTMLInputElement).value) || 0;
+    const countVal = Number((editForm.querySelector('#edit-gam-count') as HTMLInputElement).value) || 1;
+    const prev = previewInstallmentPlan({
+      planType: plan,
+      totalTarget: targetVal,
+      downPayment: downVal,
+      installmentCount: countVal,
+    });
+    const prevBox = editForm.querySelector<HTMLElement>('#edit-gam-preview');
+    if (prevBox) {
+      prevBox.className = prev.valid ? 'info-box-neutral' : 'info-box-warn';
+      prevBox.textContent = prev.valid
+        ? `💡 ${prev.summaryAr}`
+        : `⚠️ ${prev.errorAr || prev.summaryAr}`;
+    }
+    return prev.valid;
+  };
+  updateEditPreview();
+  editForm?.querySelectorAll('input, select').forEach((el) => {
+    el.addEventListener('input', updateEditPreview);
+    el.addEventListener('change', updateEditPreview);
+  });
 
   body.querySelectorAll<HTMLElement>('[data-copy-receipt]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1720,40 +1864,66 @@ function openScheduleModalForMember(m: GameyaRecord): void {
       if (!p) return;
       void copyToClipboard(
         buildReceiptMessage(active.settings.tripTitle, active.settings.supervisorName, m, p.amount),
-        '✅ تم نسخ إيصال الدفعة للواتساب'
+        isEn ? '✅ Receipt copied for WhatsApp' : '✅ تم نسخ إيصال الدفعة للواتساب'
       );
     });
   });
 
-  body.querySelectorAll<HTMLElement>('[data-void-payment]').forEach((btn) => {
+  body.querySelectorAll<HTMLButtonElement>('[data-void-payment]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const idx = m.payments.findIndex((x) => x.id === btn.dataset.voidPayment);
-      if (idx === -1) return;
-      const removed = m.payments.splice(idx, 1)[0];
-      m.totalPaid = m.payments.reduce((acc, x) => acc + x.amount, 0);
-      saveState();
-      renderAll();
-      openScheduleModalForMember(m);
-      showToast(`↩️ تم التراجع عن دفعة ${removed.amount.toLocaleString('ar-EG')} ج.م`);
+      handleTwoStepDelete(
+        btn,
+        isEn ? '⚠️ Click again to reverse' : '⚠️ تأكيد التراجع؟',
+        () => {
+          const idx = m.payments.findIndex((x) => x.id === btn.dataset.voidPayment);
+          if (idx === -1) return;
+          const removed = m.payments.splice(idx, 1)[0];
+          m.totalPaid = m.payments.reduce((acc, x) => acc + x.amount, 0);
+          void idbAppendLedgerAudit({
+            id: `rev-${Date.now()}`,
+            groupId: active.id,
+            planId: m.id,
+            memberName: m.name,
+            entryType: 'REVERSAL',
+            amount: removed.amount,
+            method: removed.method,
+            ref: removed.ref,
+            createdAt: new Date().toISOString(),
+          });
+          saveState();
+          renderAll();
+          openScheduleModalForMember(m);
+          showUndoToast(
+            isEn
+              ? `↩️ Reversed ${removed.amount.toLocaleString(loc)} ${curr}`
+              : `↩️ تم التراجع عن دفعة ${removed.amount.toLocaleString('ar-EG')} ج.م`,
+            isEn ? 'Undo' : 'تراجع',
+            () => {
+              m.payments.splice(idx, 0, removed);
+              m.totalPaid = m.payments.reduce((acc, x) => acc + x.amount, 0);
+              saveState();
+              renderAll();
+              openScheduleModalForMember(m);
+            }
+          );
+        }
+      );
     });
   });
 
-  body.querySelector('#edit-gam-member-form')?.addEventListener('submit', (e) => {
+  editForm?.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (!updateEditPreview()) {
+      showToast(isEn ? '⚠️ Down payment must be less than total package' : '⚠️ قيمة المقدم يجب أن تكون أقل من الإجمالي', true);
+      (editForm.querySelector('#edit-gam-down') as HTMLInputElement | null)?.focus();
+      return;
+    }
     const newPlan = (body.querySelector('#edit-gam-plan') as HTMLSelectElement).value as GameyaType;
     const newTarget = Number((body.querySelector('#edit-gam-target') as HTMLInputElement).value) || m.totalTarget;
     const rawDown = Number((body.querySelector('#edit-gam-down') as HTMLInputElement).value) || 0;
     const rawCount = Number((body.querySelector('#edit-gam-count') as HTMLInputElement).value) || m.installmentCount;
     const newStart = (body.querySelector('#edit-gam-start') as HTMLInputElement).value || m.startDateIso;
     const newTurn = Number((body.querySelector('#edit-gam-turn') as HTMLInputElement).value) || m.turnMonth;
-
-    if (
-      (newPlan === GameyaType.DEPOSIT_PLUS_MONTHLY || newPlan === GameyaType.DEPOSIT_PLUS_FINAL) &&
-      rawDown >= newTarget
-    ) {
-      showToast('⚠️ قيمة المقدم يجب أن تكون أقل من الإجمالي', true);
-      return;
-    }
 
     m.planType = newPlan;
     m.totalTarget = newTarget;
@@ -1770,21 +1940,22 @@ function openScheduleModalForMember(m: GameyaRecord): void {
     saveState();
     renderAll();
     openScheduleModalForMember(m);
-    showToast(`✅ تم تحديث خطة سداد ${m.name}`);
+    showToast(isEn ? `✅ Updated plan for ${m.name}` : `✅ تم تحديث خطة سداد ${m.name}`);
   });
 
   const delBtn = body.querySelector<HTMLButtonElement>('#btn-delete-gam-member');
   delBtn?.addEventListener('click', () => {
-    if (delBtn.dataset.confirmStep !== '1') {
-      delBtn.dataset.confirmStep = '1';
-      delBtn.textContent = '⚠️ اضغط مجدداً لتأكيد الحذف';
-      return;
-    }
-    active.gameya = active.gameya.filter((x) => x.id !== m.id);
-    saveState();
-    renderAll();
-    closeDialogById('schedule-modal');
-    showToast(`🗑️ تم حذف اشتراك ${m.name}`);
+    handleTwoStepDelete(
+      delBtn,
+      isEn ? '⚠️ Click again to confirm' : '⚠️ اضغط مجدداً لتأكيد الحذف',
+      () => {
+        active.gameya = active.gameya.filter((x) => x.id !== m.id);
+        saveState();
+        renderAll();
+        closeDialogById('schedule-modal');
+        showToast(isEn ? `🗑️ Removed ${m.name}` : `🗑️ تم حذف اشتراك ${m.name}`);
+      }
+    );
   });
 
   openDialogById('schedule-modal');
@@ -1865,8 +2036,12 @@ function renderGameyaSummaryAndRosca(
       roscaBoard.innerHTML = `
         <div class="info-box-neutral">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.65rem;">
-            <strong style="color:var(--primary-ink);">🔄 جدول استلام أدوار الجمعية الشهرية (${plan.length})</strong>
-            <span class="badge badge-primary">مرتب تلقائياً حسب الشهر</span>
+            <strong style="color:var(--primary-ink);">${
+              isEn
+                ? `🔄 Monthly ROSCA Turn Payout Order (${plan.length})`
+                : `🔄 جدول استلام أدوار الجمعية الشهرية (${plan.length})`
+            }</strong>
+            <span class="badge badge-primary">${isEn ? 'Sorted automatically by month' : 'مرتب تلقائياً حسب الشهر'}</span>
           </div>
           <div class="grid-2" style="margin-bottom:0;">
             ${plan
@@ -1876,13 +2051,23 @@ function renderGameyaSummaryAndRosca(
                 return `
                 <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:0.65rem 0.8rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
                   <div>
-                    <span class="badge badge-warning">الدور #${slot.turnNumber}</span>
+                    <span class="badge badge-warning">${isEn ? `Turn #${slot.turnNumber}` : `الدور #${slot.turnNumber}`}</span>
                     <strong style="margin-inline-start:0.35rem;">${escapeHtml(mem.name)}</strong>
-                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">موعد الاستحقاق: ${slot.payoutMonth.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })}</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">${
+                      isEn ? 'Payout month:' : 'موعد الاستحقاق:'
+                    } ${slot.payoutMonth.toLocaleDateString(loc, { month: 'long', year: 'numeric' })}</div>
                   </div>
                   <div style="text-align:end;font-size:0.82rem;">
-                    <strong>${mem.totalTarget.toLocaleString('ar-EG')} ج.م</strong>
-                    <div style="color:${rem === 0 ? 'var(--success)' : 'var(--gold-dark)'};font-weight:700;">${rem === 0 ? 'مكتمل ✅' : `متبقي ${rem.toLocaleString('ar-EG')}`}</div>
+                    <strong>${mem.totalTarget.toLocaleString(loc)} ${curr}</strong>
+                    <div style="color:${rem === 0 ? 'var(--success)' : 'var(--gold-dark)'};font-weight:700;">${
+                      rem === 0
+                        ? isEn
+                          ? 'Settled ✅'
+                          : 'مكتمل ✅'
+                        : isEn
+                          ? `Left ${rem.toLocaleString(loc)}`
+                          : `متبقي ${rem.toLocaleString('ar-EG')}`
+                    }</div>
                   </div>
                 </div>
               `;
@@ -1895,41 +2080,62 @@ function renderGameyaSummaryAndRosca(
   }
 }
 
-function exportGameyaCSV(): void {
+async function exportGameyaCSV(): Promise<void> {
   const active = getActiveGroup();
-  const rows = [
-    ['الفوج', 'المشترك', 'الهاتف', 'نظام السداد', 'الإجمالي', 'المسدد', 'المتبقي', 'عدد الدفعات المسجلة', 'الحالة'],
-    ...active.gameya.map((m) => {
-      const { summary } = buildScheduleSummaryForMember(m, active.settings.endDate);
-      const rem = Math.max(0, m.totalTarget - m.totalPaid);
-      const status = rem === 0 ? 'مكتمل السداد' : summary.overdueCount > 0 ? `متأخر (${summary.overdueCount})` : 'قيد السداد';
-      return [
-        active.settings.tripTitle,
-        m.name,
-        m.phone,
-        PLAN_LABELS[m.planType],
-        String(m.totalTarget),
-        String(m.totalPaid),
-        String(rem),
-        String(m.payments.length),
-        status,
-      ];
-    }),
-  ];
-  let csv = '\uFEFF';
-  rows.forEach((r) => {
-    csv += r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\r\n';
+  const lang = getCurrentLanguage();
+  const isEn = lang === 'en';
+  const btn = document.getElementById('btn-export-gameya-csv') as HTMLButtonElement | null;
+  if (btn) btn.disabled = true;
+  try {
+    const { downloadInstallmentsExcel } = await import('./export/excel-exporter.js');
+    const filename = await downloadInstallmentsExcel(active, lang);
+    showToast(isEn ? `📊 Downloaded ${filename}` : `📊 تم تنزيل ملف Excel المنسق: ${filename}`);
+  } catch (err) {
+    console.error('[Umrah] Installments Excel export failed', err);
+    showToast(isEn ? '⚠️ Excel export failed' : '⚠️ تعذر إنشاء ملف Excel، حاول مرة أخرى', true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function updateGameyaFilterChips(
+  enriched: Array<{ member: GameyaRecord; overdueCount: number; remaining: number }>,
+  visibleCount: number
+): void {
+  const isEn = getCurrentLanguage() === 'en';
+  const counts: Record<string, number> = {
+    ALL: enriched.length,
+    OVERDUE: enriched.filter((e) => e.remaining > 0 && e.overdueCount > 0).length,
+    ACTIVE: enriched.filter((e) => e.remaining > 0).length,
+    PAID: enriched.filter((e) => e.remaining === 0).length,
+    ROSCA: enriched.filter((e) => e.member.planType === GameyaType.ROTATING_ROSCA).length,
+  };
+  const labelsAr: Record<string, string> = {
+    ALL: 'الكل',
+    OVERDUE: '⚠️ متأخر',
+    ACTIVE: '⏳ قيد السداد',
+    PAID: '✅ مكتمل',
+    ROSCA: '🔄 جمعية بالأدوار',
+  };
+  const labelsEn: Record<string, string> = {
+    ALL: 'All',
+    OVERDUE: '⚠️ Overdue',
+    ACTIVE: '⏳ Active',
+    PAID: '✅ Paid',
+    ROSCA: '🔄 ROSCA Turns',
+  };
+  document.querySelectorAll<HTMLButtonElement>('[data-gameya-filter]').forEach((btn) => {
+    const key = btn.dataset.gameyaFilter || 'ALL';
+    const base = isEn ? labelsEn[key] || key : labelsAr[key] || key;
+    const count = counts[key] ?? 0;
+    btn.textContent = `${base} (${count})`;
   });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `umrah_installments_${active.settings.tripCode.replace('#', '')}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('📥 تم تنزيل كشف الأقساط (CSV / Excel)');
+  const live = document.getElementById('gameya-filter-status');
+  if (live) {
+    live.textContent = isEn
+      ? `Showing ${visibleCount} of ${enriched.length} subscribers`
+      : `عرض ${visibleCount} من أصل ${enriched.length} مشترك`;
+  }
 }
 
 function renderGameyaTable(): void {
@@ -1959,6 +2165,8 @@ function renderGameyaTable(): void {
     if (gameyaFilter === 'ROSCA') return member.planType === GameyaType.ROTATING_ROSCA;
     return true;
   });
+
+  updateGameyaFilterChips(enriched, visible.length);
 
   if (visible.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.25rem;color:var(--text-muted);">${
@@ -2017,6 +2225,7 @@ function renderGameyaTable(): void {
             ${remaining > 0 ? `<button type="button" class="btn btn-primary btn-compact" data-open-pay="${escapeHtml(m.id)}">${isEn ? '💳 Pay' : '💳 دفعة'}</button>` : ''}
             <button type="button" class="btn btn-secondary btn-compact" data-view-schedule="${escapeHtml(m.id)}">${isEn ? '📅 Ledger' : '📅 الجدول'}</button>
             <a href="${buildWhatsAppUrl(remaining === 0 ? receiptText : reminderText, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">${isEn ? '📲 WhatsApp' : '📲 واتساب'}</a>
+            <button type="button" class="btn btn-secondary btn-compact" data-copy-installment-link="${escapeHtml(m.id)}">${isEn ? '🔗 Link' : '🔗 رابط'}</button>
           </div>
         </td>
       </tr>
@@ -2035,6 +2244,23 @@ function renderGameyaTable(): void {
     btn.addEventListener('click', () => {
       const m = active.gameya.find((x) => x.id === btn.dataset.viewSchedule);
       if (m) openScheduleModalForMember(m);
+    });
+  });
+
+  tbody.querySelectorAll<HTMLElement>('[data-copy-installment-link]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const m = active.gameya.find((x) => x.id === btn.dataset.copyInstallmentLink);
+      if (!m) return;
+      const linkedPilgrim = active.pilgrims.find(
+        (p) => p.fullName.trim() === m.name.trim() || (m.phone && p.phone === m.phone)
+      );
+      const url = linkedPilgrim
+        ? buildPilgrimShareUrl(linkedPilgrim, buildBadgeToken(active.id, linkedPilgrim.id))
+        : `${window.location.origin}/?payPlan=${encodeURIComponent(m.planType)}&payTarget=${m.totalTarget}&payPaid=${m.totalPaid}&payDown=${m.downPayment}&payCount=${m.installmentCount}&payStart=${encodeURIComponent(m.startDateIso)}&name=${encodeURIComponent(m.name)}&trip=${encodeURIComponent(active.settings.tripTitle)}&code=${encodeURIComponent(active.settings.tripCode)}`;
+      void copyToClipboard(
+        url,
+        isEn ? `🔗 Copied payment portal link for ${m.name}` : `🔗 تم نسخ رابط متابعة الأقساط لـ ${m.name}`
+      );
     });
   });
 }
@@ -2489,43 +2715,29 @@ function switchTab(rawTab: string): void {
   window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
 }
 
-function exportManifestCSV(): void {
+async function exportManifestCSV(): Promise<void> {
   const active = getActiveGroup();
-  const rows = [
-    ['الفوج', 'اسم المعتمر', 'النوع', 'رقم الجواز', 'الهاتف', 'الغرفة', 'حالة الباص', 'نُسك'],
-    ...active.pilgrims.map((p) => [
-      active.settings.tripTitle,
-      p.fullName,
-      p.gender === Gender.MALE ? 'رجل' : 'امرأة',
-      p.passportNumber,
-      p.phone,
-      p.roomNumber || 'غير مسكن',
-      p.boarded ? 'صعد الباص' : 'لم يصعد بعد',
-      p.nusukReady ? 'جاهز' : 'معلق',
-    ]),
-  ];
-
-  let csv = '\uFEFF';
-  rows.forEach((r) => {
-    csv += r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\r\n';
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `umrah_manifest_${active.settings.tripCode.replace('#', '')}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('📥 تم تنزيل كشف الفوج (CSV / Excel)');
+  const lang = getCurrentLanguage();
+  const isEn = lang === 'en';
+  const btn = document.getElementById('btn-export-csv') as HTMLButtonElement | null;
+  if (btn) btn.disabled = true;
+  try {
+    const { downloadGroupExcel } = await import('./export/excel-exporter.js');
+    const filename = await downloadGroupExcel(active, lang);
+    showToast(isEn ? `📊 Downloaded full group workbook: ${filename}` : `📊 تم تنزيل ملف Excel الشامل للفوج: ${filename}`);
+  } catch (err) {
+    console.error('[Umrah] Group Excel export failed', err);
+    showToast(isEn ? '⚠️ Excel export failed' : '⚠️ تعذر إنشاء ملف Excel للفوج، حاول مرة أخرى', true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // =========================================================================
 // BOOTSTRAP
 // =========================================================================
 function updateGameyaPlanPreview(validateOnBlurOrSubmit: boolean = false): boolean {
+  const isEn = getCurrentLanguage() === 'en';
   const plan = ((document.getElementById('new-gam-plan') as HTMLSelectElement | null)?.value ||
     GameyaType.DEPOSIT_PLUS_MONTHLY) as GameyaType;
   const target = Number((document.getElementById('new-gam-target') as HTMLInputElement | null)?.value) || 0;
@@ -2554,7 +2766,7 @@ function updateGameyaPlanPreview(validateOnBlurOrSubmit: boolean = false): boole
   if (box) {
     box.className = preview.valid ? 'info-box-neutral' : 'info-box-warn';
     box.innerHTML = preview.valid
-      ? `💡 <strong>معاينة الخطة:</strong> ${escapeHtml(preview.summaryAr)}`
+      ? `💡 <strong>${isEn ? 'Plan Preview:' : 'معاينة الخطة:'}</strong> ${escapeHtml(preview.summaryAr)}`
       : `⚠️ ${escapeHtml(preview.errorAr || preview.summaryAr)}`;
   }
   return preview.valid;
@@ -2704,6 +2916,8 @@ async function pullActiveGroupFromCloud(): Promise<void> {
       ...active,
       ...candidate,
       id: active.id,
+      version: typeof res.version === 'number' ? res.version : active.version || 1,
+      updatedAt: res.updatedAt || new Date().toISOString(),
       settings: { ...active.settings, ...(candidate.settings || {}) },
       pilgrims: Array.isArray(candidate.pilgrims) ? candidate.pilgrims : active.pilgrims,
       rooms: Array.isArray(candidate.rooms) ? candidate.rooms : active.rooms,
@@ -2713,28 +2927,38 @@ async function pullActiveGroupFromCloud(): Promise<void> {
       sosAlerts: Array.isArray(candidate.sosAlerts) ? candidate.sosAlerts : active.sosAlerts,
     };
     rootState.groups = rootState.groups.map((g) => (g.id === active.id ? mergedGroup : g));
-    saveState();
+    saveState(true, false);
     renderAll();
     cleanup();
-    showToast(`✅ تم تحديث بيانات "${mergedGroup.settings.tripTitle}" من السحابة`);
+    showToast(`✅ تم تحديث بيانات "${mergedGroup.settings.tripTitle}" من السحابة (إصدار #${mergedGroup.version})`);
   });
 }
 
 async function syncActiveGroupToCloud(notifyUser: boolean): Promise<void> {
   const active = getActiveGroup();
-  const res = await pushGroupWorkspaceToCloud(active.id, active);
+  const res = await pushGroupWorkspaceToCloud(active.id, active, active.version);
   if (res.mode === 'd1') {
+    if (typeof res.version === 'number') {
+      active.version = res.version;
+      saveState(false, false);
+    }
+    await pushPeopleDirectoryToCloud(rootState.people);
     await pullCloudSosAlerts(false);
   }
   if (!notifyUser) return;
-  if (res.mode === 'd1') {
-    showToast('☁️ تمت المزامنة السحابية مع قاعدة Cloudflare D1 بنجاح');
+  if (res.mode === 'conflict') {
+    showToast(
+      `⚠️ تعارض إصدار (#${res.serverVersion || '?'}) على السحابة — اسحب النسخة الأحدث من D1 أولاً`,
+      true
+    );
+  } else if (res.mode === 'd1') {
+    showToast(`☁️ تمت المزامنة السحابية مع قاعدة Cloudflare D1 بنجاح (إصدار #${res.version || active.version || 1})`);
   } else if (res.mode === 'unauthorized') {
     showToast('🔐 رُفضت المزامنة (401) — أدخل رمز SYNC_SECRET في إعدادات الفوج', true);
   } else if (res.mode === 'offline-queued') {
     showToast(`📴 التغييرات محفوظة محلياً ومجدولة للمزامنة (${res.pendingCount})`);
   } else {
-    showToast('💾 الحفظ المحلي (IndexedDB) نشط — اربط قاعدة D1 للتزامن السحابي الحي');
+    showToast('💾 الحفظ المحلي (IndexedDB v2) نشط — اربط قاعدة D1 للتزامن السحابي الحي');
   }
 }
 
@@ -2821,11 +3045,21 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-new-group')?.addEventListener('click', () => openDialogById('new-group-modal'));
   document.getElementById('new-group-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const isEn = getCurrentLanguage() === 'en';
     const title = (document.getElementById('ng-title') as HTMLInputElement).value.trim();
     const code = (document.getElementById('ng-code') as HTMLInputElement).value.trim() || `#GRP-${rootState.groups.length + 1}`;
     const startDate = (document.getElementById('ng-start') as HTMLInputElement).value || new Date().toISOString().slice(0, 10);
-    const endDate = (document.getElementById('ng-end') as HTMLInputElement).value || startDate;
-    const hotelKey = (document.getElementById('ng-hotel') as HTMLSelectElement).value;
+    const endInput = document.getElementById('ng-end') as HTMLInputElement;
+    const endDate = endInput.value || startDate;
+    if (endInput.value && endDate < startDate) {
+      endInput.setAttribute('aria-invalid', 'true');
+      endInput.focus();
+      showToast(isEn ? '⚠️ Return date must be on or after departure date' : '⚠️ يجب أن يكون تاريخ العودة بعد تاريخ السفر', true);
+      return;
+    }
+    endInput.setAttribute('aria-invalid', 'false');
+    const hotelKey = getRadioGroupValue(form, 'ngHotel', 'kiswah');
     const supName = (document.getElementById('ng-sup-name') as HTMLInputElement).value.trim() || 'مشرف الفوج';
     const supPhone = (document.getElementById('ng-sup-phone') as HTMLInputElement).value.trim() || '+201040414659';
     if (!title) return;
@@ -2937,13 +3171,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('add-pilgrim-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
     const active = getActiveGroup();
     const isEn = getCurrentLanguage() === 'en';
     const editId = (document.getElementById('pilgrim-edit-id') as HTMLInputElement | null)?.value.trim() || '';
     const fullName = (document.getElementById('new-pilgrim-name') as HTMLInputElement).value.trim();
     const passportNumber = (document.getElementById('new-pilgrim-passport') as HTMLInputElement).value.trim();
     const phone = (document.getElementById('new-pilgrim-phone') as HTMLInputElement).value.trim();
-    const gender = (document.getElementById('new-pilgrim-gender') as HTMLSelectElement).value as Gender;
+    const gender = getRadioGroupValue(form, 'newPilgrimGender', Gender.MALE) as Gender;
     const nusukReady = (document.getElementById('new-pilgrim-nusuk') as HTMLInputElement | null)?.checked ?? true;
     if (!fullName || !passportNumber) return;
 
@@ -3037,6 +3272,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Add or Edit Person in Persistent CRM
   document.getElementById('add-person-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
     const active = getActiveGroup();
     const isEn = getCurrentLanguage() === 'en';
     const editId = (document.getElementById('crm-edit-id') as HTMLInputElement | null)?.value.trim() || '';
@@ -3044,7 +3280,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const passportNumber = (document.getElementById('crm-passport') as HTMLInputElement).value.trim();
     const passportExpiryDate = (document.getElementById('crm-expiry') as HTMLInputElement).value;
     const phone = (document.getElementById('crm-phone') as HTMLInputElement).value.trim();
-    const gender = (document.getElementById('crm-gender') as HTMLSelectElement).value as Gender;
+    const gender = getRadioGroupValue(form, 'crmGender', Gender.MALE) as Gender;
     const ecPhone = (document.getElementById('crm-ec-phone') as HTMLInputElement).value.trim();
     const wheelchair = (document.getElementById('crm-wheelchair') as HTMLInputElement).checked;
     const insulin = (document.getElementById('crm-insulin') as HTMLInputElement).checked;
@@ -3115,9 +3351,10 @@ window.addEventListener('DOMContentLoaded', () => {
   // Add Room + Assign Room
   document.getElementById('add-room-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
     const active = getActiveGroup();
     const num = (document.getElementById('new-room-num') as HTMLInputElement).value.trim();
-    const type = (document.getElementById('new-room-type') as HTMLSelectElement).value as RoomType;
+    const type = getRadioGroupValue(form, 'newRoomType', RoomType.QUAD) as RoomType;
     const isFamily = (document.getElementById('new-room-family') as HTMLInputElement).checked;
     if (!num) return;
     const capMap: Record<RoomType, number> = {
@@ -3264,11 +3501,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('payment-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
     const active = getActiveGroup();
+    const isEn = getCurrentLanguage() === 'en';
+    const loc = isEn ? 'en-US' : 'ar-EG';
+    const curr = isEn ? 'EGP' : 'ج.م';
     const m = active.gameya.find((x) => x.id === activePaymentMemberId);
     if (!m) return;
     const amount = Number((document.getElementById('pay-amount') as HTMLInputElement).value) || 0;
-    const method = (document.getElementById('pay-method') as HTMLSelectElement).value as PaymentMethod;
+    const method = getRadioGroupValue(form, 'payMethod', PaymentMethod.INSTAPAY) as PaymentMethod;
     const dateIso =
       (document.getElementById('pay-date') as HTMLInputElement | null)?.value ||
       new Date().toISOString().slice(0, 10);
@@ -3280,7 +3521,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const remainingDecimal = prevSummary.totalRemaining.toDecimal();
     const effectiveAmount = Math.min(amount, remainingDecimal);
     if (effectiveAmount <= 0) {
-      showToast('✅ المشترك أتم السداد بالكامل مسبقاً');
+      showToast(isEn ? '✅ Subscriber is already settled in full' : '✅ المشترك أتم السداد بالكامل مسبقاً');
       closeDialogById('payment-modal');
       return;
     }
@@ -3294,17 +3535,67 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     const nextSummary = group.getMemberSummary(m.id);
     m.totalPaid = nextSummary.totalPaid.toDecimal();
+    const paymentId = `pay-${Date.now()}`;
     m.payments.push({
-      id: `pay-${Date.now()}`,
+      id: paymentId,
       amount: effectiveAmount,
       method,
       ref: ref || undefined,
       dateIso,
     });
+    void idbAppendLedgerAudit({
+      id: paymentId,
+      groupId: active.id,
+      planId: m.id,
+      memberName: m.name,
+      entryType: 'PAYMENT',
+      amount: effectiveAmount,
+      method,
+      ref: ref || undefined,
+      createdAt: new Date().toISOString(),
+    });
     saveState();
     renderAll();
+
+    const receiptMsg = buildReceiptMessage(active.settings.tripTitle, active.settings.supervisorName, m, effectiveAmount);
+    const banner = document.getElementById('gameya-last-receipt-banner');
+    if (banner) {
+      banner.hidden = false;
+      banner.innerHTML = `
+        <div>
+          <strong>✅ ${
+            isEn
+              ? `Payment recorded for ${escapeHtml(m.name)}: ${effectiveAmount.toLocaleString(loc)} ${curr} (${escapeHtml(getMethodLabel(method))})`
+              : `تم تحصيل ${effectiveAmount.toLocaleString('ar-EG')} ج.م من ${escapeHtml(m.name)} (${escapeHtml(getMethodLabel(method))})`
+          }</strong>
+          <div style="font-size:0.82rem;color:var(--text-muted);">${
+            isEn ? 'Send instant official WhatsApp receipt or copy to clipboard.' : 'أرسل إيصال السداد المعتمد عبر واتساب أو انسخه مباشرة.'
+          }</div>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+          <a href="${buildWhatsAppUrl(receiptMsg, m.phone)}" target="_blank" rel="noopener" class="btn btn-gold btn-compact" style="text-decoration:none;">${
+            isEn ? '📲 WhatsApp Receipt' : '📲 إرسال الإيصال واتساب'
+          }</a>
+          <button type="button" class="btn btn-secondary btn-compact" id="btn-copy-last-receipt">${
+            isEn ? '📋 Copy Receipt' : '📋 نسخ الإيصال'
+          }</button>
+          <button type="button" class="dialog-close-btn" id="btn-dismiss-last-receipt" aria-label="${isEn ? 'Dismiss' : 'إخفاء'}" style="width:28px;height:28px;font-size:1rem;">&times;</button>
+        </div>
+      `;
+      banner.querySelector('#btn-copy-last-receipt')?.addEventListener('click', () => {
+        void copyToClipboard(receiptMsg, isEn ? '✅ Receipt copied' : '✅ تم نسخ الإيصال للواتساب');
+      });
+      banner.querySelector('#btn-dismiss-last-receipt')?.addEventListener('click', () => {
+        banner.hidden = true;
+      });
+    }
+
     closeDialogById('payment-modal');
-    showToast(`✅ تم تسجيل دفعة ${effectiveAmount.toLocaleString('ar-EG')} ج.م (${PAYMENT_METHOD_LABELS[method]})`);
+    showToast(
+      isEn
+        ? `✅ Recorded ${effectiveAmount.toLocaleString(loc)} ${curr} (${getMethodLabel(method)})`
+        : `✅ تم تسجيل دفعة ${effectiveAmount.toLocaleString('ar-EG')} ج.م (${getMethodLabel(method)})`
+    );
   });
 
   // Print Center & Direct Entity Print Triggers
@@ -3325,11 +3616,28 @@ window.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const active = getActiveGroup();
     const name = (document.getElementById('sos-pilgrim-name') as HTMLInputElement).value.trim();
-    const coordsRaw = (document.getElementById('sos-coords') as HTMLInputElement).value.trim();
+    const coordsInput = document.getElementById('sos-coords') as HTMLInputElement;
+    const coordsRaw = coordsInput.value.trim();
     const notes = (document.getElementById('sos-notes') as HTMLInputElement).value.trim() || 'بلاغ تائه';
     const [latStr, lngStr] = coordsRaw.split(',').map((s) => s.trim());
-    const lat = Number(latStr) || 21.4195;
-    const lng = Number(lngStr) || 39.8236;
+    const parsedLat = Number(latStr);
+    const parsedLng = Number(lngStr);
+    if (
+      !Number.isFinite(parsedLat) ||
+      !Number.isFinite(parsedLng) ||
+      parsedLat < -90 ||
+      parsedLat > 90 ||
+      parsedLng < -180 ||
+      parsedLng > 180
+    ) {
+      coordsInput.setAttribute('aria-invalid', 'true');
+      coordsInput.focus();
+      showToast('⚠️ يرجى إدخال إحداثيات صحيحة بصيغة: lat, lng', true);
+      return;
+    }
+    coordsInput.setAttribute('aria-invalid', 'false');
+    const lat = parsedLat;
+    const lng = parsedLng;
 
     const dispatcher = new EmergencySOSDispatcher(
       new Hotel({
@@ -3382,10 +3690,11 @@ window.addEventListener('DOMContentLoaded', () => {
   // Luggage Add
   document.getElementById('add-bag-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
     const active = getActiveGroup();
     const name = (document.getElementById('new-bag-name') as HTMLInputElement).value.trim();
     const room = (document.getElementById('new-bag-room') as HTMLInputElement).value.trim();
-    const type = (document.getElementById('new-bag-type') as HTMLSelectElement).value as BagType;
+    const type = getRadioGroupValue(form, 'newBagType', 'SUITCASE') as BagType;
     if (!name || !room) return;
     const count = active.luggage.filter((b) => b.roomNumber === room).length + 1;
     active.luggage.push({

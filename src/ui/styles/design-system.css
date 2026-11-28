@@ -1011,8 +1011,9 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
 }
 
 /* Unified Form Controls & Customizable Branded Selects */
-.field-label { display: block; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text-muted); }
-.field-hint { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+.field-label { display: block; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.2rem; color: var(--text-muted); }
+.field-hint { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.22rem; line-height: 1.45; }
+.req-star { color: var(--danger); font-weight: 900; margin-inline-start: 0.18rem; }
 
 .field-input {
   width: 100%;
@@ -1023,7 +1024,119 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
   background: var(--bg);
   color: var(--text);
   font: inherit;
-  font-size: max(1rem, 0.92rem);
+  font-size: max(1rem, 1em);
+}
+
+@media (pointer: coarse) {
+  .field-input {
+    min-block-size: 52px;
+  }
+}
+
+.form-fieldset {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  margin-block-end: 0.9rem;
+}
+.form-fieldset legend {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--primary-ink);
+  padding: 0 0.45rem;
+}
+
+.radio-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 0.45rem;
+}
+.radio-card-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-block-size: 46px;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--control-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.radio-card-option input[type="radio"] {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: none;
+  accent-color: var(--primary);
+  margin: 0;
+}
+.radio-card-option:has(input[type="radio"]:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+.radio-card-option:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.input-with-toggle {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+.input-with-toggle .field-input {
+  flex: 1;
+  min-inline-size: 0;
+}
+.visibility-toggle-btn {
+  min-inline-size: 46px;
+  min-block-size: var(--target-size);
+  padding: 0 0.65rem;
+  border-radius: var(--control-radius);
+  border: 1px solid var(--control-border);
+  background: var(--surface-muted);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.visibility-toggle-btn[aria-pressed="true"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+
+.form-error-summary {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  border-inline-start: 4px solid var(--danger);
+  color: var(--danger);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-block-end: 0.8rem;
+}
+
+.receipt-quick-banner {
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  border-inline-start: 4px solid var(--primary);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  margin-block-end: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
 }
 
 :is(.field-input:user-invalid, .field-input.user-invalid-fallback, .field-input[aria-invalid="true"]) {
@@ -1042,6 +1155,18 @@ button.btn-secondary.atlas-filter-btn[aria-pressed="true"]:hover {
 }
 :is(.field-input:user-invalid, .field-input.user-invalid-fallback, .field-input[aria-invalid="true"]) ~ .field-error-msg {
   display: block;
+}
+
+@media (max-width: 640px) {
+  .form-grid,
+  .form-inline-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+body.senior-mode .form-grid,
+body.senior-mode .form-inline-grid {
+  grid-template-columns: 1fr !important;
 }
 
 .btn-confirm-armed {

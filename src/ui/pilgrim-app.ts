@@ -18,6 +18,8 @@ import {
   openDialogById,
   closeDialogById,
   initAccessibleFormValidation,
+  getRadioGroupValue,
+  setRadioGroupValue,
   initStickyHeaders,
   initThemeSync,
   toggleColorScheme,
@@ -571,15 +573,18 @@ function openQuickSituationModal(kind: 'wudu' | 'miqat' | 'cart'): void {
 }
 
 function openProfileEditModal(): void {
+  const form = document.getElementById('profile-form') as HTMLFormElement | null;
   (document.getElementById('edit-name') as HTMLInputElement).value = profile.fullName;
   (document.getElementById('edit-passport') as HTMLInputElement).value = profile.passportNumber;
   (document.getElementById('edit-stage') as HTMLSelectElement).value = profile.tripStage;
-  (document.getElementById('edit-hotel-preset') as HTMLSelectElement).value = profile.hotelKey;
+  if (form) {
+    setRadioGroupValue(form, 'editHotelPreset', profile.hotelKey);
+    setRadioGroupValue(form, 'editGender', profile.gender || 'MALE');
+  }
   (document.getElementById('edit-room') as HTMLInputElement).value = profile.roomNumber;
   (document.getElementById('edit-bus') as HTMLInputElement).value = profile.busNumber;
   (document.getElementById('edit-sup-name') as HTMLInputElement).value = profile.supervisorName;
   (document.getElementById('edit-sup-phone') as HTMLInputElement).value = profile.supervisorPhone;
-  (document.getElementById('edit-gender') as HTMLSelectElement).value = profile.gender || 'MALE';
   (document.getElementById('edit-meeting') as HTMLInputElement).value = profile.meetingPoint;
   (document.getElementById('edit-med') as HTMLInputElement).value = profile.medicalNote;
   openDialogById('profile-modal');
@@ -587,10 +592,11 @@ function openProfileEditModal(): void {
 
 function handleProfileSave(e: Event): void {
   e.preventDefault();
-  const presetKey = (document.getElementById('edit-hotel-preset') as HTMLSelectElement).value;
+  const form = e.target as HTMLFormElement;
+  const presetKey = getRadioGroupValue(form, 'editHotelPreset', 'kiswah');
   const preset = HOTEL_PRESETS[presetKey] || HOTEL_PRESETS.kiswah;
   const nextStage = (document.getElementById('edit-stage') as HTMLSelectElement).value as TripStatus;
-  const nextGender = ((document.getElementById('edit-gender') as HTMLSelectElement)?.value || 'MALE') as 'MALE' | 'FEMALE';
+  const nextGender = getRadioGroupValue(form, 'editGender', 'MALE') as 'MALE' | 'FEMALE';
 
   profile = {
     ...profile,

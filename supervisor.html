@@ -284,6 +284,7 @@
         </div>
 
         <div id="gameya-summary-strip" class="metrics-grid" style="margin-bottom:1.1rem;" aria-label="ملخص التحصيل والمتأخرات"></div>
+        <div id="gameya-last-receipt-banner" class="receipt-quick-banner" hidden></div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.85rem;">
           <div class="atlas-filter-bar" role="group" aria-label="تصفية المشتركين حسب الحالة" style="margin-bottom:0;">
@@ -298,6 +299,7 @@
             <input type="search" id="gameya-search" name="gameyaSearch" enterkeyhint="search" autocorrect="off" spellcheck="false" class="field-input" placeholder="🔍 ابحث باسم المشترك أو رقم الهاتف..." data-i18n-placeholder="sup.search.gameyaPh">
           </search>
         </div>
+        <div id="gameya-filter-status" class="sr-only" role="status" aria-live="polite"></div>
 
         <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="gameya-caption">
           <table class="gameya-table">
@@ -528,25 +530,56 @@
       <h2 id="ng-modal-title" style="font-size:1.15rem;">➕ إنشاء فوج جديد (متزامن أو تالي)</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="new-group-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="new-group-form">
-      <div class="form-inline-grid">
-        <div><label for="ng-title" class="field-label">اسم الفوج:</label><input id="ng-title" class="field-input" placeholder="مثال: فوج شوال 1447" required></div>
-        <div><label for="ng-code" class="field-label">كود الفوج:</label><input id="ng-code" class="field-input" placeholder="#SHW-1447"></div>
-        <div><label for="ng-start" class="field-label">تاريخ السفر:</label><input id="ng-start" type="date" class="field-input"></div>
-        <div><label for="ng-end" class="field-label">تاريخ العودة:</label><input id="ng-end" type="date" class="field-input"></div>
-        <div>
-          <label for="ng-hotel" class="field-label">فندق مكة:</label>
-          <select id="ng-hotel" class="field-input">
-            <option value="kiswah">فندق أبراج الكسوة</option>
-            <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
-            <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
-            <option value="ghazza">فنادق الغزة وريع بخش</option>
-          </select>
+    <form id="new-group-form" aria-labelledby="ng-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <fieldset class="form-fieldset">
+        <legend>🚌 بيانات الفوج والفندق</legend>
+        <div class="form-inline-grid" style="margin-bottom:0.65rem;">
+          <div>
+            <label for="ng-title" class="field-label">اسم الفوج:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="ng-title" name="tripTitle" enterkeyhint="next" class="field-input" placeholder="مثال: فوج شوال 1447" data-error="ng-title-error" required>
+            <div id="ng-title-error" class="field-error-msg">يرجى كتابة اسم الفوج.</div>
+          </div>
+          <div>
+            <label for="ng-code" class="field-label">كود الفوج:</label>
+            <input id="ng-code" name="tripCode" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" class="field-input" placeholder="#SHW-1447">
+          </div>
+          <div><label for="ng-start" class="field-label">تاريخ السفر:</label><input id="ng-start" name="startDate" type="date" class="field-input"></div>
+          <div>
+            <label for="ng-end" class="field-label">تاريخ العودة:</label>
+            <input id="ng-end" name="endDate" type="date" class="field-input" data-error="ng-end-error">
+            <div id="ng-end-error" class="field-error-msg">يجب أن يكون تاريخ العودة بعد تاريخ السفر.</div>
+          </div>
         </div>
-        <div><label for="ng-sup-name" class="field-label">مشرف الفوج:</label><input id="ng-sup-name" class="field-input" placeholder="الشيخ مصطفى فليفل (أبو رضوى)" value="الشيخ مصطفى فليفل (أبو رضوى)" required></div>
-        <div><label for="ng-sup-phone" class="field-label">هاتف المشرف:</label><input id="ng-sup-phone" type="tel" dir="ltr" class="field-input" placeholder="+201040414659" value="+201040414659" required></div>
+        <div>
+          <span class="field-label">فندق مكة المعتمد:</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="فندق مكة">
+            <label class="radio-card-option" for="ng-hotel-kiswah"><input type="radio" id="ng-hotel-kiswah" name="ngHotel" value="kiswah" checked><span>أبراج الكسوة</span></label>
+            <label class="radio-card-option" for="ng-hotel-clock"><input type="radio" id="ng-hotel-clock" name="ngHotel" value="clock"><span>وقف الملك عبد العزيز</span></label>
+            <label class="radio-card-option" for="ng-hotel-jabal"><input type="radio" id="ng-hotel-jabal" name="ngHotel" value="jabal-omar"><span>جبل عمر / هيلتون</span></label>
+            <label class="radio-card-option" for="ng-hotel-ghazza"><input type="radio" id="ng-hotel-ghazza" name="ngHotel" value="ghazza"><span>الغزة وريع بخش</span></label>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-fieldset">
+        <legend>🧭 إشراف الفوج</legend>
+        <div class="form-inline-grid" style="margin-bottom:0;">
+          <div>
+            <label for="ng-sup-name" class="field-label">مشرف الفوج:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="ng-sup-name" name="supervisorName" enterkeyhint="next" class="field-input" placeholder="الشيخ مصطفى فليفل (أبو رضوى)" value="الشيخ مصطفى فليفل (أبو رضوى)" data-error="ng-sup-name-error" required>
+            <div id="ng-sup-name-error" class="field-error-msg">يرجى إدخال اسم المشرف.</div>
+          </div>
+          <div>
+            <label for="ng-sup-phone" class="field-label">هاتف المشرف:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="ng-sup-phone" name="supervisorPhone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="\+?\d[\d\s\-]{7,18}" enterkeyhint="done" class="field-input" placeholder="+201040414659" value="+201040414659" data-error="ng-sup-phone-error" required>
+            <div id="ng-sup-phone-error" class="field-error-msg">يرجى إدخال رقم هاتف دولي صحيح.</div>
+          </div>
+        </div>
+      </fieldset>
+      <div class="dialog-sticky-actions">
+        <button type="submit" class="btn btn-primary" style="flex:1;">✅ إنشاء وفتح الفوج</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="new-group-modal">إلغاء</button>
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">✅ إنشاء وفتح الفوج</button>
     </form>
   </dialog>
 
@@ -594,13 +627,22 @@
 
     <section class="prefs-section" aria-labelledby="sup-group-settings-title" style="margin-bottom:0;">
       <h3 id="sup-group-settings-title" class="prefs-section-title" data-i18n="sup.prefs.groupTabBtn">🚌 تعديل إعدادات الفوج النشط</h3>
-      <form id="settings-form">
+      <form id="settings-form" aria-labelledby="sup-group-settings-title" novalidate>
+        <div class="form-error-summary" role="alert" hidden></div>
         <div class="form-inline-grid">
-          <div><label for="set-trip-title" class="field-label">اسم الرحلة:</label><input id="set-trip-title" class="field-input" required></div>
-          <div><label for="set-trip-code" class="field-label">كود الفوج:</label><input id="set-trip-code" class="field-input" required></div>
+          <div>
+            <label for="set-trip-title" class="field-label">اسم الرحلة:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="set-trip-title" name="tripTitle" enterkeyhint="next" class="field-input" data-error="set-trip-title-error" required>
+            <div id="set-trip-title-error" class="field-error-msg">يرجى إدخال اسم الرحلة.</div>
+          </div>
+          <div>
+            <label for="set-trip-code" class="field-label">كود الفوج:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="set-trip-code" name="tripCode" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" class="field-input" data-error="set-trip-code-error" required>
+            <div id="set-trip-code-error" class="field-error-msg">يرجى إدخال كود الفوج.</div>
+          </div>
           <div>
             <label for="set-trip-stage" class="field-label">مرحلة الفوج الحالية:</label>
-            <select id="set-trip-stage" class="field-input">
+            <select id="set-trip-stage" name="status" class="field-input">
               <option value="DRAFT">مسودة الإعداد</option>
               <option value="REGISTRATION_OPEN">باب التسجيل مفتوح</option>
               <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
@@ -611,26 +653,37 @@
               <option value="COMPLETED">رحلة مكتملة (أرشيف)</option>
             </select>
           </div>
-          <div><label for="set-bus-num" class="field-label">رقم الباص:</label><input id="set-bus-num" class="field-input"></div>
+          <div><label for="set-bus-num" class="field-label">رقم الباص:</label><input id="set-bus-num" name="busNumber" enterkeyhint="next" class="field-input"></div>
           <div>
             <label for="set-hotel-key" class="field-label">فندق مكة المعتمد:</label>
-            <select id="set-hotel-key" class="field-input">
+            <select id="set-hotel-key" name="hotelKey" class="field-input">
               <option value="kiswah">فندق أبراج الكسوة (جرول)</option>
               <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
               <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
               <option value="ghazza">فنادق الغزة وريع بخش</option>
             </select>
           </div>
-          <div><label for="set-sup-name" class="field-label">اسم المشرف:</label><input id="set-sup-name" class="field-input" required></div>
-          <div><label for="set-sup-phone" class="field-label">واتساب المشرف:</label><input id="set-sup-phone" type="tel" dir="ltr" class="field-input" required></div>
+          <div>
+            <label for="set-sup-name" class="field-label">اسم المشرف:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="set-sup-name" name="supervisorName" enterkeyhint="next" class="field-input" data-error="set-sup-name-error" required>
+            <div id="set-sup-name-error" class="field-error-msg">يرجى إدخال اسم المشرف.</div>
+          </div>
+          <div>
+            <label for="set-sup-phone" class="field-label">واتساب المشرف:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="set-sup-phone" name="supervisorPhone" type="tel" dir="ltr" autocorrect="off" pattern="\+?\d[\d\s\-]{7,18}" enterkeyhint="next" class="field-input" data-error="set-sup-phone-error" required>
+            <div id="set-sup-phone-error" class="field-error-msg">يرجى إدخال رقم واتساب صحيح.</div>
+          </div>
         </div>
-        <div style="margin-bottom:1rem;">
+        <div style="margin-bottom:0.85rem;">
           <label for="set-meeting" class="field-label">نقطة التجمع المعتمدة بالحرم:</label>
-          <input id="set-meeting" class="field-input">
+          <input id="set-meeting" name="meetingPoint" enterkeyhint="next" class="field-input">
         </div>
         <div style="margin-bottom:1rem;">
           <label for="set-sync-token" class="field-label">رمز مصادقة المزامنة السحابية D1 (SYNC_SECRET - اختياري):</label>
-          <input id="set-sync-token" type="password" dir="ltr" autocomplete="off" class="field-input" placeholder="Bearer token إذا كان مفعّلاً على Cloudflare Pages">
+          <div class="input-with-toggle">
+            <input id="set-sync-token" name="syncToken" type="password" dir="ltr" autocorrect="off" autocapitalize="none" spellcheck="false" autocomplete="off" enterkeyhint="done" class="field-input" placeholder="Bearer token إذا كان مفعّلاً على Cloudflare Pages">
+            <button type="button" class="visibility-toggle-btn" data-toggle-visibility="set-sync-token" aria-pressed="false" aria-label="إظهار الرمز">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%;">💾 حفظ وتطبيق</button>
       </form>
@@ -644,28 +697,38 @@
     </div>
     <div id="pay-modal-member" class="info-box-neutral" style="margin-bottom:0.75rem;font-weight:700;"></div>
     <div id="pay-quick-presets" class="quick-preset-row" aria-label="مبالغ سريعة مقترحة"></div>
-    <form id="payment-form">
-      <div class="form-inline-grid">
-        <div>
-          <label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):</label>
-          <input id="pay-amount" type="number" inputmode="decimal" min="1" step="0.01" class="field-input" data-error="pay-amount-error" required>
-          <div id="pay-amount-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل مبلغاً صحيحاً أكبر من الصفر.</div>
+    <form id="payment-form" aria-labelledby="pay-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <fieldset class="form-fieldset">
+        <legend>💰 قيمة وتفاصيل التحصيل</legend>
+        <div class="form-inline-grid" style="margin-bottom:0.7rem;">
+          <div>
+            <label for="pay-amount" class="field-label">المبلغ المدفوع (ج.م):<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="pay-amount" name="payAmount" type="number" inputmode="decimal" min="1" step="0.01" enterkeyhint="next" class="field-input" aria-describedby="pay-projection-preview" data-error="pay-amount-error" required>
+            <div id="pay-amount-error" class="field-error-msg">❌ أدخل مبلغاً صحيحاً أكبر من الصفر (ولا يتجاوز المتبقي).</div>
+          </div>
+          <div><label for="pay-date" class="field-label">تاريخ السداد:</label><input id="pay-date" name="payDate" type="date" class="field-input"></div>
+          <div class="field-span-wide">
+            <label for="pay-ref" class="field-label">رقم المرجع / التحويل (اختياري):</label>
+            <input id="pay-ref" name="payRef" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" class="field-input" placeholder="مثال: IPN-12345">
+          </div>
         </div>
         <div>
-          <label for="pay-method" class="field-label">وسيلة الدفع:</label>
-          <select id="pay-method" class="field-input">
-            <option value="INSTAPAY">إنستاباي (InstaPay)</option>
-            <option value="CASH">نقدي (كاش)</option>
-            <option value="VODAFONE_CASH">محفظة إلكترونية</option>
-            <option value="BANK_TRANSFER">تحويل بنكي</option>
-            <option value="CARD">بطاقة بنكية</option>
-          </select>
+          <span class="field-label">وسيلة الدفع المعتمدة:</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="وسيلة الدفع">
+            <label class="radio-card-option" for="pay-method-instapay"><input type="radio" id="pay-method-instapay" name="payMethod" value="INSTAPAY" checked><span>⚡ إنستاباي</span></label>
+            <label class="radio-card-option" for="pay-method-cash"><input type="radio" id="pay-method-cash" name="payMethod" value="CASH"><span>💵 نقدي</span></label>
+            <label class="radio-card-option" for="pay-method-wallet"><input type="radio" id="pay-method-wallet" name="payMethod" value="VODAFONE_CASH"><span>📱 محفظة</span></label>
+            <label class="radio-card-option" for="pay-method-bank"><input type="radio" id="pay-method-bank" name="payMethod" value="BANK_TRANSFER"><span>🏦 تحويل بنكي</span></label>
+            <label class="radio-card-option" for="pay-method-card"><input type="radio" id="pay-method-card" name="payMethod" value="CARD"><span>💳 بطاقة</span></label>
+          </div>
         </div>
-        <div><label for="pay-date" class="field-label">تاريخ السداد:</label><input id="pay-date" type="date" class="field-input"></div>
-        <div><label for="pay-ref" class="field-label">رقم المرجع (اختياري):</label><input id="pay-ref" class="field-input" placeholder="IPN-12345"></div>
+      </fieldset>
+      <div id="pay-projection-preview" class="info-box-neutral" role="status" aria-live="polite" style="margin-bottom:0.85rem;font-size:0.86rem;padding:0.6rem 0.85rem;"></div>
+      <div class="dialog-sticky-actions">
+        <button type="submit" id="btn-pay-submit" class="btn btn-primary" style="flex:1;">✅ تأكيد استلام الدفعة</button>
+        <button type="button" class="btn btn-secondary" data-close-dialog="payment-modal">إلغاء</button>
       </div>
-      <div id="pay-projection-preview" class="info-box-neutral" role="status" style="margin-bottom:0.85rem;font-size:0.86rem;padding:0.6rem 0.85rem;"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">✅ تأكيد استلام الدفعة</button>
     </form>
   </dialog>
 
@@ -729,9 +792,16 @@
     <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;">
       أدخل رمز الخصوصية المكون من 4–6 أرقام للوصول لبيانات الجوازات والملفات الطبية والأقساط.
     </p>
-    <form id="pin-unlock-form">
-      <label for="pin-unlock-input" class="field-label">رمز الحماية (PIN):</label>
-      <input id="pin-unlock-input" type="password" inputmode="numeric" autocomplete="off" minlength="4" maxlength="6" pattern="\d{4,6}" class="field-input" style="margin-bottom:0.85rem;" required>
+    <form id="pin-unlock-form" aria-labelledby="pin-unlock-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <div style="margin-bottom:0.85rem;">
+        <label for="pin-unlock-input" class="field-label">رمز الحماية (PIN):<span class="req-star" aria-hidden="true">*</span></label>
+        <div class="input-with-toggle">
+          <input id="pin-unlock-input" name="pinUnlock" type="password" inputmode="numeric" autocorrect="off" autocomplete="off" minlength="4" maxlength="6" pattern="\d{4,6}" enterkeyhint="done" class="field-input" data-error="pin-unlock-error" required>
+          <button type="button" class="visibility-toggle-btn" data-toggle-visibility="pin-unlock-input" aria-pressed="false" aria-label="إظهار الرمز">👁️</button>
+        </div>
+        <div id="pin-unlock-error" class="field-error-msg">أدخل رمزاً رقمياً من 4 إلى 6 أرقام.</div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;">🔓 فتح اللوحة</button>
     </form>
   </dialog>
@@ -744,9 +814,16 @@
     <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.85rem;">
       يُحفظ الرمز مشفراً بخوارزمية SHA-256 على جهازك لحماية بيانات المعتمرين من العبث عند فقدان الهاتف أو مشاركته.
     </p>
-    <form id="pin-setup-form">
-      <label for="pin-setup-input" class="field-label">رمز جديد (4 إلى 6 أرقام):</label>
-      <input id="pin-setup-input" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="6" pattern="\d{4,6}" class="field-input" style="margin-bottom:0.85rem;" required>
+    <form id="pin-setup-form" aria-labelledby="pin-setup-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <div style="margin-bottom:0.85rem;">
+        <label for="pin-setup-input" class="field-label">رمز جديد (4 إلى 6 أرقام):<span class="req-star" aria-hidden="true">*</span></label>
+        <div class="input-with-toggle">
+          <input id="pin-setup-input" name="pinSetup" type="password" inputmode="numeric" autocorrect="off" autocomplete="new-password" minlength="4" maxlength="6" pattern="\d{4,6}" enterkeyhint="done" class="field-input" data-error="pin-setup-error" required>
+          <button type="button" class="visibility-toggle-btn" data-toggle-visibility="pin-setup-input" aria-pressed="false" aria-label="إظهار الرمز">👁️</button>
+        </div>
+        <div id="pin-setup-error" class="field-error-msg">يجب إدخال 4 إلى 6 أرقام فقط.</div>
+      </div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
         <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ وتفعيل القفل</button>
         <button type="button" id="btn-pin-remove" class="btn btn-danger" hidden>🗑️ إلغاء القفل</button>
@@ -759,37 +836,41 @@
       <h2 id="add-pilgrim-modal-title" style="font-size:1.15rem;">➕ إضافة معتمر للفوج النشط</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-pilgrim-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-pilgrim-form" name="addPilgrim">
+    <form id="add-pilgrim-form" name="addPilgrim" aria-labelledby="add-pilgrim-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
       <input type="hidden" id="pilgrim-edit-id" value="">
-      <div class="form-inline-grid">
-        <div>
-          <label for="new-pilgrim-name" class="field-label">اسم المعتمر:</label>
-          <input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" placeholder="الاسم الثلاثي" data-error="new-pilgrim-name-error" required>
-          <div id="new-pilgrim-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى كتابة اسم المعتمر كاملاً.</div>
+      <fieldset class="form-fieldset">
+        <legend>🪪 البيانات الأساسية والهوية</legend>
+        <div class="form-inline-grid" style="margin-bottom:0.65rem;">
+          <div>
+            <label for="new-pilgrim-name" class="field-label">اسم المعتمر:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="new-pilgrim-name" name="fullName" autocomplete="name" list="pilgrims-directory-datalist" enterkeyhint="next" class="field-input" placeholder="الاسم الثلاثي" data-error="new-pilgrim-name-error" required>
+            <div id="new-pilgrim-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى كتابة اسم المعتمر كاملاً.</div>
+          </div>
+          <div>
+            <label for="new-pilgrim-passport" class="field-label">رقم الجواز:<span class="req-star" aria-hidden="true">*</span></label>
+            <span id="new-pilgrim-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً (مثل A98765432)</span>
+            <input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" enterkeyhint="next" aria-describedby="new-pilgrim-passport-hint" data-error="new-pilgrim-passport-error" class="field-input" placeholder="A98765432" required>
+            <div id="new-pilgrim-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5 أحرف/أرقام على الأقل).</div>
+          </div>
+          <div class="field-span-wide">
+            <label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label>
+            <span id="new-pilgrim-phone-hint" class="field-hint">يفضل بالصيغة الدولية (+20 أو +966)</span>
+            <input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="(\+?\d[\d\s\-]{7,18})?" enterkeyhint="done" aria-describedby="new-pilgrim-phone-hint" data-error="new-pilgrim-phone-error" class="field-input" placeholder="+2010...">
+            <div id="new-pilgrim-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم هاتف صحيحاً أو اتركه فارغاً.</div>
+          </div>
         </div>
-        <div>
-          <label for="new-pilgrim-passport" class="field-label">رقم الجواز:</label>
-          <span id="new-pilgrim-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً (مثل A98765432)</span>
-          <input id="new-pilgrim-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" aria-describedby="new-pilgrim-passport-hint" data-error="new-pilgrim-passport-error" class="field-input" placeholder="A98765432" required>
-          <div id="new-pilgrim-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5 أحرف/أرقام على الأقل).</div>
+        <div style="margin-bottom:0.5rem;">
+          <span class="field-label">النوع (لتطبيق ضوابط التسكين):</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="النوع">
+            <label class="radio-card-option" for="new-pilgrim-gender-male"><input type="radio" id="new-pilgrim-gender-male" name="newPilgrimGender" value="MALE" checked><span>👨 رجل</span></label>
+            <label class="radio-card-option" for="new-pilgrim-gender-female"><input type="radio" id="new-pilgrim-gender-female" name="newPilgrimGender" value="FEMALE"><span>🧕 امرأة</span></label>
+          </div>
         </div>
-        <div>
-          <label for="new-pilgrim-phone" class="field-label">رقم الواتساب:</label>
-          <span id="new-pilgrim-phone-hint" class="field-hint">يفضل بالصيغة الدولية (+20 أو +966)</span>
-          <input id="new-pilgrim-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" pattern="(\+?\d[\d\s\-]{7,18})?" aria-describedby="new-pilgrim-phone-hint" data-error="new-pilgrim-phone-error" class="field-input" placeholder="+2010...">
-          <div id="new-pilgrim-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم هاتف صحيحاً أو اتركه فارغاً.</div>
-        </div>
-        <div>
-          <label for="new-pilgrim-gender" class="field-label">النوع:</label>
-          <select id="new-pilgrim-gender" name="gender" class="field-input">
-            <option value="MALE">رجل</option>
-            <option value="FEMALE">امرأة</option>
-          </select>
-        </div>
-        <div class="field-span-wide" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;min-height:44px;font-size:0.86rem;">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;min-height:44px;font-size:0.86rem;">
           <label for="new-pilgrim-nusuk"><input type="checkbox" id="new-pilgrim-nusuk" checked> تصريح نُسك جاهز</label>
         </div>
-      </div>
+      </fieldset>
       <div class="dialog-sticky-actions">
         <button type="submit" id="btn-save-pilgrim-submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة للفوج والسجل</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-pilgrim-modal">إلغاء</button>
@@ -802,24 +883,27 @@
       <h2 id="add-room-modal-title" style="font-size:1.15rem;">➕ فتح غرفة فندقية جديدة</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-room-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-room-form">
-      <div class="form-inline-grid">
-        <div><label for="new-room-num" class="field-label">رقم الغرفة:</label><input id="new-room-num" inputmode="numeric" class="field-input" placeholder="508" required></div>
-        <div>
-          <label for="new-room-type" class="field-label">نوع الغرفة:</label>
-          <select id="new-room-type" class="field-input">
-            <option value="DOUBLE">ثنائية (2)</option>
-            <option value="TRIPLE">ثلاثية (3)</option>
-            <option value="QUAD">رباعية (4)</option>
-            <option value="SUITE">جناح (4)</option>
-          </select>
+    <form id="add-room-form" aria-labelledby="add-room-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <div style="margin-bottom:0.75rem;">
+        <label for="new-room-num" class="field-label">رقم الغرفة:<span class="req-star" aria-hidden="true">*</span></label>
+        <input id="new-room-num" name="roomNumber" inputmode="numeric" enterkeyhint="done" class="field-input" placeholder="508" data-error="new-room-num-error" required>
+        <div id="new-room-num-error" class="field-error-msg">يرجى إدخال رقم الغرفة.</div>
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <span class="field-label">نوع الغرفة والسعة:</span>
+        <div class="radio-card-grid" role="radiogroup" aria-label="نوع الغرفة">
+          <label class="radio-card-option" for="room-type-double"><input type="radio" id="room-type-double" name="newRoomType" value="DOUBLE" checked><span>🛏️ ثنائية (2)</span></label>
+          <label class="radio-card-option" for="room-type-triple"><input type="radio" id="room-type-triple" name="newRoomType" value="TRIPLE"><span>🛏️ ثلاثية (3)</span></label>
+          <label class="radio-card-option" for="room-type-quad"><input type="radio" id="room-type-quad" name="newRoomType" value="QUAD"><span>🛏️ رباعية (4)</span></label>
+          <label class="radio-card-option" for="room-type-suite"><input type="radio" id="room-type-suite" name="newRoomType" value="SUITE"><span>🏨 جناح (4)</span></label>
         </div>
       </div>
       <label for="new-room-family" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;cursor:pointer;min-height:44px;">
         <input type="checkbox" id="new-room-family" style="width:20px;height:20px;">
         <span>غرفة عائلية (يُسمح بسكن المحارم معاً)</span>
       </label>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وفتح الغرفة</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-room-modal">إلغاء</button>
       </div>
@@ -846,41 +930,54 @@
       <h2 id="add-person-modal-title" style="font-size:1.15rem;">👥 إضافة سجل شخص دائم (CRM)</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-person-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-person-form">
+    <form id="add-person-form" aria-labelledby="add-person-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
       <input type="hidden" id="crm-edit-id" value="">
-      <div class="form-inline-grid">
-        <div>
-          <label for="crm-name" class="field-label">الاسم الكامل:</label>
-          <input id="crm-name" autocomplete="name" class="field-input" data-error="crm-name-error" required>
-          <div id="crm-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال الاسم الكامل.</div>
+      <fieldset class="form-fieldset">
+        <legend>🪪 الهوية والجواز</legend>
+        <div class="form-inline-grid" style="margin-bottom:0.65rem;">
+          <div>
+            <label for="crm-name" class="field-label">الاسم الكامل:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="crm-name" name="fullName" autocomplete="name" enterkeyhint="next" class="field-input" data-error="crm-name-error" required>
+            <div id="crm-name-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال الاسم الكامل.</div>
+          </div>
+          <div>
+            <label for="crm-passport" class="field-label">رقم الجواز:<span class="req-star" aria-hidden="true">*</span></label>
+            <span id="crm-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً</span>
+            <input id="crm-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" enterkeyhint="next" aria-describedby="crm-passport-hint" data-error="crm-passport-error" class="field-input" required>
+            <div id="crm-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5+ أحرف/أرقام).</div>
+          </div>
+          <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" name="passportExpiryDate" type="date" class="field-input"></div>
+          <div>
+            <label for="crm-phone" class="field-label">الهاتف / واتساب:<span class="req-star" aria-hidden="true">*</span></label>
+            <span id="crm-phone-hint" class="field-hint">بالصيغة الدولية (+20 أو +966)</span>
+            <input id="crm-phone" name="phone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="\+?\d[\d\s\-]{7,18}" enterkeyhint="next" aria-describedby="crm-phone-hint" data-error="crm-phone-error" class="field-input" required>
+            <div id="crm-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال رقم هاتف/واتساب صحيح.</div>
+          </div>
         </div>
         <div>
-          <label for="crm-passport" class="field-label">رقم الجواز:</label>
-          <span id="crm-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً</span>
-          <input id="crm-passport" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" aria-describedby="crm-passport-hint" data-error="crm-passport-error" class="field-input" required>
-          <div id="crm-passport-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> أدخل رقم جواز صحيحاً (5+ أحرف/أرقام).</div>
+          <span class="field-label">النوع:</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="النوع">
+            <label class="radio-card-option" for="crm-gender-male"><input type="radio" id="crm-gender-male" name="crmGender" value="MALE" checked><span>👨 رجل</span></label>
+            <label class="radio-card-option" for="crm-gender-female"><input type="radio" id="crm-gender-female" name="crmGender" value="FEMALE"><span>🧕 امرأة</span></label>
+          </div>
         </div>
-        <div><label for="crm-expiry" class="field-label">انتهاء الجواز:</label><input id="crm-expiry" type="date" class="field-input"></div>
-        <div>
-          <label for="crm-phone" class="field-label">الهاتف / واتساب:</label>
-          <span id="crm-phone-hint" class="field-hint">بالصيغة الدولية (+20 أو +966)</span>
-          <input id="crm-phone" type="tel" autocomplete="tel" dir="ltr" pattern="\+?\d[\d\s\-]{7,18}" aria-describedby="crm-phone-hint" data-error="crm-phone-error" class="field-input" required>
-          <div id="crm-phone-error" class="field-error-msg"><span role="img" aria-label="خطأ">❌</span> يرجى إدخال رقم هاتف/واتساب صحيح.</div>
+      </fieldset>
+      <fieldset class="form-fieldset">
+        <legend>🩺 الطوارئ والاحتياجات الطبية</legend>
+        <div class="form-inline-grid" style="margin-bottom:0;">
+          <div>
+            <label for="crm-ec-phone" class="field-label">هاتف طوارئ قريب:</label>
+            <input id="crm-ec-phone" name="emergencyPhone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="(\+?\d[\d\s\-]{7,18})?" enterkeyhint="next" class="field-input" data-error="crm-ec-phone-error">
+            <div id="crm-ec-phone-error" class="field-error-msg">أدخل رقم هاتف طوارئ صحيح أو اتركه فارغاً.</div>
+          </div>
+          <div><label for="crm-notes" class="field-label">ملاحظات طبية / سكنية:</label><input id="crm-notes" name="notes" enterkeyhint="done" class="field-input"></div>
+          <div class="field-span-wide" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
+            <label for="crm-wheelchair"><input type="checkbox" id="crm-wheelchair"> كرسي متحرك</label>
+            <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
+          </div>
         </div>
-        <div>
-          <label for="crm-gender" class="field-label">النوع:</label>
-          <select id="crm-gender" class="field-input">
-            <option value="MALE">رجل</option>
-            <option value="FEMALE">امرأة</option>
-          </select>
-        </div>
-        <div><label for="crm-ec-phone" class="field-label">هاتف طوارئ قريب:</label><input id="crm-ec-phone" type="tel" dir="ltr" class="field-input"></div>
-        <div class="field-span-wide"><label for="crm-notes" class="field-label">ملاحظات طبية / سكنية:</label><input id="crm-notes" class="field-input"></div>
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
-          <label for="crm-wheelchair"><input type="checkbox" id="crm-wheelchair"> كرسي متحرك</label>
-          <label for="crm-insulin"><input type="checkbox" id="crm-insulin"> ثلاجة إنسولين</label>
-        </div>
-      </div>
+      </fieldset>
       <div class="dialog-sticky-actions">
         <button type="submit" id="btn-save-person-submit" class="btn btn-primary" style="flex:1;">💾 حفظ بالسجل الدائم</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-person-modal">إلغاء</button>
@@ -893,36 +990,61 @@
       <h2 id="add-gameya-modal-title" style="font-size:1.15rem;">💰 إضافة مشترك لخطة سداد / جمعية</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-gameya-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-gameya-form" name="addInstallmentMember">
-      <div class="form-inline-grid">
-        <div><label for="new-gam-name" class="field-label">اسم المشترك:</label><input id="new-gam-name" name="memberName" autocomplete="name" list="pilgrims-directory-datalist" class="field-input" required></div>
-        <div><label for="new-gam-phone" class="field-label">رقم الواتساب:</label><input id="new-gam-phone" name="memberPhone" type="tel" autocomplete="tel" dir="ltr" class="field-input" placeholder="+2010..."></div>
-        <div class="field-span-wide">
-          <label for="new-gam-plan" class="field-label">نظام السداد:</label>
-          <select id="new-gam-plan" name="planType" class="field-input">
-            <option value="DEPOSIT_PLUS_MONTHLY">مقدم حجز + أقساط شهرية</option>
-            <option value="DIRECT_INSTALLMENT">تقسيط شهري متساوٍ</option>
-            <option value="ROTATING_ROSCA">جمعية دورية بالأدوار</option>
-            <option value="DEPOSIT_PLUS_FINAL">مقدم + الباقي قبل السفر</option>
-            <option value="BIWEEKLY_INSTALLMENT">تقسيط كل أسبوعين</option>
-            <option value="FULL_CASH">سداد نقدي كامل</option>
-          </select>
+    <form id="add-gameya-form" name="addInstallmentMember" aria-labelledby="add-gameya-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <fieldset class="form-fieldset">
+        <legend>👤 بيانات المشترك</legend>
+        <div class="form-inline-grid" style="margin-bottom:0;">
+          <div>
+            <label for="new-gam-name" class="field-label">اسم المشترك:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="new-gam-name" name="memberName" autocomplete="name" list="pilgrims-directory-datalist" enterkeyhint="next" class="field-input" data-error="new-gam-name-error" required>
+            <div id="new-gam-name-error" class="field-error-msg">يرجى اختيار أو كتابة اسم المشترك.</div>
+          </div>
+          <div>
+            <label for="new-gam-phone" class="field-label">رقم الواتساب:</label>
+            <input id="new-gam-phone" name="memberPhone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="(\+?\d[\d\s\-]{7,18})?" enterkeyhint="next" class="field-input" placeholder="+2010..." data-error="new-gam-phone-error">
+            <div id="new-gam-phone-error" class="field-error-msg">أدخل رقم واتساب دولي صحيح أو اتركه فارغاً.</div>
+          </div>
         </div>
-        <div><label for="new-gam-target" class="field-label">الإجمالي (ج.م):</label><input id="new-gam-target" name="totalTarget" type="number" inputmode="decimal" value="40000" min="100" class="field-input" required></div>
-        <div id="gam-down-wrap">
-          <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
-          <input id="new-gam-down" name="downPayment" type="number" inputmode="decimal" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
-          <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
+      </fieldset>
+      <fieldset class="form-fieldset">
+        <legend>📅 نظام السداد والجدول</legend>
+        <div class="form-inline-grid" style="margin-bottom:0;">
+          <div class="field-span-wide">
+            <label for="new-gam-plan" class="field-label">نظام السداد:</label>
+            <select id="new-gam-plan" name="planType" class="field-input">
+              <option value="DEPOSIT_PLUS_MONTHLY">مقدم حجز + أقساط شهرية</option>
+              <option value="DIRECT_INSTALLMENT">تقسيط شهري متساوٍ</option>
+              <option value="ROTATING_ROSCA">جمعية دورية بالأدوار</option>
+              <option value="DEPOSIT_PLUS_FINAL">مقدم + الباقي قبل السفر</option>
+              <option value="BIWEEKLY_INSTALLMENT">تقسيط كل أسبوعين</option>
+              <option value="FULL_CASH">سداد نقدي كامل</option>
+            </select>
+          </div>
+          <div>
+            <label for="new-gam-target" class="field-label">الإجمالي (ج.م):<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="new-gam-target" name="totalTarget" type="number" inputmode="decimal" value="40000" min="100" class="field-input" data-error="new-gam-target-error" required>
+            <div id="new-gam-target-error" class="field-error-msg">الحد الأدنى للإجمالي 100 ج.م.</div>
+          </div>
+          <div id="gam-down-wrap">
+            <label for="new-gam-down" class="field-label">المقدم (إن وجد):</label>
+            <input id="new-gam-down" name="downPayment" type="number" inputmode="decimal" value="10000" min="0" class="field-input" data-error="new-gam-down-error">
+            <div id="new-gam-down-error" class="field-error-msg">يجب أن يكون المقدم أقل من الإجمالي.</div>
+          </div>
+          <div id="gam-count-wrap">
+            <label for="new-gam-count" class="field-label">عدد الدفعات:</label>
+            <input id="new-gam-count" name="installmentCount" type="number" inputmode="numeric" value="6" min="1" max="48" class="field-input" data-error="new-gam-count-error">
+            <div id="new-gam-count-error" class="field-error-msg">أدخل عدداً بين 1 و 48 دفعة.</div>
+          </div>
+          <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" inputmode="numeric" value="1" min="1" max="48" class="field-input" disabled></div>
+          <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
+          <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
+            <input type="checkbox" id="new-gam-mark-paid">
+            <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
+          </div>
         </div>
-        <div id="gam-count-wrap"><label for="new-gam-count" class="field-label">عدد الدفعات:</label><input id="new-gam-count" name="installmentCount" type="number" inputmode="numeric" value="6" min="1" max="48" class="field-input"></div>
-        <div id="gam-turn-wrap" hidden><label for="new-gam-turn" class="field-label">الدور (للجمعية):</label><input id="new-gam-turn" name="turnMonth" type="number" inputmode="numeric" value="1" min="1" max="48" class="field-input" disabled></div>
-        <div><label for="new-gam-start" class="field-label">تاريخ بدء الخطة:</label><input id="new-gam-start" name="startDate" type="date" class="field-input"></div>
-        <div id="gam-mark-paid-wrap" style="display:flex;align-items:center;gap:0.45rem;min-height:44px;font-size:0.84rem;">
-          <input type="checkbox" id="new-gam-mark-paid">
-          <label for="new-gam-mark-paid" style="cursor:pointer;font-weight:700;">تحصيل المقدم/النقدي الآن</label>
-        </div>
-      </div>
-      <div id="gameya-plan-preview" class="info-box-neutral" role="status" style="margin-bottom:0.9rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
+      </fieldset>
+      <div id="gameya-plan-preview" class="info-box-neutral" role="status" aria-live="polite" style="margin-bottom:0.9rem;font-size:0.85rem;padding:0.65rem 0.9rem;"></div>
       <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">✅ حفظ وإضافة المشترك</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-gameya-modal">إلغاء</button>
@@ -935,13 +1057,23 @@
       <h2 id="add-sos-modal-title" style="font-size:1.15rem;color:var(--danger);">🆘 تسجيل بلاغ معتمر تائه</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-sos-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-sos-form">
+    <form id="add-sos-form" aria-labelledby="add-sos-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
       <div class="form-inline-grid">
-        <div><label for="sos-pilgrim-name" class="field-label">اسم المعتمر التائه:</label><input id="sos-pilgrim-name" list="pilgrims-directory-datalist" class="field-input" placeholder="مثال: سعيد إبراهيم" required></div>
-        <div><label for="sos-coords" class="field-label">الإحداثيات (lat, lng):</label><input id="sos-coords" dir="ltr" class="field-input" placeholder="21.4195, 39.8236"></div>
-        <div class="field-span-wide"><label for="sos-notes" class="field-label">رقم البوابة / وصف المكان:</label><input id="sos-notes" class="field-input" placeholder="بجوار باب الملك فهد 79"></div>
+        <div>
+          <label for="sos-pilgrim-name" class="field-label">اسم المعتمر التائه:<span class="req-star" aria-hidden="true">*</span></label>
+          <input id="sos-pilgrim-name" name="sosPilgrimName" list="pilgrims-directory-datalist" enterkeyhint="next" class="field-input" placeholder="مثال: سعيد إبراهيم" data-error="sos-pilgrim-name-error" required>
+          <div id="sos-pilgrim-name-error" class="field-error-msg">يرجى إدخال اسم المعتمر التائه.</div>
+        </div>
+        <div>
+          <label for="sos-coords" class="field-label">الإحداثيات (lat, lng):</label>
+          <span id="sos-coords-hint" class="field-hint">اختياري — مثال: 21.4195, 39.8236</span>
+          <input id="sos-coords" name="sosCoords" dir="ltr" autocorrect="off" pattern="(-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?)?" enterkeyhint="next" aria-describedby="sos-coords-hint" class="field-input" placeholder="21.4195, 39.8236" data-error="sos-coords-error">
+          <div id="sos-coords-error" class="field-error-msg">صيغة غير صحيحة (اكتب: 21.4195, 39.8236 أو اتركه فارغاً).</div>
+        </div>
+        <div class="field-span-wide"><label for="sos-notes" class="field-label">رقم البوابة / وصف المكان:</label><input id="sos-notes" name="sosNotes" enterkeyhint="done" class="field-input" placeholder="بجوار باب الملك فهد 79"></div>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-danger" style="flex:1;">🆘 تسجيل وحساب المسافة للفندق</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-sos-modal">إلغاء</button>
       </div>
@@ -953,20 +1085,29 @@
       <h2 id="add-bag-modal-title" style="font-size:1.15rem;">🧳 إضافة حقيبة لنظام الفرز</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-bag-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-bag-form">
-      <div class="form-inline-grid">
-        <div><label for="new-bag-name" class="field-label">اسم المعتمر:</label><input id="new-bag-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-        <div><label for="new-bag-room" class="field-label">رقم الغرفة:</label><input id="new-bag-room" inputmode="numeric" class="field-input" placeholder="502" required></div>
+    <form id="add-bag-form" aria-labelledby="add-bag-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <div class="form-inline-grid" style="margin-bottom:0.75rem;">
         <div>
-          <label for="new-bag-type" class="field-label">النوع:</label>
-          <select id="new-bag-type" class="field-input">
-            <option value="SUITCASE">حقيبة سفر كبيرة</option>
-            <option value="HANDBAG">حقيبة يد</option>
-            <option value="ZAMZAM">عبوة زمزم</option>
-          </select>
+          <label for="new-bag-name" class="field-label">اسم المعتمر:<span class="req-star" aria-hidden="true">*</span></label>
+          <input id="new-bag-name" name="bagPilgrimName" list="pilgrims-directory-datalist" enterkeyhint="next" class="field-input" data-error="new-bag-name-error" required>
+          <div id="new-bag-name-error" class="field-error-msg">يرجى إدخال اسم صاحب الحقيبة.</div>
+        </div>
+        <div>
+          <label for="new-bag-room" class="field-label">رقم الغرفة:<span class="req-star" aria-hidden="true">*</span></label>
+          <input id="new-bag-room" name="bagRoom" inputmode="numeric" enterkeyhint="done" class="field-input" placeholder="502" data-error="new-bag-room-error" required>
+          <div id="new-bag-room-error" class="field-error-msg">يرجى إدخال رقم الغرفة.</div>
         </div>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <div style="margin-bottom:1rem;">
+        <span class="field-label">نوع الحقيبة:</span>
+        <div class="radio-card-grid" role="radiogroup" aria-label="نوع الحقيبة">
+          <label class="radio-card-option" for="bag-type-suitcase"><input type="radio" id="bag-type-suitcase" name="newBagType" value="SUITCASE" checked><span>🧳 حقيبة سفر</span></label>
+          <label class="radio-card-option" for="bag-type-handbag"><input type="radio" id="bag-type-handbag" name="newBagType" value="HANDBAG"><span>🎒 حقيبة يد</span></label>
+          <label class="radio-card-option" for="bag-type-zamzam"><input type="radio" id="bag-type-zamzam" name="newBagType" value="ZAMZAM"><span>💧 عبوة زمزم</span></label>
+        </div>
+      </div>
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">✅ إضافة وتوليد كود الحقيبة</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-bag-modal">إلغاء</button>
       </div>
@@ -978,20 +1119,32 @@
       <h2 id="add-med-modal-title" style="font-size:1.15rem;">♿ إضافة حالة للسجل الطبي</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="add-med-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="add-med-form">
-      <div class="form-inline-grid">
-        <div><label for="new-med-name" class="field-label">اسم المعتمر:</label><input id="new-med-name" list="pilgrims-directory-datalist" class="field-input" required></div>
-        <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" inputmode="numeric" class="field-input" placeholder="504"></div>
-        <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" class="field-input"></div>
-        <div><label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label><input id="new-med-ec-phone" type="tel" dir="ltr" class="field-input"></div>
-        <div class="field-span-wide"><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" class="field-input" placeholder="ضغط / سكري / عربة"></div>
-        <div class="field-span-wide" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
+    <form id="add-med-form" aria-labelledby="add-med-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+      <div class="form-inline-grid" style="margin-bottom:0.75rem;">
+        <div>
+          <label for="new-med-name" class="field-label">اسم المعتمر:<span class="req-star" aria-hidden="true">*</span></label>
+          <input id="new-med-name" name="medPilgrimName" list="pilgrims-directory-datalist" enterkeyhint="next" class="field-input" data-error="new-med-name-error" required>
+          <div id="new-med-name-error" class="field-error-msg">يرجى إدخال اسم المعتمر.</div>
+        </div>
+        <div><label for="new-med-room" class="field-label">الغرفة:</label><input id="new-med-room" name="medRoom" inputmode="numeric" enterkeyhint="next" class="field-input" placeholder="504"></div>
+        <div><label for="new-med-ec-name" class="field-label">اسم المرافق:</label><input id="new-med-ec-name" name="medCompanionName" enterkeyhint="next" class="field-input"></div>
+        <div>
+          <label for="new-med-ec-phone" class="field-label">هاتف المرافق:</label>
+          <input id="new-med-ec-phone" name="medCompanionPhone" type="tel" dir="ltr" autocorrect="off" pattern="(\+?\d[\d\s\-]{7,18})?" enterkeyhint="next" class="field-input" data-error="new-med-ec-phone-error">
+          <div id="new-med-ec-phone-error" class="field-error-msg">أدخل رقم هاتف صحيح أو اتركه فارغاً.</div>
+        </div>
+        <div class="field-span-wide"><label for="new-med-notes" class="field-label">ملاحظة طبية:</label><input id="new-med-notes" name="medNotes" enterkeyhint="done" class="field-input" placeholder="ضغط / سكري / عربة"></div>
+      </div>
+      <fieldset class="form-fieldset">
+        <legend>🦽 متطلبات الرعاية والمرافق</legend>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;min-height:44px;font-size:0.86rem;">
           <label for="new-med-wheelchair"><input type="checkbox" id="new-med-wheelchair"> كرسي متحرك</label>
           <label for="new-med-cart"><input type="checkbox" id="new-med-cart"> عربة غولف (نُسك)</label>
           <label for="new-med-insulin"><input type="checkbox" id="new-med-insulin"> ثلاجة إنسولين</label>
         </div>
-      </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      </fieldset>
+      <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ الحالة الطبية</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="add-med-modal">إلغاء</button>
       </div>

@@ -32,7 +32,7 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     const safaAudioStatus = (await page.request.get('/audio/safa-marwah.mp3')).status();
     expect(safaAudioStatus).toBe(200);
     const swText = await (await page.request.get('/sw.js')).text();
-    expect(swText).toContain('umrah-companion-v17');
+    expect(swText).toContain('umrah-companion-v18');
 
     // Prayer timer hero countdown + 6 individual prayer cards render live HH:MM:SS and progress
     await expect(page.locator('#prayer-hero-countdown')).toHaveText(/^\d{2,}:\d{2}:\d{2}$/);
@@ -162,9 +162,12 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.goto('/supervisor.html');
     await expect(page.locator('#active-group-switcher')).toBeVisible();
 
-    // Clean modal-based forms, post-interaction validation, Edit Pilgrim, 2-step delete + Undo toast
+    // Clean modal-based forms, novalidate error summary + first invalid focus, Edit Pilgrim, 2-step delete + Undo toast
     await page.click('#btn-open-add-pilgrim');
     await expect(page.locator('#add-pilgrim-modal')).toBeVisible();
+    await page.click('#btn-save-pilgrim-submit');
+    await expect(page.locator('#add-pilgrim-form .form-error-summary')).toBeVisible();
+    await expect(page.locator('#new-pilgrim-name')).toBeFocused();
     await page.click('#new-pilgrim-passport');
     await page.fill('#new-pilgrim-passport', '12');
     await page.locator('#new-pilgrim-name').focus();
@@ -229,18 +232,40 @@ test.describe('Desktop Light: Umrah Platform E2E & WCAG 2 AA', () => {
     await page.click('#add-gameya-modal [data-close-dialog="add-gameya-modal"] >> nth=0');
     await expect(page.locator('#add-gameya-modal')).toBeHidden();
 
-    // Filter pills & quick payment modal projection
+    // Password unmask toggle in Settings modal
+    await page.click('#btn-open-settings');
+    await expect(page.locator('#settings-modal')).toBeVisible();
+    await expect(page.locator('#set-sync-token')).toHaveAttribute('type', 'password');
+    await page.click('[data-toggle-visibility="set-sync-token"]');
+    await expect(page.locator('#set-sync-token')).toHaveAttribute('type', 'text');
+    await expect(page.locator('[data-toggle-visibility="set-sync-token"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.click('[data-toggle-visibility="set-sync-token"]');
+    await page.click('#settings-modal [data-close-dialog="settings-modal"]');
+
+    // Filter pills with counts, quick payment radio group, dynamic pay button & WhatsApp receipt banner, and .xlsx download
     await page.click('[data-gameya-filter="OVERDUE"]');
     await expect(page.locator('[data-gameya-filter="OVERDUE"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#gameya-filter-status')).not.toHaveText('');
     await page.click('[data-gameya-filter="ALL"]');
     await page.locator('#gameya-tbody [data-open-pay]').first().click();
     await expect(page.locator('#payment-modal')).toBeVisible();
     await expect(page.locator('#pay-quick-presets .quick-preset-chip').first()).toBeVisible();
     await expect(page.locator('#pay-projection-preview')).toContainText('المتبقي');
-    await page.click('#payment-modal [data-close-dialog="payment-modal"]');
+    await expect(page.locator('#btn-pay-submit')).toContainText('تأكيد تحصيل');
+    await page.click('label[for="pay-method-cash"]');
+    await page.fill('#pay-amount', '500');
+    await page.click('#btn-pay-submit');
     await expect(page.locator('#payment-modal')).toBeHidden();
+    await expect(page.locator('#gameya-last-receipt-banner')).toBeVisible();
+    await expect(page.locator('#gameya-last-receipt-banner')).toContainText(/500|٥٠٠/);
 
-    // Schedule modal ledger & edit disclosure
+    // Download formatted multi-sheet Excel (.xlsx) workbook
+    const downloadPromise = page.waitForEvent('download');
+    await page.click('#btn-export-gameya-csv');
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.xlsx$/i);
+
+    // Schedule modal ledger, reversal two-step confirm, & edit disclosure
     await page.locator('#gameya-tbody [data-view-schedule]').first().click();
     await expect(page.locator('#schedule-modal')).toBeVisible();
     await expect(page.locator('#schedule-modal [data-copy-receipt]').first()).toBeVisible();

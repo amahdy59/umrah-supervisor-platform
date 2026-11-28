@@ -1012,46 +1012,80 @@
       <h2 id="profile-modal-title" style="font-size:1.15rem;">✏️ تخصيص بيانات المعتمر والفوج</h2>
       <button type="button" class="dialog-close-btn" data-close-dialog="profile-modal" aria-label="إغلاق">&times;</button>
     </div>
-    <form id="profile-form">
-      <div class="form-grid">
-        <div><label for="edit-name" class="field-label">الاسم الكامل:</label><input id="edit-name" autocomplete="name" class="field-input" required></div>
-        <div><label for="edit-passport" class="field-label">رقم الجواز:</label><input id="edit-passport" class="field-input" required></div>
-        <div>
-          <label for="edit-stage" class="field-label">المرحلة الحالية للرحلة:</label>
-          <select id="edit-stage" class="field-input">
-            <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
-            <option value="IN_TRANSIT">في الطريق / الميقات</option>
-            <option value="IN_MAKKAH">في مكة المكرمة</option>
-            <option value="IN_MADINAH">في المدينة المنورة</option>
-            <option value="RETURN_TRANSIT">الاستعداد للعودة</option>
-          </select>
+    <form id="profile-form" aria-labelledby="profile-modal-title" novalidate>
+      <div class="form-error-summary" role="alert" hidden></div>
+
+      <fieldset class="form-fieldset">
+        <legend>🪪 بيانات المعتمر الشخصية</legend>
+        <div class="form-grid" style="margin-bottom:0;">
+          <div>
+            <label for="edit-name" class="field-label">الاسم الكامل:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="edit-name" name="fullName" autocomplete="name" enterkeyhint="next" class="field-input" data-error="edit-name-error" required>
+            <div id="edit-name-error" class="field-error-msg">يرجى إدخال اسم المعتمر الكامل.</div>
+          </div>
+          <div>
+            <label for="edit-passport" class="field-label">رقم الجواز:<span class="req-star" aria-hidden="true">*</span></label>
+            <span id="edit-passport-hint" class="field-hint">5 إلى 15 حرفاً ورقماً (مثل A12345678)</span>
+            <input id="edit-passport" name="passportNumber" autocorrect="off" autocapitalize="characters" spellcheck="false" minlength="5" maxlength="15" pattern="[A-Za-z0-9\-]{5,15}" enterkeyhint="next" aria-describedby="edit-passport-hint" data-error="edit-passport-error" class="field-input" required>
+            <div id="edit-passport-error" class="field-error-msg">أدخل رقم جواز صحيحاً (5–15 حرفاً/رقماً).</div>
+          </div>
         </div>
-        <div>
-          <label for="edit-hotel-preset" class="field-label">فندق مكة المكرمة:</label>
-          <select id="edit-hotel-preset" class="field-input">
-            <option value="kiswah">فندق أبراج الكسوة (جرول)</option>
-            <option value="clock">وقف الملك عبد العزيز (أبراج البيت)</option>
-            <option value="jabal-omar">فنادق جبل عمر / هيلتون مكة</option>
-            <option value="ghazza">فنادق الغزة وريع بخش</option>
-          </select>
+        <div style="margin-top:0.65rem;">
+          <span class="field-label">النوع (لتخصيص الإرشاد الفقهي):</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="النوع">
+            <label class="radio-card-option" for="edit-gender-male">
+              <input type="radio" id="edit-gender-male" name="editGender" value="MALE" checked>
+              <span>👨 رجل</span>
+            </label>
+            <label class="radio-card-option" for="edit-gender-female">
+              <input type="radio" id="edit-gender-female" name="editGender" value="FEMALE">
+              <span>🧕 امرأة (فقه المعتمرة وبوابة 25)</span>
+            </label>
+          </div>
         </div>
-        <div><label for="edit-room" class="field-label">رقم الغرفة:</label><input id="edit-room" class="field-input"></div>
-        <div><label for="edit-bus" class="field-label">رقم الباص:</label><input id="edit-bus" class="field-input"></div>
-        <div><label for="edit-sup-name" class="field-label">اسم المشرف:</label><input id="edit-sup-name" class="field-input"></div>
-        <div><label for="edit-sup-phone" class="field-label">واتساب المشرف:</label><input id="edit-sup-phone" type="tel" autocomplete="tel" dir="ltr" class="field-input" required></div>
-        <div>
-          <label for="edit-gender" class="field-label">النوع (لتخصيص الإرشاد):</label>
-          <select id="edit-gender" class="field-input">
-            <option value="MALE">رجل</option>
-            <option value="FEMALE">امرأة (فقه المعتمرة وبوابة 25)</option>
-          </select>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>🏨 الفندق والمرحلة والتنقل</legend>
+        <div style="margin-bottom:0.65rem;">
+          <span class="field-label">فندق مكة المكرمة:</span>
+          <div class="radio-card-grid" role="radiogroup" aria-label="فندق مكة المكرمة">
+            <label class="radio-card-option" for="edit-hotel-kiswah"><input type="radio" id="edit-hotel-kiswah" name="editHotelPreset" value="kiswah" checked><span>أبراج الكسوة (جرول)</span></label>
+            <label class="radio-card-option" for="edit-hotel-clock"><input type="radio" id="edit-hotel-clock" name="editHotelPreset" value="clock"><span>وقف الملك عبد العزيز</span></label>
+            <label class="radio-card-option" for="edit-hotel-jabal"><input type="radio" id="edit-hotel-jabal" name="editHotelPreset" value="jabal-omar"><span>جبل عمر / هيلتون</span></label>
+            <label class="radio-card-option" for="edit-hotel-ghazza"><input type="radio" id="edit-hotel-ghazza" name="editHotelPreset" value="ghazza"><span>الغزة وريع بخش</span></label>
+          </div>
         </div>
-        <div><label for="edit-med" class="field-label">حالة صحية / حساسية:</label><input id="edit-med" class="field-input"></div>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <label for="edit-meeting" class="field-label">نقطة التجمع المعتمدة:</label>
-        <input id="edit-meeting" class="field-input">
-      </div>
+        <div class="form-grid" style="margin-bottom:0;">
+          <div>
+            <label for="edit-stage" class="field-label">المرحلة الحالية للرحلة:</label>
+            <select id="edit-stage" name="tripStage" class="field-input">
+              <option value="PRE_DEPARTURE">تجهيز ما قبل السفر</option>
+              <option value="IN_TRANSIT">في الطريق / الميقات</option>
+              <option value="IN_MAKKAH">في مكة المكرمة</option>
+              <option value="IN_MADINAH">في المدينة المنورة</option>
+              <option value="RETURN_TRANSIT">الاستعداد للعودة</option>
+            </select>
+          </div>
+          <div><label for="edit-room" class="field-label">رقم الغرفة:</label><input id="edit-room" name="roomNumber" enterkeyhint="next" class="field-input"></div>
+          <div><label for="edit-bus" class="field-label">رقم الباص:</label><input id="edit-bus" name="busNumber" enterkeyhint="next" class="field-input"></div>
+          <div><label for="edit-meeting" class="field-label">نقطة التجمع المعتمدة:</label><input id="edit-meeting" name="meetingPoint" enterkeyhint="next" class="field-input"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>🧭 بيانات المشرف والحالة الصحية</legend>
+        <div class="form-grid" style="margin-bottom:0;">
+          <div><label for="edit-sup-name" class="field-label">اسم المشرف:</label><input id="edit-sup-name" name="supervisorName" enterkeyhint="next" class="field-input"></div>
+          <div>
+            <label for="edit-sup-phone" class="field-label">واتساب المشرف:<span class="req-star" aria-hidden="true">*</span></label>
+            <input id="edit-sup-phone" name="supervisorPhone" type="tel" autocomplete="tel" dir="ltr" autocorrect="off" pattern="\+?\d[\d\s\-]{7,18}" enterkeyhint="next" class="field-input" data-error="edit-sup-phone-error" required>
+            <div id="edit-sup-phone-error" class="field-error-msg">أدخل رقم هاتف/واتساب دولي صحيح (مثل +201040414659).</div>
+          </div>
+          <div style="grid-column:1 / -1;"><label for="edit-med" class="field-label">حالة صحية / حساسية:</label><input id="edit-med" name="medicalNote" enterkeyhint="done" class="field-input"></div>
+        </div>
+      </fieldset>
+
       <div class="dialog-sticky-actions">
         <button type="submit" class="btn btn-primary" style="flex:1;">💾 حفظ البيانات</button>
         <button type="button" class="btn btn-secondary" data-close-dialog="profile-modal">إلغاء</button>

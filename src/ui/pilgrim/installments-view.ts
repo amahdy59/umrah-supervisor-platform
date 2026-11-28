@@ -270,6 +270,14 @@ export function openMyInstallmentsModal(): void {
       </div>
     </div>
     ${nextDueBanner}
+    <div class="info-box-neutral" style="margin-bottom:0.85rem;font-size:0.84rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+      <div>
+        <strong>🏦 ${isEn ? 'Official Transfer Channels (Granada #1094):' : 'قنوات السداد الرسمية (شركة غرناطة ترخيص ١٠٩٤):'}</strong>
+        <div style="color:var(--text-muted);margin-top:0.15rem;">
+          ${isEn ? `InstaPay / Wallet to Supervisor: ${personalPlan.supervisorPhone || '+201040414659'} — Include your full name in notes.` : `إنستاباي / محفظة إلكترونية على رقم الإشراف (${personalPlan.supervisorPhone || '+201040414659'}) — مع إرسال صورة الإيصال للشيخ.`}
+        </div>
+      </div>
+    </div>
     <div class="table-wrapper" tabindex="0" role="region" aria-label="${isEn ? 'My payment schedule' : 'جدول أقساطي'}">
       <table class="schedule-table">
         <caption class="sr-only">${isEn ? 'Personal Umrah installment schedule' : 'جدول أقساط المعتمر التفصيلي'}</caption>

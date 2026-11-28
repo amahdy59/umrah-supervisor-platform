@@ -52,7 +52,7 @@ describe('Sheikh Mostafa Flefel / Abshirou Brand Data', () => {
 
   it('removes excluded women/girl image files and precaches only curated Sheikh & Haramain images', () => {
     const swContent = fs.readFileSync(path.join(ROOT_DIR, 'public/sw.js'), 'utf8');
-    expect(swContent).toContain('umrah-companion-v17');
+    expect(swContent).toContain('umrah-companion-v18');
 
     const excludedBrandFiles = [
       'abshirou-fb-cover.jpg',

@@ -12,9 +12,12 @@ export interface OutboxMutation {
 }
 
 export interface SyncPushResult {
-  mode: 'd1' | 'local-only' | 'offline-queued' | 'unauthorized';
+  mode: 'd1' | 'local-only' | 'offline-queued' | 'unauthorized' | 'conflict';
   synced: boolean;
   pendingCount: number;
+  version?: number;
+  serverVersion?: number;
+  serverUpdatedAt?: string;
 }
 
 export interface CloudSosEventRow {
@@ -72,12 +75,21 @@ function enqueueMutation(queue: OutboxMutation[], mutation: OutboxMutation): Out
   return [...filtered.slice(-19), mutation];
 }
 
-export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayload: unknown): Promise<SyncPushResult> {
+export async function pushGroupWorkspaceToCloud(
+  groupId: string,
+  workspacePayload: unknown,
+  expectedVersion?: number
+): Promise<SyncPushResult> {
   const mutation: OutboxMutation = {
     id: `mut-${Date.now()}`,
     endpoint: '/api/sync',
     groupId,
-    payload: { groupId, workspace: workspacePayload, updatedAt: new Date().toISOString() },
+    payload: {
+      groupId,
+      expectedVersion,
+      workspace: workspacePayload,
+      updatedAt: new Date().toISOString(),
+    },
     createdAt: new Date().toISOString(),
   };
 
@@ -97,16 +109,26 @@ export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayloa
     if (res.status === 401) {
       return { mode: 'unauthorized', synced: false, pendingCount: (await getOutbox()).length };
     }
+    if (res.status === 409) {
+      const conflict = (await res.json()) as { serverVersion?: number; updatedAt?: string };
+      return {
+        mode: 'conflict',
+        synced: false,
+        pendingCount: (await getOutbox()).length,
+        serverVersion: conflict.serverVersion,
+        serverUpdatedAt: conflict.updatedAt,
+      };
+    }
     if (!res.ok) {
       return { mode: 'local-only', synced: false, pendingCount: (await getOutbox()).length };
     }
-    const data = (await res.json()) as { mode?: string; synced?: boolean };
+    const data = (await res.json()) as { mode?: string; synced?: boolean; version?: number };
     if (data.mode === 'd1' && data.synced) {
       const remaining = (await getOutbox()).filter(
         (x) => !(x.endpoint === '/api/sync' && (x.groupId ?? '') === groupId)
       );
       await saveOutbox(remaining);
-      return { mode: 'd1', synced: true, pendingCount: remaining.length };
+      return { mode: 'd1', synced: true, pendingCount: remaining.length, version: data.version };
     }
     return { mode: 'local-only', synced: false, pendingCount: 0 };
   } catch {
@@ -120,6 +142,7 @@ export async function pushGroupWorkspaceToCloud(groupId: string, workspacePayloa
 export interface SyncPullResult {
   mode: 'd1' | 'local-only' | 'unauthorized';
   found: boolean;
+  version?: number;
   updatedAt?: string;
   workspace?: unknown;
 }
@@ -138,17 +161,66 @@ export async function pullGroupWorkspaceFromCloud(groupId: string): Promise<Sync
     const data = (await res.json()) as {
       mode?: string;
       found?: boolean;
+      version?: number;
       updatedAt?: string;
       workspace?: unknown;
     };
     return {
       mode: data.mode === 'd1' ? 'd1' : 'local-only',
       found: Boolean(data.found),
+      version: data.version,
       updatedAt: data.updatedAt,
       workspace: data.workspace,
     };
   } catch {
     return { mode: 'local-only', found: false };
+  }
+}
+
+export async function pushPeopleDirectoryToCloud(
+  people: unknown[]
+): Promise<{ mode: 'd1' | 'local-only' | 'unauthorized'; synced: boolean; upserted: number }> {
+  if (!navigator.onLine || !Array.isArray(people) || people.length === 0) {
+    return { mode: 'local-only', synced: false, upserted: 0 };
+  }
+  try {
+    const res = await fetch('/api/people', {
+      method: 'POST',
+      headers: buildAuthHeaders(true),
+      body: JSON.stringify({ people }),
+    });
+    if (res.status === 401) return { mode: 'unauthorized', synced: false, upserted: 0 };
+    if (!res.ok) return { mode: 'local-only', synced: false, upserted: 0 };
+    const data = (await res.json()) as { mode?: string; synced?: boolean; upserted?: number };
+    return {
+      mode: data.mode === 'd1' ? 'd1' : 'local-only',
+      synced: Boolean(data.synced),
+      upserted: Number(data.upserted) || 0,
+    };
+  } catch {
+    return { mode: 'local-only', synced: false, upserted: 0 };
+  }
+}
+
+export async function pullPeopleDirectoryFromCloud(): Promise<{
+  mode: 'd1' | 'local-only' | 'unauthorized';
+  people: unknown[];
+}> {
+  if (!navigator.onLine) return { mode: 'local-only', people: [] };
+  try {
+    const res = await fetch('/api/people', {
+      method: 'GET',
+      headers: buildAuthHeaders(false),
+    });
+    if (res.status === 401) return { mode: 'unauthorized', people: [] };
+    if (!res.ok) return { mode: 'local-only', people: [] };
+    const data = (await res.json()) as { mode?: string; people?: unknown[] };
+    return {
+      mode: data.mode === 'd1' ? 'd1' : 'local-only',
+      people: Array.isArray(data.people) ? data.people : [],
+    };
+  } catch {
+    return { mode: 'local-only', people: [] };
   }
 }
 

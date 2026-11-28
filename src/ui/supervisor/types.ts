@@ -103,6 +103,8 @@ export interface GroupSettings {
 
 export interface GroupWorkspace {
   id: string;
+  version?: number;
+  updatedAt?: string;
   settings: GroupSettings;
   pilgrims: PilgrimRecord[];
   rooms: RoomRecord[];
@@ -113,6 +115,7 @@ export interface GroupWorkspace {
 }
 
 export interface MultiGroupRootState {
+  schemaVersion?: number;
   activeGroupId: string;
   groups: GroupWorkspace[];
   people: PersonRecord[];

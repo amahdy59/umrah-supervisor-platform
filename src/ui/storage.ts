@@ -4,10 +4,23 @@
  */
 
 const DB_NAME = 'umrah_platform_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_KV = 'kv_store';
 const STORE_BLOBS = 'blob_store';
+const STORE_AUDIT = 'ledger_audit';
 const SYNC_CHANNEL = 'umrah_platform_sync_v1';
+
+export interface LedgerAuditEntry {
+  id: string;
+  groupId: string;
+  planId: string;
+  memberName: string;
+  entryType: 'PAYMENT' | 'REVERSAL';
+  amount: number;
+  method: string;
+  ref?: string;
+  createdAt: string;
+}
 
 export interface StorageHealthReport {
   backend: 'indexeddb' | 'localstorage';
@@ -33,6 +46,11 @@ function openDatabase(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(STORE_BLOBS)) {
         db.createObjectStore(STORE_BLOBS);
+      }
+      if (!db.objectStoreNames.contains(STORE_AUDIT)) {
+        const auditStore = db.createObjectStore(STORE_AUDIT, { keyPath: 'id' });
+        auditStore.createIndex('by_group', 'groupId', { unique: false });
+        auditStore.createIndex('by_created_at', 'createdAt', { unique: false });
       }
     };
     req.onsuccess = () => {
@@ -124,6 +142,36 @@ export async function idbDeleteBlob(key: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function idbAppendLedgerAudit(entry: LedgerAuditEntry): Promise<boolean> {
+  try {
+    const db = await openDatabase();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_AUDIT, 'readwrite');
+      tx.objectStore(STORE_AUDIT).put(entry);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function idbListLedgerAudit(groupId?: string): Promise<LedgerAuditEntry[]> {
+  try {
+    const db = await openDatabase();
+    return await new Promise<LedgerAuditEntry[]>((resolve, reject) => {
+      const tx = db.transaction(STORE_AUDIT, 'readonly');
+      const store = tx.objectStore(STORE_AUDIT);
+      const req = groupId ? store.index('by_group').getAll(groupId) : store.getAll();
+      req.onsuccess = () => resolve((req.result as LedgerAuditEntry[] | undefined) || []);
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    return [];
   }
 }
 

@@ -399,10 +399,96 @@ export function initAccessibleFormValidation(): void {
           el.classList.remove('user-invalid-fallback', 'user-valid-fallback');
           syncAria(el, false);
         });
+        const summary = form.querySelector<HTMLElement>('.form-error-summary');
+        if (summary) {
+          summary.hidden = true;
+          summary.textContent = '';
+        }
       });
     },
     true
   );
+
+  document.addEventListener(
+    'submit',
+    (e) => {
+      const form = e.target as HTMLFormElement | null;
+      if (!form || form.tagName !== 'FORM' || !form.noValidate) return;
+      if (form.checkValidity()) {
+        const summary = form.querySelector<HTMLElement>('.form-error-summary');
+        if (summary) {
+          summary.hidden = true;
+          summary.textContent = '';
+        }
+        return;
+      }
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      let firstInvalid: (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) | null = null;
+      let invalidCount = 0;
+      Array.from(form.elements).forEach((node) => {
+        const ctrl = node as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+        if (!ctrl.matches?.('input, select, textarea') || ctrl.disabled) return;
+        dirtyState.set(ctrl, { hasInteracted: true, hasBlurred: true });
+        syncAria(ctrl, false);
+        if (!ctrl.validity.valid) {
+          invalidCount++;
+          if (!firstInvalid) firstInvalid = ctrl;
+        }
+      });
+
+      const isEn = getCurrentLanguage() === 'en';
+      const summary = form.querySelector<HTMLElement>('.form-error-summary');
+      if (summary) {
+        summary.hidden = false;
+        summary.textContent = isEn
+          ? `⚠️ Please review ${invalidCount} highlighted field(s) before submitting.`
+          : `⚠️ يرجى مراجعة (${invalidCount}) حقل/حقول محددة باللون الأحمر قبل الحفظ.`;
+      }
+      if (firstInvalid) {
+        const targetEl = firstInvalid as HTMLInputElement;
+        const firstLabel = targetEl.labels?.[0] ? spokenText(targetEl.labels[0]) : targetEl.name || '';
+        announceToScreenReader(
+          isEn ? `Form error in ${firstLabel}` : `يرجى مراجعة الحقل: ${firstLabel}`,
+          true
+        );
+        targetEl.focus({ preventScroll: false });
+      }
+    },
+    true
+  );
+
+  document.addEventListener('click', (e) => {
+    const toggleBtn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-toggle-visibility]');
+    if (!toggleBtn) return;
+    const targetId = toggleBtn.dataset.toggleVisibility;
+    if (!targetId) return;
+    const input = document.getElementById(targetId) as HTMLInputElement | null;
+    if (!input) return;
+    const willShow = input.type === 'password';
+    input.type = willShow ? 'text' : 'password';
+    toggleBtn.setAttribute('aria-pressed', String(willShow));
+    const isEn = getCurrentLanguage() === 'en';
+    toggleBtn.setAttribute(
+      'aria-label',
+      willShow ? (isEn ? 'Hide secret value' : 'إخفاء القيمة') : isEn ? 'Show secret value' : 'إظهار القيمة'
+    );
+    toggleBtn.textContent = willShow ? (isEn ? '🙈' : '🙈') : isEn ? '👁️' : '👁️';
+  });
+}
+
+export function getRadioGroupValue(root: ParentNode, name: string, fallback: string = ''): string {
+  const checked = root.querySelector<HTMLInputElement>(`input[type="radio"][name="${name}"]:checked`);
+  return checked?.value ?? fallback;
+}
+
+export function setRadioGroupValue(root: ParentNode, name: string, value: string): void {
+  const radios = root.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${name}"]`);
+  radios.forEach((r) => {
+    r.checked = r.value === value;
+  });
 }
 
 export async function copyToClipboard(text: string, successMessage: string): Promise<void> {
